@@ -11,25 +11,26 @@ const AboutModal = React.memo(({ onClose }) => {
       overflowY: "auto",
       backgroundColor: "rgba(0,0,0,0.6)",
       zIndex: 2000,
-      padding: "16px",
-      boxSizing: "border-box",
       display: "flex",
       justifyContent: "center",
-      alignItems: "flex-start",
+      alignItems: "center",
+      padding: 0,
       touchAction: "manipulation"
     }}>
       <div style={{
-        maxWidth: '800px',
-        margin: '0 auto',
-        padding: '40px 20px',
+        width: "min(90vw, 800px)",
+        maxHeight: "90vh",
+        overflowY: "auto",
+        WebkitOverflowScrolling: "touch",
+        padding: "40px 20px",
         fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
         lineHeight: '1.6',
         color: '#333',
         background: '#fff',
         borderRadius: '12px',
         position: 'relative',
-        width: '100%',
-        textAlign: 'left'
+        textAlign: 'left',
+        margin: "auto"
       }}>
         <button
           onClick={onClose}
