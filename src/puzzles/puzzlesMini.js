@@ -41,7 +41,7 @@ export const puzzleMini5 = [
 ];
 
 export const puzzleMini6 = [
-  ["X", "X", null, "X", "X"],
+  [null, "X", null, "X", null],
   ["X", null, null, null, "X"],
   [null, null, 2, 12, null],
   ["X", null, 1, 3, "X"],
