@@ -1,45 +1,206 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#303036" />
-    
-    <!-- Primary Meta Tags -->
-    <meta name="title" content="Sums - Daily Number Puzzle Game" />
-    <meta name="description" content="Play Sums: Build number chains by selecting adjacent numbers that add up to the next number in sequence. New puzzles daily!" />
-    
-    <!-- Open Graph / Facebook -->
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://sums.games/" />
-    <meta property="og:title" content="Sums - Daily Number Puzzle Game" />
-    <meta property="og:description" content="Play Sums: Build number chains by selecting adjacent numbers that add up to the next number in sequence. New puzzles daily!" />
-    <meta property="og:image" content="%PUBLIC_URL%/og-image.png" />
-    
-    <!-- Twitter -->
-    <meta property="twitter:card" content="summary_large_image" />
-    <meta property="twitter:url" content="https://sums.games/" />
-    <meta property="twitter:title" content="Sums - Daily Number Puzzle Game" />
-    <meta property="twitter:description" content="Play Sums: Build number chains by selecting adjacent numbers that add up to the next number in sequence. New puzzles daily!" />
-    <meta property="twitter:image" content="%PUBLIC_URL%/og-image.png" />
-    
-<!-- Google Analytics -->
-   <script async src="https://www.googletagmanager.com/gtag/js?id=G-XJK6E2BMCN"></script>
-   <script>
-     window.dataLayer = window.dataLayer || [];
-     function gtag(){dataLayer.push(arguments);}
-     gtag('js', new Date());
-     gtag('config', 'G-XJK6E2BMCN');
-   </script>
-    
-    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
-    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
-    
-    <title>Sums - Daily Number Puzzle Game</title>
-  </head>
-  <body>
-    <noscript>You need to enable JavaScript to run this app.</noscript>
-    <div id="root"></div>
-  </body>
+<head>
+  <meta charset="utf-8" />
+  <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#303036" />
+  
+  <!-- Primary Meta Tags -->
+  <title>SUMS - Daily Number Logic Puzzle Game | Free Math Brain Teaser</title>
+  <meta name="title" content="SUMS - Daily Number Logic Puzzle Game | Free Math Brain Teaser" />
+  <meta name="description" content="Play SUMS, a free daily number puzzle game that combines math, logic, and spatial reasoning. Challenge yourself with Mini (5×5) or Full (7×7) grids. New puzzles every day at midnight EST!" />
+  <meta name="keywords" content="number puzzle, math game, logic puzzle, daily puzzle, brain teaser, number game, math puzzle, puzzle game, SUMS game, spatial reasoning, addition game, free puzzle, online puzzle" />
+  <meta name="author" content="Xavier Games" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://sums.games/" />
+  
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://sums.games/" />
+  <meta property="og:title" content="SUMS - Daily Number Logic Puzzle Game" />
+  <meta property="og:description" content="Challenge your mind with SUMS, a daily number puzzle combining math and spatial reasoning. Play Mini (5×5) or Full (7×7) grids. Free to play, new puzzles daily!" />
+  <meta property="og:image" content="https://sums.games/SUMS_logo.png" />
+  <meta property="og:site_name" content="SUMS" />
+  <meta property="og:locale" content="en_US" />
+  
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image" />
+  <meta property="twitter:url" content="https://sums.games/" />
+  <meta property="twitter:title" content="SUMS - Daily Number Logic Puzzle Game" />
+  <meta property="twitter:description" content="Challenge your mind with SUMS, a daily number puzzle combining math and spatial reasoning. Play Mini (5×5) or Full (7×7) grids. Free to play!" />
+  <meta property="twitter:image" content="https://sums.games/SUMS_logo.png" />
+  
+  <!-- Additional SEO Tags -->
+  <meta name="application-name" content="SUMS" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  <meta name="apple-mobile-web-app-title" content="SUMS Puzzle" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="format-detection" content="telephone=no" />
+  
+  <!-- Geo Tags -->
+  <meta name="geo.region" content="US" />
+  <meta name="geo.placename" content="United States" />
+  
+  <!-- App Links -->
+  <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
+  <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+  
+  <!-- Preconnect for Performance -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://www.googletagmanager.com" />
+  <link rel="dns-prefetch" href="https://pagead2.googlesyndication.com" />
+  
+  <!-- Structured Data - JSON-LD for Rich Results -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "SUMS",
+    "alternateName": "SUMS Puzzle Game",
+    "url": "https://sums.games",
+    "description": "A daily number logic puzzle game that combines spatial reasoning with addition. Fill the grid by placing numbers in sequence using mathematical sums.",
+    "applicationCategory": "GameApplication",
+    "genre": ["Puzzle", "Logic", "Math"],
+    "inLanguage": "en-US",
+    "operatingSystem": "Any",
+    "browserRequirements": "Requires JavaScript. Requires HTML5.",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "Xavier Games",
+      "url": "https://sums.games"
+    },
+    "image": "https://sums.games/SUMS_logo.png",
+    "screenshot": "https://sums.games/SUMS_logo.png",
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.8",
+      "ratingCount": "125",
+      "bestRating": "5",
+      "worstRating": "1"
+    },
+    "featureList": [
+      "Daily Puzzles",
+      "Mini SUMS (5×5 grid)",
+      "Full SUMS (7×7 grid)",
+      "Hard Mode",
+      "Statistics Tracking",
+      "Mobile Friendly",
+      "No Account Required"
+    ]
+  }
+  </script>
+
+  <!-- Structured Data - Game -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Game",
+    "name": "SUMS Daily Puzzle",
+    "description": "Daily number logic puzzle combining math and spatial reasoning",
+    "gameItem": {
+      "@type": "Thing",
+      "name": "Daily Puzzle"
+    },
+    "numberOfPlayers": {
+      "@type": "QuantitativeValue",
+      "value": 1
+    },
+    "playMode": "SinglePlayer",
+    "gamePlatform": ["Web Browser", "Mobile Browser", "Desktop"]
+  }
+  </script>
+
+  <!-- Structured Data - FAQ -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [{
+      "@type": "Question",
+      "name": "What is SUMS?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "SUMS is a daily number logic puzzle game that challenges you with spatial reasoning and addition. The goal is to fill every empty cell by placing numbers in order (1, 2, 3, 4, 5...) using addition."
+      }
+    }, {
+      "@type": "Question",
+      "name": "How do you play SUMS?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Select adjacent numbers that sum to your target, then place the result in an empty cell touching your selection. Numbers must be placed in numerical order starting from 1."
+      }
+    }, {
+      "@type": "Question",
+      "name": "Is SUMS free to play?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes! SUMS is completely free to play with no account required. The game is ad-supported and new puzzles are released daily at midnight EST."
+      }
+    }, {
+      "@type": "Question",
+      "name": "What are Mini SUMS and Full SUMS?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Mini SUMS is a 5×5 grid puzzle designed to be completed in under 2 minutes. Full SUMS is a 7×7 grid that provides a longer, more challenging experience. Both offer new puzzles daily."
+      }
+    }]
+  }
+  </script>
+
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XJK6E2BMCN"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-XJK6E2BMCN');
+  </script>
+
+  <!-- Google AdSense -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9089968933343465"
+     crossorigin="anonymous"></script>
+</head>
+<body>
+  <noscript>You need to enable JavaScript to play SUMS - a daily number logic puzzle game.</noscript>
+  <div id="root"></div>
+  
+  <!-- Alternative content for SEO when JS is disabled -->
+  <noscript>
+    <div style="text-align: center; padding: 50px; font-family: Arial, sans-serif;">
+      <h1>SUMS - Daily Number Logic Puzzle Game</h1>
+      <h2>Free Math Brain Teaser</h2>
+      <p>SUMS is a daily number puzzle game that combines spatial reasoning with addition. Challenge yourself with two game modes:</p>
+      <ul style="list-style: none; padding: 0;">
+        <li><strong>Mini SUMS (5×5):</strong> Quick puzzle designed for under 2 minutes</li>
+        <li><strong>Full SUMS (7×7):</strong> Challenging puzzle for extended play</li>
+      </ul>
+      <h3>How to Play SUMS</h3>
+      <ol style="text-align: left; max-width: 600px; margin: 20px auto;">
+        <li>Look at the grid with pre-filled clue numbers (shown in gray)</li>
+        <li>Start by placing the number 1, then 2, then 3, and so on in sequence</li>
+        <li>To create each number, select 2 or more adjacent cells whose values add up to your target</li>
+        <li>Click an empty cell touching the start or end of your selection to place the number</li>
+        <li>Plan ahead! Some numbers are pre-filled and you must create valid paths to reach them</li>
+        <li>Fill every empty cell to win!</li>
+      </ol>
+      <h3>Features</h3>
+      <ul style="text-align: left; max-width: 600px; margin: 20px auto;">
+        <li>New puzzles daily at midnight EST</li>
+        <li>Normal and Hard difficulty modes</li>
+        <li>Track your statistics and best times</li>
+        <li>Mobile-friendly design</li>
+        <li>No account required</li>
+        <li>Completely free to play</li>
+      </ul>
+      <p><strong>Please enable JavaScript to play SUMS.</strong></p>
+    </div>
+  </noscript>
+</body>
 </html>

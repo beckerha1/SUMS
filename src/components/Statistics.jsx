@@ -19,28 +19,32 @@ const Statistics = ({ onClose, bestTimeMini, bestTimeFull, gameHistory, onResetS
 
   const statBoxStyle = {
     backgroundColor: '#f8f8f8',
-    padding: '14px 16px',
-    borderRadius: '10px',
-    marginBottom: '14px'
+    padding: 'clamp(10px, 3vw, 14px)',
+    borderRadius: '8px',
+    marginBottom: 'clamp(10px, 3vw, 14px)'
   };
 
   const statRowStyle = {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: '12px',
-    fontSize: '1rem'
+    marginBottom: 'clamp(8px, 2vw, 12px)',
+    fontSize: 'clamp(0.85rem, 2.5vw, 1rem)',
+    gap: '8px'
   };
 
   const labelStyle = {
     color: '#666',
-    fontWeight: '500'
+    fontWeight: '500',
+    flex: '1',
+    textAlign: 'left'
   };
 
   const valueStyle = {
     color: '#303036',
     fontWeight: 'bold',
-    fontSize: '1.15rem'
+    fontSize: 'clamp(0.95rem, 2.8vw, 1.15rem)',
+    whiteSpace: 'nowrap'
   };
 
   return (
@@ -55,32 +59,34 @@ const Statistics = ({ onClose, bestTimeMini, bestTimeFull, gameHistory, onResetS
       justifyContent: "center",
       alignItems: "center",
       zIndex: 2000,
-      padding: "20px"
+      padding: "16px"
     }}>
       <div style={{
         position: "relative",
         background: "#fff",
-        padding: "24px 20px",
+        padding: "clamp(16px, 4vw, 24px) clamp(12px, 3vw, 20px)",
         borderRadius: "12px",
         boxShadow: "0 0 20px rgba(0,0,0,0.3)",
-        maxWidth: "450px",
-        width: "90%",
-        maxHeight: "75vh",
+        maxWidth: "420px",
+        width: "100%",
+        maxHeight: "85vh",
         overflowY: "auto",
-        WebkitOverflowScrolling: "touch"
+        WebkitOverflowScrolling: "touch",
+        boxSizing: "border-box"
       }}>
         <button
           onClick={onClose}
           style={{
             position: "absolute",
-            top: "15px",
-            right: "15px",
+            top: "12px",
+            right: "12px",
             background: "transparent",
             border: "none",
-            fontSize: "1.5rem",
+            fontSize: "clamp(1.2rem, 4vw, 1.5rem)",
             cursor: "pointer",
             color: "#666",
-            lineHeight: "1"
+            lineHeight: "1",
+            padding: "4px"
           }}
           aria-label="Close statistics"
         >
@@ -88,11 +94,12 @@ const Statistics = ({ onClose, bestTimeMini, bestTimeFull, gameHistory, onResetS
         </button>
 
         <h2 style={{ 
-          marginBottom: "18px", 
-          fontSize: "1.5rem", 
+          marginBottom: "clamp(12px, 3vw, 18px)", 
+          fontSize: "clamp(1.2rem, 4vw, 1.5rem)", 
           color: "#303036",
           textAlign: "center",
-          fontWeight: "bold"
+          fontWeight: "bold",
+          paddingRight: "24px"
         }}>
           Statistics 📊
         </h2>
@@ -100,11 +107,11 @@ const Statistics = ({ onClose, bestTimeMini, bestTimeFull, gameHistory, onResetS
         {/* Mini SUMS Stats */}
         <div style={statBoxStyle}>
           <h3 style={{ 
-            marginBottom: "12px", 
-            fontSize: "1.1rem", 
+            marginBottom: "clamp(8px, 2vw, 12px)", 
+            fontSize: "clamp(0.95rem, 3vw, 1.1rem)", 
             color: "#303036",
             borderBottom: "2px solid #303036",
-            paddingBottom: "6px",
+            paddingBottom: "4px",
             fontWeight: "bold"
           }}>
             Mini SUMS (5×5)
@@ -133,11 +140,11 @@ const Statistics = ({ onClose, bestTimeMini, bestTimeFull, gameHistory, onResetS
         {/* Full SUMS Stats */}
         <div style={statBoxStyle}>
           <h3 style={{ 
-            marginBottom: "12px", 
-            fontSize: "1.1rem", 
+            marginBottom: "clamp(8px, 2vw, 12px)", 
+            fontSize: "clamp(0.95rem, 3vw, 1.1rem)", 
             color: "#303036",
             borderBottom: "2px solid #303036",
-            paddingBottom: "6px",
+            paddingBottom: "4px",
             fontWeight: "bold"
           }}>
             Full SUMS (7×7)
@@ -167,9 +174,9 @@ const Statistics = ({ onClose, bestTimeMini, bestTimeFull, gameHistory, onResetS
           <p style={{
             textAlign: 'center',
             color: '#999',
-            marginTop: '10px',
+            marginTop: '8px',
             marginBottom: '0',
-            fontSize: '0.9rem',
+            fontSize: 'clamp(0.8rem, 2.2vw, 0.9rem)',
             fontStyle: 'italic'
           }}>
             Complete your first game to see stats!
@@ -181,17 +188,18 @@ const Statistics = ({ onClose, bestTimeMini, bestTimeFull, gameHistory, onResetS
           onClick={() => setShowResetConfirm(true)}
           style={{
             width: '100%',
-            padding: '12px',
-            marginTop: '14px',
+            padding: 'clamp(10px, 2.5vw, 12px)',
+            marginTop: 'clamp(10px, 2.5vw, 14px)',
             marginBottom: '4px',
-            fontSize: '0.95rem',
+            fontSize: 'clamp(0.85rem, 2.5vw, 0.95rem)',
             borderRadius: '8px',
             border: '2px solid #e53935',
             backgroundColor: '#fff',
             color: '#e53935',
             cursor: 'pointer',
             fontWeight: '600',
-            transition: 'all 0.2s'
+            transition: 'all 0.2s',
+            boxSizing: 'border-box'
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.backgroundColor = '#e53935';
@@ -217,37 +225,55 @@ const Statistics = ({ onClose, bestTimeMini, bestTimeFull, gameHistory, onResetS
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
-            zIndex: 3001
+            zIndex: 3001,
+            padding: "16px"
           }}>
             <div style={{
               background: "#fff",
-              padding: "30px",
+              padding: "clamp(20px, 5vw, 30px)",
               borderRadius: "12px",
               boxShadow: "0 0 20px rgba(0,0,0,0.3)",
               textAlign: "center",
-              maxWidth: "400px",
-              width: "90%"
+              maxWidth: "380px",
+              width: "100%",
+              boxSizing: "border-box"
             }}>
-              <h3 style={{ marginBottom: "20px", fontSize: "1.3rem", color: "#303036" }}>
+              <h3 style={{ 
+                marginBottom: "16px", 
+                fontSize: "clamp(1.1rem, 3.5vw, 1.3rem)", 
+                color: "#303036" 
+              }}>
                 Reset Statistics?
               </h3>
-              <p style={{ marginBottom: "25px", fontSize: "1rem", lineHeight: "1.5", color: "#555" }}>
+              <p style={{ 
+                marginBottom: "20px", 
+                fontSize: "clamp(0.9rem, 2.8vw, 1rem)", 
+                lineHeight: "1.5", 
+                color: "#555" 
+              }}>
                 Are you sure you want to reset all of your historical game progress?
               </p>
               
-              <div style={{ display: "flex", gap: "12px", justifyContent: "center" }}>
+              <div style={{ 
+                display: "flex", 
+                gap: "10px", 
+                justifyContent: "center",
+                flexWrap: "wrap"
+              }}>
                 <button
                   onClick={() => setShowResetConfirm(false)}
                   style={{
-                    padding: "10px 24px",
-                    fontSize: "1rem",
+                    padding: "10px 20px",
+                    fontSize: "clamp(0.9rem, 2.5vw, 1rem)",
                     borderRadius: "24px",
                     border: "2px solid #303036",
                     backgroundColor: "#fff",
                     color: "#303036",
                     cursor: "pointer",
                     fontWeight: "600",
-                    minWidth: "100px"
+                    minWidth: "90px",
+                    flex: "1",
+                    maxWidth: "120px"
                   }}
                 >
                   No
@@ -259,15 +285,17 @@ const Statistics = ({ onClose, bestTimeMini, bestTimeFull, gameHistory, onResetS
                     onClose();
                   }}
                   style={{
-                    padding: "10px 24px",
-                    fontSize: "1rem",
+                    padding: "10px 20px",
+                    fontSize: "clamp(0.9rem, 2.5vw, 1rem)",
                     borderRadius: "24px",
                     border: "none",
                     backgroundColor: "#e53935",
                     color: "#fff",
                     cursor: "pointer",
                     fontWeight: "600",
-                    minWidth: "100px"
+                    minWidth: "90px",
+                    flex: "1",
+                    maxWidth: "120px"
                   }}
                 >
                   Yes, Reset

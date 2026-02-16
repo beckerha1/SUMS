@@ -11,7 +11,7 @@ const AboutModal = React.memo(({ onClose }) => {
       overflowY: "auto",
       backgroundColor: "rgba(0,0,0,0.6)",
       zIndex: 2000,
-      padding: "40px 16px",
+      padding: "16px",
       boxSizing: "border-box",
       display: "flex",
       justifyContent: "center",
