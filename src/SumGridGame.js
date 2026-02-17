@@ -475,6 +475,26 @@ setTimeout(() => {
 }, delay);
 
 
+setTimeout(() => {
+  setGameWon(true);
+  setShowWinScreen(true);
+  
+  // DEBUG: Check what we're sending to GA
+  console.log('=== GAME COMPLETE DEBUG ===');
+  console.log('gameMode:', gameMode);
+  console.log('moveCount:', moveCount);
+  console.log('elapsedTime:', elapsedTime);
+  console.log('==========================');
+  
+  // Track game completion
+  if (window.gtag) {
+    window.gtag('event', 'game_complete', {
+      game_mode: gameMode,
+      completion_time_seconds: elapsedTime,
+      total_moves: moveCount
+    });
+  }
+}, delay);
 
           // Save best time based on game mode
           if (gameMode === 'mini') {
