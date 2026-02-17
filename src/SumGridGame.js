@@ -460,56 +460,48 @@ triggerFlipAnimation();
 const cellsToFlip = grid.flat().filter(cell => cell !== undefined && cell !== "X").length;
 const delay = cellsToFlip * 80 + 500; 
 
-setTimeout(() => {
-  setGameWon(true);
-  setShowWinScreen(true);
-  
-  // Track game completion
-  if (window.gtag) {
-    window.gtag('event', 'game_complete', {
-      game_mode: gameMode,
-      completion_time_seconds: elapsedTime,
-      total_moves: moveCount
-    });
-  }
-}, delay);
+// Calculate final values NOW before async setState
+const finalTime = Math.floor((Date.now() - startTime) / 1000);
+const finalMoves = moveCount + 1; // moveCount hasn't updated yet from the setState above
 
+console.log('Game Complete Analytics:', {
+  game_mode: gameMode,
+  completion_time_seconds: finalTime,
+  total_moves: finalMoves,
+  startTime,
+  now: Date.now()
+});
 
 setTimeout(() => {
   setGameWon(true);
   setShowWinScreen(true);
   
-  // DEBUG: Check what we're sending to GA
-  console.log('=== GAME COMPLETE DEBUG ===');
-  console.log('gameMode:', gameMode);
-  console.log('moveCount:', moveCount);
-  console.log('elapsedTime:', elapsedTime);
-  console.log('==========================');
-  
-  // Track game completion
+  // Track game completion with calculated values
   if (window.gtag) {
     window.gtag('event', 'game_complete', {
       game_mode: gameMode,
-      completion_time_seconds: elapsedTime,
-      total_moves: moveCount
+      completion_time_seconds: finalTime,
+      total_moves: finalMoves
     });
   }
 }, delay);
 
-          // Save best time based on game mode
+
+
+          // Save best time based on game mode (using the calculated finalTime)
           if (gameMode === 'mini') {
-            if (!bestTimeMini || elapsedTime < bestTimeMini) {
-              setBestTimeMini(elapsedTime);
-              localStorage.setItem("sums-best-time-mini", elapsedTime.toString());
+            if (!bestTimeMini || finalTime < bestTimeMini) {
+              setBestTimeMini(finalTime);
+              localStorage.setItem("sums-best-time-mini", finalTime.toString());
             }
           } else if (gameMode === 'full') {
-            if (!bestTimeFull || elapsedTime < bestTimeFull) {
-              setBestTimeFull(elapsedTime);
-              localStorage.setItem("sums-best-time-full", elapsedTime.toString());
+            if (!bestTimeFull || finalTime < bestTimeFull) {
+              setBestTimeFull(finalTime);
+              localStorage.setItem("sums-best-time-full", finalTime.toString());
             }
           }
 
-          const updatedHistory = [...gameHistory, { time: elapsedTime, mode: gameMode, date: new Date().toISOString() }];
+          const updatedHistory = [...gameHistory, { time: finalTime, mode: gameMode, date: new Date().toISOString() }];
           setGameHistory(updatedHistory);
           localStorage.setItem("sums-game-history", JSON.stringify(updatedHistory));
         }
@@ -659,6 +651,10 @@ if (showStartScreen) {
     setShowInstructions(false);
   }}
 />
+
+<p style={{ marginTop: 20, fontSize: '0.9rem', color: '#666' }}>
+  Black squares are blocked. Gray areas aren't part of the grid.
+</p>
     </div>
   </div>
 )}
@@ -879,6 +875,9 @@ return (
         ✖
       </button>
 
+      <h2 style={{ marginBottom: 16 }}>How to Play</h2>
+      <p style={{ marginBottom: 20 }}>Build a number chain: 1 → 2 → 3 → 4 → …</p>
+
       <InteractiveTutorial 
         onComplete={() => {
           setShowInstructions(false);
@@ -899,6 +898,9 @@ return (
         }}
       />
 
+      <p style={{ marginTop: 20, fontSize: '0.9rem', color: '#666' }}>
+        Black squares are blocked. Gray areas aren't part of the grid.
+      </p>
     </div>
   </div>
 )}
