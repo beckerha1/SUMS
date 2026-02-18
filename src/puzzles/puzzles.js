@@ -70,9 +70,9 @@ export const puzzle7 = [
 
 export const puzzle8 = [
   [null, null, null, "X", null, null, null], 
-  [null, null, "X", 13, "X", null, null], 
-  [null, "X", 8, null, 21, "X", null], 
-  ["X", 5, null, 1, null, 34, "X"], 
+  [null, null, "X", null, "X", null, null], 
+  [null, "X", null, null, null, "X", null], 
+  ["X", null, null, 1, null, null, "X"], 
   [null, null, 3, 2, null, null, null], 
   [null, null, null, "X", null, null, null], 
   ["X", "X", "X", "X", "X", "X", "X"]
