@@ -80,7 +80,7 @@ export const puzzleMini10 = [
   [null, null, null, null, null]
 ];
 
-export const puzzleMini11 = [
+export const puzzleMini1000 = [
   [15, 14, 13, 12, 11],
   [null, null, null, null, 10],
   [null, 1, 2, null, 9],
@@ -88,7 +88,7 @@ export const puzzleMini11 = [
   [null, null, null, null, 7]
 ];
 
-export const puzzleMini12 = [
+export const puzzleMini11 = [
   [null, null, null, "X", "X"],
   [null, null, "X", null, "X"],
   [null, "X", 2, null, null],
@@ -96,7 +96,7 @@ export const puzzleMini12 = [
   ["X", "X", 3, null, null]
 ];
 
-export const puzzleMini13 = [
+export const puzzleMini12 = [
   [null, 1, 2, null, null],
   [null, 3, null, null, null],
   [null, null, null, null, null],
@@ -104,7 +104,7 @@ export const puzzleMini13 = [
   ["X", "X", null, "X", "X"]
 ];
 
-export const puzzleMini14 = [
+export const puzzleMini13 = [
   ["X", null, null, null, "X"],
   [null, null, 1, null, null],
   [null, "X", 2, "X", null],
@@ -112,7 +112,7 @@ export const puzzleMini14 = [
   ["X", null, null, null, "X"]
 ];
 
-export const puzzleMini15 = [
+export const puzzleMini1005 = [
   [18, 17, 16, 15, 14],
   [7, null, null, null, 13],
   [8, null, 1, null, 12],
@@ -120,12 +120,28 @@ export const puzzleMini15 = [
   [10, null, null, null, 10]
 ];
 
-export const puzzleMini16 = [
+export const puzzleMini14 = [
   ["X", "X", null, null, null],
   ["X", 1, 2, null, null],
   [null, 3, 4, null, null],
   [null, 5, null, null, "X"],
   [null, null, null, "X", "X"]
+];
+
+export const puzzleMini15 = [
+  [9, null, "X", null, 8],
+  [null, null, null, null, null],
+  [null, 2, 1, 3, null],
+  [null, null, null, null, null],
+  [10, null, "X", null, 11]
+];
+
+export const puzzleMini16 = [
+  [9, null, "X", null, 8],
+  [null, null, null, null, null],
+  [null, 2, 1, 3, null],
+  [null, null, null, null, null],
+  [10, null, "X", null, 11]
 ];
 
 export const puzzleMini17 = [
@@ -135,7 +151,6 @@ export const puzzleMini17 = [
   [null, null, null, null, null],
   [10, null, "X", null, 11]
 ];
-
 // Export the list of mini puzzles
 export const puzzlesMini = [
   { name: "20260211", grid: puzzleMini1, number: "1" },
