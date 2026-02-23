@@ -3,7 +3,6 @@ import { formatTime } from '../utils/gameHelpers';
 
 const Statistics = ({ onClose, bestTimeMini, bestTimeFull, gameHistory, onResetStats }) => {
   const [showResetConfirm, setShowResetConfirm] = useState(false);
-  // Only count completed games (games with recorded times)
   const miniGames = gameHistory.filter(g => g.mode === 'mini' && g.time);
   const fullGames = gameHistory.filter(g => g.mode === 'full' && g.time);
   
@@ -95,7 +94,7 @@ const Statistics = ({ onClose, bestTimeMini, bestTimeFull, gameHistory, onResetS
           textAlign: "center",
           fontWeight: "bold"
         }}>
-          Statistics 📊
+          Personal Statistics 📊
         </h2>
 
         {/* Mini SUMS Stats */}
@@ -177,7 +176,6 @@ const Statistics = ({ onClose, bestTimeMini, bestTimeFull, gameHistory, onResetS
           </p>
         )}
 
-        {/* Reset Statistics Button */}
         <button
           onClick={() => setShowResetConfirm(true)}
           style={{
@@ -206,7 +204,6 @@ const Statistics = ({ onClose, bestTimeMini, bestTimeFull, gameHistory, onResetS
           Reset Statistics
         </button>
 
-        {/* Reset Confirmation Modal */}
         {showResetConfirm && (
           <div style={{
             position: "fixed",

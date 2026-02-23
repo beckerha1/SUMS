@@ -5,6 +5,7 @@ const StartScreen = ({
   onPlayFull, 
   onShowInstructions,
   onShowStats,
+  onShowHighScores,
   todayStr,
   puzzleNumber,
   puzzleNumberMini,
@@ -56,7 +57,11 @@ const StartScreen = ({
         </button>
 
         <button onClick={onShowStats} style={mobileButton}>
-          Statistics
+          Personal Statistics
+        </button>
+
+        <button onClick={onShowHighScores} style={mobileButton}>
+          🏆 Today's High Scores
         </button>
       </div>
 
