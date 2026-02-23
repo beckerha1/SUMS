@@ -107,8 +107,8 @@ export const puzzleMini12 = [
 export const puzzleMini13 = [
   ["X", null, null, null, "X"],
   [null, null, 1, null, null],
-  [null, "X", 2, "X", null],
-  [null, null, 3, null, null],
+  [null, "X", 3, "X", null],
+  [null, null, 2, null, null],
   ["X", null, null, null, "X"]
 ];
 
@@ -151,6 +151,7 @@ export const puzzleMini17 = [
   [null, null, null, null, null],
   [10, null, "X", null, 11]
 ];
+
 // Export the list of mini puzzles
 export const puzzlesMini = [
   { name: "20260211", grid: puzzleMini1, number: "1" },

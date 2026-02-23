@@ -178,6 +178,45 @@ export const puzzle17 = [
   ["X", null, null, "X", null, null, null]
 ];
 
+export const puzzle18 = [
+  [null, null, null, null, null, null, null], 
+  [null, null, null, null, null, 'X', null], 
+  [null, null, 3, 2, 'X', null, null], 
+  [null, null, null, 1, null, null, null], 
+  [null, null, 'X', null, null, null, null], 
+  [null, 'X', null, null, null, null, null], 
+  [null, null, null, null, null, null, null]
+];
+
+export const puzzle19 = [
+  ['X', null, null, null, null, null, 'X'], 
+  [null, null, null, null, null, null, null], 
+  [null, null, 3, 2, null, null, null], 
+  [null, null, 45, 1, 44, null, null], 
+  [null, null, null, null, null, null, null], 
+  [null, null, null, null, null, null, null], 
+  ['X', null, null, null, null, null, 'X']
+];
+
+export const puzzle20 = [
+  [null, 'X', null, null, null, null, null], 
+  ['X', null, 'X', null, null, null, null], 
+  [null, 'X', null, null, null, null, null], 
+  [null, null, null, null, null, null, null], 
+  [null, null, null, null, 2, null, null], 
+  [null, null, null, null, 1, 3, null], 
+  [null, null, null, null, null, null, null]
+];
+
+export const puzzle21 = [
+  ['X', 'X', 'X', null, null, null, null], 
+  ['X', 17, null, null, null, null, null], 
+  ['X', null, null, null, null, null, null], 
+  [null, null, null, null, null, null, null], 
+  [null, null, null, null, null, 3, 'X'], 
+  [null, null, null, null, 1, 2, 'X'], 
+  [null, null, null, null, 'X', 'X', 'X']
+];
 
 // Now export the list of puzzles
 export const puzzles = [
@@ -197,6 +236,10 @@ export const puzzles = [
   { name: "20260224", grid: puzzle14, number: "14" },
   { name: "20260225", grid: puzzle15, number: "15" },
   { name: "20260226", grid: puzzle16, number: "16" },
-  { name: "20260227", grid: puzzle17, number: "17" }
+  { name: "20260227", grid: puzzle17, number: "17" },
+  { name: "20260227", grid: puzzle17, number: "18" },
+  { name: "20260227", grid: puzzle17, number: "19" },
+  { name: "20260227", grid: puzzle17, number: "20" },
+  { name: "20260227", grid: puzzle17, number: "21" }
 ];
 
