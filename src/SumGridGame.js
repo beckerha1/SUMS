@@ -605,9 +605,6 @@ if (showStartScreen) {
               }}
             />
 
-            <p style={{ marginTop: 20, fontSize: '0.9rem', color: '#666' }}>
-              Black squares are blocked. Gray areas aren't part of the grid.
-            </p>
           </div>
         </div>
       )}
@@ -848,9 +845,6 @@ return (
               }}
             />
 
-            <p style={{ marginTop: 20, fontSize: '0.9rem', color: '#666' }}>
-              Black squares are blocked. Gray areas aren't part of the grid.
-            </p>
           </div>
         </div>
       )}
