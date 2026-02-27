@@ -145,11 +145,11 @@ export const puzzleMini16 = [
 ];
 
 export const puzzleMini17 = [
-  [9, null, "X", null, 8],
+  [null, "X", "X", "X", null],
   [null, null, null, null, null],
   [null, 2, 1, 3, null],
   [null, null, null, null, null],
-  [10, null, "X", null, 11]
+  [null, "X", "X", "X", null]
 ];
 
 // Export the list of mini puzzles
