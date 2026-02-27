@@ -152,6 +152,54 @@ export const puzzleMini17 = [
   [null, "X", "X", "X", null]
 ];
 
+export const puzzleMini18 = [
+  [null, 2, null, null, null],
+  [3, 1, "X", null, null],
+  [null, null, null, null, null],
+  [null, null, null, null, "X"],
+  [null, null, null, "X", "X"]
+];
+
+export const puzzleMini19 = [
+  [25, null, null, null, null],
+  [null, 10, null, null, null],
+  [null, null, null, null, null],
+  [null, null, 3, 1, null],
+  [null, null, 2, null, null]
+];
+
+export const puzzleMini20 = [
+  [null, null, null, null, null],
+  [null, null, null, null, null],
+  ["X", "X", 1, "X", "X"],
+  [null, null, 3, 2, null],
+  [null, null, null, null, null]
+];
+
+export const puzzleMini21 = [
+  [null, null, null, null, null],
+  [null, 7, null, null, null],
+  [null, 6, null, 2, null],
+  [null, null, null, 3, null],
+  [null, null, null, 1, null]
+];
+
+export const puzzleMini22 = [
+  [null, "X", "X", "X", null],
+  [null, null, "X", null, null],
+  [null, 2, 1, 3, null],
+  [null, null, "X", null, null],
+  [null, "X", "X", "X", null]
+];
+
+export const puzzleMini23 = [
+  [null, null, null, null, null],
+  [null, 25, 1, null, null],
+  [null, 24, 3, 2, null],
+  [null, 23, null, null, null],
+  [null, null, null, null, null]
+];
+
 // Export the list of mini puzzles
 export const puzzlesMini = [
   { name: "20260211", grid: puzzleMini1, number: "1" },
@@ -170,5 +218,12 @@ export const puzzlesMini = [
   { name: "20260224", grid: puzzleMini14, number: "14" },
   { name: "20260225", grid: puzzleMini15, number: "15" },
   { name: "20260226", grid: puzzleMini16, number: "16" },
-  { name: "20260227", grid: puzzleMini17, number: "17" }
+  { name: "20260227", grid: puzzleMini17, number: "17" },
+  { name: "20260228", grid: puzzleMini17, number: "17" },
+  { name: "20260301", grid: puzzleMini17, number: "18" },
+  { name: "20260302", grid: puzzleMini17, number: "19" },
+  { name: "20260303", grid: puzzleMini17, number: "20" },
+  { name: "20260304", grid: puzzleMini17, number: "21" },
+  { name: "20260305", grid: puzzleMini17, number: "22" },
+  { name: "20260306", grid: puzzleMini17, number: "23" }
 ];
