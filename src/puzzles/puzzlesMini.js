@@ -218,12 +218,11 @@ export const puzzlesMini = [
   { name: "20260224", grid: puzzleMini14, number: "14" },
   { name: "20260225", grid: puzzleMini15, number: "15" },
   { name: "20260226", grid: puzzleMini16, number: "16" },
-  { name: "20260227", grid: puzzleMini17, number: "17" },
-  { name: "20260228", grid: puzzleMini17, number: "17" },
-  { name: "20260301", grid: puzzleMini17, number: "18" },
-  { name: "20260302", grid: puzzleMini17, number: "19" },
-  { name: "20260303", grid: puzzleMini17, number: "20" },
-  { name: "20260304", grid: puzzleMini17, number: "21" },
-  { name: "20260305", grid: puzzleMini17, number: "22" },
-  { name: "20260306", grid: puzzleMini17, number: "23" }
+   { name: "20260226", grid: puzzleMini17, number: "17" },
+    { name: "20260226", grid: puzzleMini18, number: "18" },
+  { name: "20260301", grid: puzzleMini19, number: "19" },
+  { name: "20260302", grid: puzzleMini20, number: "20" },
+  { name: "20260303", grid: puzzleMini21, number: "21" },
+  { name: "20260304", grid: puzzleMini22, number: "22" },
+  { name: "20260305", grid: puzzleMini23, number: "23" }
 ];

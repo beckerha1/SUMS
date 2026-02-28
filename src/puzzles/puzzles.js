@@ -237,9 +237,9 @@ export const puzzles = [
   { name: "20260225", grid: puzzle15, number: "15" },
   { name: "20260226", grid: puzzle16, number: "16" },
   { name: "20260227", grid: puzzle17, number: "17" },
-  { name: "20260228", grid: puzzle17, number: "18" },
-  { name: "20260301", grid: puzzle17, number: "19" },
-  { name: "20260302", grid: puzzle17, number: "20" },
-  { name: "20260303", grid: puzzle17, number: "21" }
+  { name: "20260228", grid: puzzle18, number: "18" },
+  { name: "20260301", grid: puzzle19, number: "19" },
+  { name: "20260302", grid: puzzle20, number: "20" },
+  { name: "20260303", grid: puzzle21, number: "21" }
 ];
 
