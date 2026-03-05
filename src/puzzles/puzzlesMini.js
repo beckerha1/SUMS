@@ -200,6 +200,126 @@ export const puzzleMini23 = [
   [null, null, null, null, null]
 ];
 
+export const puzzleMini24 = [
+  ["X", null, null, 3, 8],
+  ["X", null, null, 2, 1],
+  ["X", "X", 13, null, null],
+  ["X", "X", null, null, null],
+  ["X", 18, null, null, null]
+];
+
+export const puzzleMini25 = [
+  [9, 1, null, null, null],
+  [3, 2, null, null, 15],
+  [null, null, null, 21, null],
+  [null, 13, null, "X", "X"],
+  [null, null, null, "X", "X"]
+];
+
+export const puzzleMini26 = [
+  ["X", "X", "X", "X", "X"],
+  [null, null, "X", "X", "X"],
+  [null, null, 3, 16, null],
+  [null, 2, 1, null, null],
+  [null, "X", null, null, null]
+];
+
+export const puzzleMini27 = [
+  [null, null, null, null, null],
+  [null, 10, 1, null, null],
+  [null, 2, 3, 16, null],
+  [null, null, "X", null, 23],
+  [null, null, null, "X", null]
+];
+
+export const puzzleMini28 = [
+  ["X", null, null, null, null],
+  ["X", "X", null, null, 1],
+  ["X", "X", null, 2, 3],
+  ["X", "X", "X", null, 7],
+  ["X", "X", 14, "X", null]
+];
+
+export const puzzleMini29 = [
+  [null, null, null, null, null],
+  [null, 3, 2, null, "X"],
+  [null, 1, null, 20, null],
+  [null, null, null, "X", "X"],
+  [null, null, null, "X", "X"]
+];
+
+export const puzzleMini30 = [
+  [null, null, null, 9, null],
+  [null, 3, 2, 13, null],
+  [null, 1, null, "X", null],
+  [null, null, 19, "X", "X"],
+  [null, null, "X", "X", "X"]
+];
+
+export const puzzleMini31 = [
+  ["X", "X", "X", "X", "X"],
+  ["X", "X", "X", "X", "X"],
+  ["X", "X", 2, 12, null],
+  ["X", 1, 3, null, null],
+  [null, 6, null, null, null]
+];
+
+export const puzzleMini32 = [
+  [null, null, null, 11, null],
+  [null, 2, null, null, null],
+  [null, 3, 1, null, null],
+  [null, null, null, null, 24],
+  [null, null, null, 17, "X"]
+];
+
+export const puzzleMini33 = [
+  [null, null, null, null, null],
+  [1, null, null, null, "X"],
+  [3, 2, null, 17, "X"],
+  [null, null, "X", "X", "X"],
+  [null, null, "X", "X", "X"]
+];
+
+export const puzzleMini34 = [
+  [null, 15, null, null, null],
+  [null, null, 1, 3, null],
+  ["X", null, null, 2, null],
+  ["X", 22, null, null, null],
+  ["X", null, 13, null, 10]
+];
+
+export const puzzleMini35 = [
+  ["X", "X", "X", 15, "X"],
+  ["X", "X", "X", "X", null],
+  ["X", "X", null, 2, null],
+  [null, null, 1, 3, null],
+  [null, 7, null, null, null]
+];
+
+export const puzzleMini36 = [
+  [null, null, 11, null, null],
+  [17, null, 2, null, null],
+  [25, null, 1, 3, null],
+  [null, null, 15, null, null],
+  [null, 20, null, null, null]
+];
+
+export const puzzleMini37 = [
+  [null, null, 1, null, null],
+  [null, 2, 3, "X", null],
+  [null, null, null, "X", "X"],
+  [13, "X", "X", "X", "X"],
+  ["X", "X", "X", "X", "X"]
+];
+
+export const puzzleMini38 = [
+  ["X", null, null, 15, null],
+  ["X", "X", null, null, null],
+  [21, "X", 3, 2, null],
+  [null, null, null, 1, null],
+  [null, null, 9, null, null]
+];
+
 // Export the list of mini puzzles
 export const puzzlesMini = [
   { name: "20260211", grid: puzzleMini1, number: "1" },
@@ -218,11 +338,26 @@ export const puzzlesMini = [
   { name: "20260224", grid: puzzleMini14, number: "14" },
   { name: "20260225", grid: puzzleMini15, number: "15" },
   { name: "20260226", grid: puzzleMini16, number: "16" },
-   { name: "20260226", grid: puzzleMini17, number: "17" },
-    { name: "20260226", grid: puzzleMini18, number: "18" },
+  { name: "20260226", grid: puzzleMini17, number: "17" },
+  { name: "20260226", grid: puzzleMini18, number: "18" },
   { name: "20260301", grid: puzzleMini19, number: "19" },
   { name: "20260302", grid: puzzleMini20, number: "20" },
   { name: "20260303", grid: puzzleMini21, number: "21" },
   { name: "20260304", grid: puzzleMini22, number: "22" },
-  { name: "20260305", grid: puzzleMini23, number: "23" }
+  { name: "20260305", grid: puzzleMini23, number: "23" },
+  { name: "20260306", grid: puzzleMini24, number: "24" },
+  { name: "20260307", grid: puzzleMini25, number: "25" },
+  { name: "20260308", grid: puzzleMini26, number: "26" },
+  { name: "20260309", grid: puzzleMini27, number: "27" },
+  { name: "20260310", grid: puzzleMini28, number: "28" },
+  { name: "20260311", grid: puzzleMini29, number: "29" },
+  { name: "20260312", grid: puzzleMini30, number: "30" },
+  { name: "20260313", grid: puzzleMini31, number: "31" },
+  { name: "20260314", grid: puzzleMini32, number: "32" },
+  { name: "20260315", grid: puzzleMini33, number: "33" },
+  { name: "20260316", grid: puzzleMini34, number: "34" },
+  { name: "20260317", grid: puzzleMini35, number: "35" },
+  { name: "20260318", grid: puzzleMini36, number: "36" },
+  { name: "20260319", grid: puzzleMini37, number: "37" },
+  { name: "20260320", grid: puzzleMini38, number: "38" }
 ];
