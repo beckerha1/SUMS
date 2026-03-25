@@ -2,10 +2,9 @@ import React from "react";
 
 const NumberOverlay = ({ grid, puzzle, cellSize, margin = 2 }) => {
   const getCellPosition = (row, col) => {
-const spacing = cellSize + margin * 3.05;
-const x = Math.round(col * spacing + margin);
-const y = Math.round(row * spacing + margin);
-
+    const spacing = cellSize + margin * 3.05;
+    const x = Math.round(col * spacing + margin);
+    const y = Math.round(row * spacing + margin);
     return { x, y };
   };
 

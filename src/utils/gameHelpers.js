@@ -77,10 +77,6 @@ export const formatTime = (seconds) => {
   return `${mins}:${secs.toString().padStart(2, '0')}`;
 };
 
-export const isCellEmpty = (r, c, grid) => {
-  return grid[r][c] === null;
-};
-
 export const isPrefilledClue = (r, c, grid, puzzle) => {
   return puzzle[r][c] === grid[r][c] && typeof grid[r][c] === "number";
 };

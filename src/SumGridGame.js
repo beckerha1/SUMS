@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
-import { Link } from 'react-router-dom';
 import { initialGrid, puzzleNumber } from './puzzles/today';
 import { initialGridMini, puzzleNumberMini } from './puzzles/todayMini';
 import CanvasOverlay from "./components/CanvasOverlay";
@@ -26,17 +25,11 @@ import AboutModal from './About';
 import Statistics from './components/Statistics';
 import HighScores from './components/HighScores';
 
-// Debug logging
-console.log('initialGrid:', initialGrid);
-console.log('initialGridMini:', initialGridMini);
-console.log('puzzleNumber:', puzzleNumber);
-console.log('puzzleNumberMini:', puzzleNumberMini);
-
 export default function SumGridGame() {
   const [showStartScreen, setShowStartScreen] = useState(true);
   const [gameMode, setGameMode] = useState(null); // 'mini' or 'full'
   
-  const puzzle = gameMode === 'mini' ? initialGridMini : (gameMode === 'full' ? initialGrid : initialGrid);
+  const puzzle = gameMode === 'mini' ? initialGridMini : initialGrid;
   const currentPuzzleNumber = gameMode === 'mini' ? puzzleNumberMini : puzzleNumber;
   const [grid, setGrid] = useState(initialGrid);
   const [selectedCells, setSelectedCells] = useState([]);
@@ -46,7 +39,6 @@ export default function SumGridGame() {
   const [showInstructions, setShowInstructions] = useState(false);
   const [startTime, setStartTime] = useState(null);
   const [elapsedTime, setElapsedTime] = useState(0);
-  const [bestTime, setBestTime] = useState(null);
   const [bestTimeMini, setBestTimeMini] = useState(null);
   const [bestTimeFull, setBestTimeFull] = useState(null);
   const [gameHistory, setGameHistory] = useState([]);
@@ -189,18 +181,14 @@ useEffect(() => {
 }, []);
 
 useEffect(() => {
-  console.log('Timer useEffect:', { startTime, gameWon, hasTimer: !!timerRef.current });
   if (startTime && !gameWon && !timerRef.current) {
-    console.log('Starting timer interval');
     timerRef.current = setInterval(() => {
       const elapsed = Math.floor((Date.now() - startTime) / 1000);
-      console.log('Timer tick:', elapsed);
       setElapsedTime(elapsed);
     }, 1000);
   }
   return () => {
     if (timerRef.current) {
-      console.log('Clearing timer interval');
       clearInterval(timerRef.current);
     }
   };
@@ -372,7 +360,6 @@ const handleCellClick = (r, c, event) => {
         setShowAlertModal(true);
         return;
       }
-      if (clueIsBlocked) return;
 
       const placedKey = `${r},${c}`;
       const newGrid = grid.map(row => [...row]);
@@ -485,14 +472,6 @@ const handleCellClick = (r, c, event) => {
 
         const finalTime = Math.floor((Date.now() - startTime) / 1000);
         const finalMoves = moveCount + 1;
-
-        console.log('Game Complete Analytics:', {
-          game_mode: gameMode,
-          completion_time_seconds: finalTime,
-          total_moves: finalMoves,
-          startTime,
-          now: Date.now()
-        });
 
         setTimeout(() => {
           setGameWon(true);
