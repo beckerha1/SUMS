@@ -155,6 +155,29 @@ export const getNextExpectedNumber = (grid, puzzle) => {
   }
 };
 
+/**
+ * Prefilled clue values strictly between the number just placed and the solver's
+ * next unsatisfied target — these are satisfied clues the player does not place.
+ * Each entry lists all grid positions for that clue value.
+ */
+export const getPrefilledCluesSkippedBeforeNext = (grid, puzzle, placedExpected, nextExpected) => {
+  const chain = [];
+  for (let n = placedExpected + 1; n < nextExpected; n++) {
+    const positions = [];
+    for (let r = 0; r < grid.length; r++) {
+      for (let c = 0; c < grid[r].length; c++) {
+        if (grid[r][c] === n && puzzle[r][c] === n) {
+          positions.push([r, c]);
+        }
+      }
+    }
+    if (positions.length > 0) {
+      chain.push({ value: n, positions });
+    }
+  }
+  return chain;
+};
+
 export const isNextNumberBlockedByClue = (grid, puzzle) => {
   const next = getNextExpectedNumber(grid, puzzle);
 

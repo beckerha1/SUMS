@@ -1,12 +1,78 @@
 import React from 'react';
 import { useEffect, useRef } from "react";
 
-const CanvasOverlay = ({ overlayPoints, grid, cellSize, margin = 2 }) => {
+const PLACEMENT_POP_MS = 200;
+
+const CanvasOverlay = ({ overlayPoints, grid, cellSize, margin = 2, clueFlashCells = [] }) => {
   const canvasRef = useRef(null);
+  const flashCanvasRef = useRef(null);
 
 const padding = cellSize * 0.5; // Extra space around edges for animations
 const canvasWidth = grid[0].length * (cellSize + margin * 2) + padding * 2;
 const canvasHeight = grid.length * (cellSize + margin * 2) + padding * 2;
+
+useEffect(() => {
+  const flashCanvas = flashCanvasRef.current;
+  if (!flashCanvas || !grid?.[0]?.length) return;
+
+  const fctx = flashCanvas.getContext("2d");
+  if (!fctx) return;
+
+  const dpr = window.devicePixelRatio || 1;
+  flashCanvas.width = canvasWidth * dpr;
+  flashCanvas.height = canvasHeight * dpr;
+  flashCanvas.style.width = `${canvasWidth}px`;
+  flashCanvas.style.height = `${canvasHeight}px`;
+  fctx.scale(dpr, dpr);
+
+  const getCellPosition = (row, col) => {
+    const spacing = cellSize + margin * 3.05;
+    const x = Math.round(col * spacing + margin + cellSize / 2 + padding);
+    const y = Math.round(row * spacing + margin + cellSize / 2 + padding);
+    return { x, y };
+  };
+
+  const radius = cellSize * 0.2;
+  const lineThickness = cellSize * 0.3;
+  const turquoise_blue = "#00bcd4";
+
+  if (!clueFlashCells.length) {
+    fctx.clearRect(0, 0, canvasWidth, canvasHeight);
+    return;
+  }
+
+  let rafId = 0;
+  const start = performance.now();
+
+  const drawFrame = (now) => {
+    const progress = Math.min((now - start) / PLACEMENT_POP_MS, 1);
+    const scale = 1 + 0.6 * Math.sin(progress * Math.PI);
+
+    fctx.clearRect(0, 0, canvasWidth, canvasHeight);
+    clueFlashCells.forEach((p) => {
+      if (grid[p.row]?.[p.col] === "X") return;
+      const { x, y } = getCellPosition(p.row, p.col);
+      fctx.beginPath();
+      fctx.arc(x, y, radius * scale, 0, 2 * Math.PI);
+      fctx.lineWidth = lineThickness;
+      fctx.lineCap = "round";
+      fctx.strokeStyle = turquoise_blue;
+      fctx.stroke();
+    });
+
+    if (progress < 1) {
+      rafId = requestAnimationFrame(drawFrame);
+    } else {
+      fctx.clearRect(0, 0, canvasWidth, canvasHeight);
+    }
+  };
+
+  rafId = requestAnimationFrame(drawFrame);
+
+  return () => {
+    cancelAnimationFrame(rafId);
+  };
+}, [clueFlashCells, grid, cellSize, margin, canvasWidth, canvasHeight, padding]);
 
 useEffect(() => {
   const canvas = canvasRef.current;
@@ -86,7 +152,7 @@ const animatePop = (lastPoint, onDone) => {
   const start = performance.now();
 
   const animate = (now) => {
-    const progress = Math.min((now - start) / 200, 1);
+    const progress = Math.min((now - start) / PLACEMENT_POP_MS, 1);
     const scale = 1 + 0.6 * Math.sin(progress * Math.PI);
 
     clearCanvas();
@@ -129,16 +195,28 @@ if (!frozenPoints.length) {
 }, [overlayPoints, grid, cellSize, margin, canvasHeight, canvasWidth, padding]);
 
   return (
-    <canvas
-  ref={canvasRef}
-  style={{
-    position: "absolute",
-    top: -padding,
-    left: -padding,
-    zIndex: 1000,
-    pointerEvents: "none"
-  }}
-    />
+    <>
+      <canvas
+        ref={canvasRef}
+        style={{
+          position: "absolute",
+          top: -padding,
+          left: -padding,
+          zIndex: 1000,
+          pointerEvents: "none"
+        }}
+      />
+      <canvas
+        ref={flashCanvasRef}
+        style={{
+          position: "absolute",
+          top: -padding,
+          left: -padding,
+          zIndex: 1001,
+          pointerEvents: "none"
+        }}
+      />
+    </>
   );
 };
 

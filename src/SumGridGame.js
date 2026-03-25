@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { Link } from 'react-router-dom';
 import { initialGrid, puzzleNumber } from './puzzles/today';
 import { initialGridMini, puzzleNumberMini } from './puzzles/todayMini';
@@ -13,6 +13,7 @@ import {
   formatTime,
   getMaxSelection,
   getNextExpectedNumber,
+  getPrefilledCluesSkippedBeforeNext,
   isNextNumberBlockedByClue
 } from './utils/gameHelpers';
 
@@ -78,6 +79,33 @@ const todayStr = new Date().toLocaleDateString("en-US", {
 const prefilledCells = useRef(new Set());
 const [overlayPoints, setOverlayPoints] = useState([]);
 const gridWrapperRef = useRef(null);
+const clueSkipAnimRef = useRef(null);
+const [clueSkipFlashKeys, setClueSkipFlashKeys] = useState([]);
+const [headerNextOverride, setHeaderNextOverride] = useState(null);
+const clueFlashCells = useMemo(
+  () => clueSkipFlashKeys.map((k) => {
+    const [row, col] = k.split(",").map(Number);
+    return { row, col };
+  }),
+  [clueSkipFlashKeys]
+);
+
+const clearClueSkipAnimation = () => {
+  if (clueSkipAnimRef.current) {
+    clearTimeout(clueSkipAnimRef.current);
+    clueSkipAnimRef.current = null;
+  }
+  setClueSkipFlashKeys([]);
+  setHeaderNextOverride(null);
+};
+
+useEffect(() => {
+  return () => {
+    if (clueSkipAnimRef.current) {
+      clearTimeout(clueSkipAnimRef.current);
+    }
+  };
+}, []);
 
 useEffect(() => {
   if (!gridWrapperRef.current) return;
@@ -98,6 +126,7 @@ useEffect(() => {
 
 useEffect(() => {
   if (gameMode) {
+    clearClueSkipAnimation();
     setGrid(puzzle);
     setHistory([puzzle]);
     setSelectedCells([]);
@@ -424,6 +453,29 @@ const handleCellClick = (r, c, event) => {
         }
       }
 
+      const solverNext = getNextExpectedNumber(newGrid, puzzle);
+      const skipChain = getPrefilledCluesSkippedBeforeNext(newGrid, puzzle, expected, solverNext);
+      clearClueSkipAnimation();
+      const PRE_CLUE_FLASH_PAUSE_MS = 500;
+      const CLUE_SKIP_STEP_MS = 500;
+      if (skipChain.length > 0) {
+        let step = 0;
+        const runStep = () => {
+          if (step >= skipChain.length) {
+            setClueSkipFlashKeys([]);
+            setHeaderNextOverride(null);
+            clueSkipAnimRef.current = null;
+            return;
+          }
+          const seg = skipChain[step];
+          setHeaderNextOverride(seg.value);
+          setClueSkipFlashKeys(seg.positions.map(([sr, sc]) => `${sr},${sc}`));
+          step++;
+          clueSkipAnimRef.current = setTimeout(runStep, CLUE_SKIP_STEP_MS);
+        };
+        clueSkipAnimRef.current = setTimeout(runStep, PRE_CLUE_FLASH_PAUSE_MS);
+      }
+
       const allFilled = newGrid.every(row => row.every(cell => cell === "X" || cell !== null));
       if (allFilled) {
         clearInterval(timerRef.current);     
@@ -476,6 +528,7 @@ const handleCellClick = (r, c, event) => {
 };
 
 const handleUndo = () => {
+  clearClueSkipAnimation();
   if (history.length > 1) {
     const newHistory = [...history];
     newHistory.pop();
@@ -491,6 +544,7 @@ const handleClear = () => {
 };
 
 const confirmClear = () => {
+  clearClueSkipAnimation();
   const clearedGrid = puzzle.map(row => [...row]);
   setGrid(clearedGrid);
   setHistory([clearedGrid]);
@@ -644,6 +698,8 @@ if (!puzzle || puzzle.length !== grid.length || puzzle[0]?.length !== grid[0]?.l
   return null;
 }
 
+const solverNextExpected = getNextExpectedNumber(grid, puzzle);
+
 return (
   <>
     <div className="game-wrapper"
@@ -657,7 +713,7 @@ return (
     >
       <GameHeader
         elapsedTime={elapsedTime}
-        nextExpectedNumber={getNextExpectedNumber(grid, puzzle)}
+        nextExpectedNumber={headerNextOverride ?? solverNextExpected}
         currentSum={selectedCells.length > 0
           ? selectedCells.reduce((acc, [r, c]) => acc + grid[r][c], 0)
           : 0}
@@ -692,6 +748,7 @@ return (
           grid={grid}
           cellSize={cellSize}
           margin={2}
+          clueFlashCells={clueFlashCells}
         />
         <div className="grid" style={{ 
           position: "relative", 
