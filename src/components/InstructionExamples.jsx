@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import CanvasOverlay from './CanvasOverlay';
 import NumberOverlay from './NumberOverlay';
+import { getNextExpectedNumber, getPrefilledCluesSkippedBeforeNext } from '../utils/gameHelpers';
 
 const InteractiveTutorial = ({ onComplete, onPlayMini, onPlayFull }) => {
   const [tutorialStep, setTutorialStep] = useState(0);
@@ -12,6 +13,7 @@ const InteractiveTutorial = ({ onComplete, onPlayMini, onPlayFull }) => {
   const [userSelectedCorrectly, setUserSelectedCorrectly] = useState(false);
   const [canPlaceNumber, setCanPlaceNumber] = useState(false);
   const [userCompletedPlacement, setUserCompletedPlacement] = useState(false);
+  const [clueFlashCells, setClueFlashCells] = useState([]);
 
   // Step 4 state: user fills out the rest of the grid
   const [step4Grid, setStep4Grid] = useState([[1, 2, null], [3, 4, null], [null, null, 5]]);
@@ -52,6 +54,11 @@ const InteractiveTutorial = ({ onComplete, onPlayMini, onPlayFull }) => {
     }
   }, [tutorialStep]);
 
+  // Clear any clue-flash overlay when switching screens.
+  useEffect(() => {
+    setClueFlashCells([]);
+  }, [tutorialStep]);
+
   // Screen 3: Auto-play showing 1+2+3=6
   useEffect(() => {
     if (tutorialStep === 3) {
@@ -89,13 +96,34 @@ const InteractiveTutorial = ({ onComplete, onPlayMini, onPlayFull }) => {
       const cellValue = grid[r][c];
 
       if (canPlaceNumber && r === 1 && c === 1 && grid[r][c] === null) {
+        const prevGrid = grid;
+        const newGrid = [[1, 2, null], [3, 4, null], [null, null, 5]];
+        const placedExpected = getNextExpectedNumber(prevGrid, puzzle);
+        const solverNext = getNextExpectedNumber(newGrid, puzzle);
+        const skipChain = getPrefilledCluesSkippedBeforeNext(newGrid, puzzle, placedExpected, solverNext);
+
         setPlacementPath([[1, 0], [r, c]]);
         setTimeout(() => {
-          setGrid([[1, 2, null], [3, 4, null], [null, null, 5]]);
+          setGrid(newGrid);
           setSelectedCells([]);
           setPlacementPath([]);
           setCanPlaceNumber(false);
           setUserCompletedPlacement(true);
+
+          // Match the real game: if placing 4 satisfies a prefilled clue (like `5`),
+          // the game briefly flashes those clue cells.
+          if (skipChain.length > 0) {
+            const PRE_CLUE_FLASH_PAUSE_MS = 500;
+            const CLUE_SKIP_STEP_MS = 500;
+            const CLUE_FLASH_MS = 260; // > CanvasOverlay's ~200ms animation
+
+            skipChain.forEach((seg, idx) => {
+              setTimeout(() => {
+                setClueFlashCells(seg.positions.map(([sr, sc]) => ({ row: sr, col: sc })));
+                setTimeout(() => setClueFlashCells([]), CLUE_FLASH_MS);
+              }, PRE_CLUE_FLASH_PAUSE_MS + idx * CLUE_SKIP_STEP_MS);
+            });
+          }
         }, 200);
         return;
       }
@@ -117,7 +145,9 @@ const InteractiveTutorial = ({ onComplete, onPlayMini, onPlayFull }) => {
       }
 
       const [lastR, lastC] = selectedCells[selectedCells.length - 1];
-      const isAdjacent = Math.abs(r - lastR) + Math.abs(c - lastC) === 1;
+      const dr = Math.abs(r - lastR);
+      const dc = Math.abs(c - lastC);
+      const isAdjacent = dr <= 1 && dc <= 1 && !(dr === 0 && dc === 0);
       if (!isAdjacent) {
         setSelectedCells([[r, c]]);
         setUserSelectedCorrectly(false);
@@ -144,20 +174,14 @@ const InteractiveTutorial = ({ onComplete, onPlayMini, onPlayFull }) => {
   // The grid starts as [[1,2,null],[3,4,null],[null,null,5]]
   // Next numbers to place: 5→ wait, 5 is a clue already. So next = 6, 7, 8, 9
   // Actually after 4 is placed, next expected = 5 (clue, already there), then 6, 7, 8, 9
-  // We simplify: user places 6, 7, 8, 9 into the remaining 4 empty cells
-  // For simplicity we track next expected manually
-  const getNextExpected = (g) => {
-    const flat = g.flat();
-    const nums = flat.filter(v => typeof v === 'number').sort((a, b) => a - b);
-    // find first gap starting from 1
-    for (let i = 1; i <= 20; i++) {
-      if (!nums.includes(i)) return i;
-    }
-    return null;
-  };
+  // Use the real game logic so the tutorial highlight matches (including prefilled clue satisfaction).
+  const getNextExpected = (g) => getNextExpectedNumber(g, step4Puzzle);
 
-  const isAdjacentCell = (r1, c1, r2, c2) =>
-    Math.abs(r1 - r2) + Math.abs(c1 - c2) === 1;
+  const isAdjacentCell = (r1, c1, r2, c2) => {
+    const dr = Math.abs(r1 - r2);
+    const dc = Math.abs(c1 - c2);
+    return dr <= 1 && dc <= 1 && !(dr === 0 && dc === 0);
+  };
 
   const isConnected = (cells) => {
     if (cells.length <= 1) return true;
@@ -303,7 +327,13 @@ const InteractiveTutorial = ({ onComplete, onPlayMini, onPlayFull }) => {
   const renderGrid = (g, puz, onCellClick, dropTargetFn, overlayPts, statusText) => (
     <div style={gridContainerStyle}>
       <div style={{ position: 'relative', display: 'inline-block' }}>
-        <CanvasOverlay overlayPoints={overlayPts} grid={g} cellSize={cellSize} margin={margin} />
+        <CanvasOverlay
+          overlayPoints={overlayPts}
+          grid={g}
+          cellSize={cellSize}
+          margin={margin}
+          clueFlashCells={clueFlashCells}
+        />
         <div style={{ position: 'relative', zIndex: 2 }}>
           {g.map((row, rIdx) => (
             <div key={rIdx} style={{ display: 'flex' }}>
