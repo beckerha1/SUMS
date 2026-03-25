@@ -320,6 +320,406 @@ export const puzzleMini38 = [
   [null, null, 9, null, null]
 ];
 
+export const puzzleMini39 = [
+  [18, null, null, null, null],
+  [null, null, 1, 13, "X"],
+  [8, 2, 3, "X", "X"],
+  [null, null, null, "X", "X"],
+  [null, null, null, "X", "X"]
+];
+
+export const puzzleMini40 = [
+  [null, 9, null, null, null],
+  [null, 13, null, 3, 1],
+  ["X", null, null, 2, null],
+  ["X", "X", null, null, null],
+  ["X", null, 21, null, 15]
+];
+
+export const puzzleMini41 = [
+  ["X", null, null, null, null],
+  ["X", "X", null, 2, null],
+  ["X", "X", null, 3, 1],
+  ["X", "X", null, null, null],
+  ["X", "X", null, null, 16]
+];
+
+export const puzzleMini42 = [
+  ["X", null, null, null, null],
+  ["X", 16, null, null, null],
+  [null, 23, 2, 3, null],
+  [null, null, 10, 1, null],
+  [null, null, null, null, null]
+];
+
+export const puzzleMini43 = [
+  ["X", "X", "X", null, null],
+  ["X", "X", "X", null, null],
+  ["X", "X", "X", "X", 1],
+  ["X", null, null, 2, 3],
+  [14, 7, null, null, null]
+];
+
+export const puzzleMini44 = [
+  ["X", 20, null, null, null],
+  ["X", null, null, null, null],
+  ["X", null, null, 2, 1],
+  ["X", null, null, null, 3],
+  ["X", null, null, null, null]
+];
+
+export const puzzleMini45 = [
+  [null, null, null, null, 13],
+  [null, 2, 9, null, null],
+  [null, 3, 1, null, null],
+  [null, null, "X", "X", 19],
+  ["X", null, "X", "X", "X"]
+];
+
+export const puzzleMini46 = [
+  ["X", "X", null, null, 3],
+  ["X", "X", null, 2, 1],
+  ["X", "X", "X", 12, null],
+  ["X", "X", "X", null, 6],
+  ["X", "X", "X", null, null]
+];
+
+export const puzzleMini47 = [
+  [null, null, 17, 24, "X"],
+  [null, 11, null, null, null],
+  [null, null, 3, null, null],
+  [null, 2, 1, null, null],
+  [null, null, null, null, null]
+];
+
+export const puzzleMini48 = [
+  [null, null, null, null, null],
+  [null, null, 1, null, null],
+  [null, "X", 3, 2, null],
+  ["X", "X", "X", null, null],
+  ["X", "X", "X", "X", 17]
+];
+
+export const puzzleMini49 = [
+  [null, null, 13, "X", "X"],
+  [null, null, null, null, "X"],
+  [null, 2, null, null, 22],
+  [1, 3, null, 15, null],
+  [10, null, null, null, null]
+];
+
+export const puzzleMini50 = [
+  [null, 7, 1, null, "X"],
+  [null, null, 3, 2, null],
+  [null, "X", null, null, null],
+  ["X", "X", "X", 15, null],
+  ["X", "X", "X", "X", "X"]
+];
+
+export const puzzleMini51 = [
+  [25, null, 17, null, null],
+  [null, null, null, null, null],
+  [20, null, 2, 1, null],
+  [null, null, 3, null, 11],
+  [null, null, null, null, 15]
+];
+
+export const puzzleMini52 = [
+  ["X", "X", "X", "X", "X"],
+  ["X", "X", "X", null, "X"],
+  ["X", "X", 3, null, null],
+  ["X", null, 2, 1, null],
+  [13, null, null, null, null]
+];
+
+export const puzzleMini53 = [
+  [15, null, 21, "X", "X"],
+  [9, null, "X", null, "X"],
+  [null, null, null, null, null],
+  [null, 2, null, null, null],
+  [1, 3, null, null, null]
+];
+
+export const puzzleMini54 = [
+  [null, null, null, null, "X"],
+  [null, 1, "X", null, 18],
+  [3, 2, null, "X", "X"],
+  [null, null, null, "X", "X"],
+  [null, null, null, null, "X"]
+];
+
+export const puzzleMini55 = [
+  [null, null, 15, 9, null],
+  [null, 2, 3, null, null],
+  [null, 1, "X", null, null],
+  [null, null, null, "X", 21],
+  [null, null, null, "X", "X"]
+];
+
+export const puzzleMini56 = [
+  [null, 1, 3, 7, null],
+  [null, null, 2, 10, null],
+  [null, null, "X", null, null],
+  [null, "X", 16, "X", "X"],
+  ["X", "X", "X", "X", "X"]
+];
+
+export const puzzleMini57 = [
+  [null, null, null, null, null],
+  [null, 2, null, null, null],
+  [null, 1, 3, 16, "X"],
+  [null, 10, 14, 23, null],
+  [null, null, null, null, "X"]
+];
+
+export const puzzleMini58 = [
+  ["X", "X", "X", null, "X"],
+  ["X", "X", "X", null, null],
+  ["X", "X", 14, 2, null],
+  ["X", null, null, 1, 3],
+  ["X", null, null, null, null]
+];
+
+export const puzzleMini59 = [
+  [null, null, null, null, null],
+  [null, 1, 2, 12, null],
+  [null, null, 3, 20, null],
+  [9, null, null, "X", "X"],
+  [14, null, "X", "X", "X"]
+];
+
+export const puzzleMini60 = [
+  [null, null, null, "X", "X"],
+  [null, null, "X", "X", "X"],
+  [null, 1, null, 19, null],
+  [null, 3, 2, null, "X"],
+  [null, null, null, null, null]
+];
+
+export const puzzleMini61 = [
+  [null, 12, "X", "X", "X"],
+  [6, null, "X", "X", "X"],
+  [3, 2, "X", "X", "X"],
+  [1, null, null, "X", "X"],
+  [null, null, null, "X", "X"]
+];
+
+export const puzzleMini62 = [
+  [null, 24, null, null, 17],
+  [null, null, "X", null, 11],
+  [null, null, 1, 2, null],
+  [null, null, 3, null, null],
+  [14, null, null, null, null]
+];
+
+export const puzzleMini63 = [
+  ["X", null, "X", "X", "X"],
+  [null, "X", "X", "X", "X"],
+  [null, 3, null, 17, null],
+  [null, 2, 1, null, null],
+  [null, null, null, 8, null]
+];
+
+export const puzzleMini64 = [
+  [null, 1, 3, null, null],
+  [null, null, 2, null, null],
+  [null, null, null, null, null],
+  [null, null, null, null, 22],
+  [null, null, "X", "X", "X"]
+];
+
+export const puzzleMini65 = [
+  ["X", null, 7, 3, null],
+  ["X", "X", null, 2, 1],
+  ["X", "X", 15, 9, null],
+  ["X", "X", "X", null, null],
+  ["X", "X", null, null, null]
+];
+
+export const puzzleMini66 = [
+  [null, null, 25, null, null],
+  [null, 17, null, null, null],
+  [null, null, 3, 2, null],
+  [null, 11, 1, null, null],
+  [null, null, null, null, null]
+];
+
+export const puzzleMini67 = [
+  ["X", "X", "X", "X", "X"],
+  ["X", "X", "X", "X", "X"],
+  [null, "X", 2, "X", 13],
+  [null, null, 3, 1, null],
+  [null, 6, null, null, null]
+];
+
+export const puzzleMini68 = [
+  [null, null, null, null, null],
+  [21, null, null, 2, 1],
+  ["X", null, null, null, 3],
+  ["X", null, null, null, null],
+  ["X", "X", null, null, null]
+];
+
+export const puzzleMini69 = [
+  [null, null, 3, 1, null],
+  [null, 8, 2, null, 11],
+  [null, null, null, 13, null],
+  [null, "X", null, "X", 18],
+  ["X", "X", "X", "X", "X"]
+];
+
+export const puzzleMini70 = [
+  ["X", "X", "X", 21, null],
+  ["X", null, null, null, null],
+  [null, null, null, null, null],
+  [null, null, 2, 3, null],
+  [null, null, 1, null, null]
+];
+
+export const puzzleMini71 = [
+  ["X", "X", "X", "X", "X"],
+  [null, "X", 16, "X", "X"],
+  [null, null, "X", null, null],
+  [null, null, 2, null, null],
+  [null, null, 3, 1, 7]
+];
+
+export const puzzleMini72 = [
+  ["X", 23, null, null, null],
+  ["X", null, null, null, null],
+  [null, null, 3, 1, null],
+  [null, null, 2, null, null],
+  [null, null, null, null, null]
+];
+
+export const puzzleMini73 = [
+  ["X", "X", "X", "X", "X"],
+  ["X", "X", "X", "X", null],
+  [14, "X", null, 7, null],
+  [null, null, 3, 2, null],
+  ["X", null, null, 1, null]
+];
+
+export const puzzleMini74 = [
+  [null, null, null, null, "X"],
+  [null, 14, null, null, "X"],
+  [null, 1, 3, null, "X"],
+  [null, 2, null, 20, "X"],
+  [null, null, 9, null, "X"]
+];
+
+export const puzzleMini75 = [
+  ["X", "X", "X", 11, null],
+  ["X", "X", "X", null, 9],
+  [19, null, 3, 2, null],
+  [null, null, 1, null, null],
+  [13, null, null, null, null]
+];
+
+export const puzzleMini76 = [
+  ["X", "X", "X", "X", "X"],
+  ["X", "X", "X", "X", "X"],
+  ["X", "X", 3, 12, "X"],
+  [null, null, 2, 1, null],
+  [null, null, null, null, null]
+];
+
+export const puzzleMini77 = [
+  [null, null, null, 24, null],
+  [null, null, "X", null, null],
+  [null, 2, 3, null, null],
+  [null, null, 1, null, null],
+  [null, null, null, null, null]
+];
+
+export const puzzleMini78 = [
+  ["X", null, 10, 8, null],
+  ["X", null, null, 2, 1],
+  ["X", "X", 17, null, 3],
+  ["X", "X", null, null, null],
+  ["X", "X", null, null, null]
+];
+
+export const puzzleMini79 = [
+  [null, null, null, 22, "X"],
+  [null, null, "X", null, "X"],
+  [null, 15, null, null, null],
+  [3, 2, null, null, null],
+  [1, null, null, 10, null]
+];
+
+export const puzzleMini80 = [
+  ["X", "X", "X", null, null],
+  ["X", "X", "X", 15, null],
+  ["X", "X", "X", 1, null],
+  ["X", null, 2, 3, null],
+  [null, null, null, null, null]
+];
+
+export const puzzleMini81 = [
+  [null, null, null, null, null],
+  [null, null, null, 3, null],
+  [null, null, 1, 2, null],
+  [null, null, null, null, null],
+  [25, null, null, null, null]
+];
+
+export const puzzleMini82 = [
+  ["X", "X", "X", 13, "X"],
+  ["X", "X", "X", null, null],
+  ["X", "X", null, null, null],
+  ["X", null, 6, 2, null],
+  ["X", null, "X", 1, 3]
+];
+
+export const puzzleMini83 = [
+  [null, null, null, null, 13],
+  [null, 3, 2, null, null],
+  [null, 1, null, null, null],
+  [9, 15, null, "X", "X"],
+  [null, 21, null, "X", "X"]
+];
+
+export const puzzleMini84 = [
+  [13, null, null, null, 8],
+  [18, null, 3, null, null],
+  ["X", "X", 1, 2, null],
+  ["X", "X", null, null, null],
+  ["X", "X", "X", null, null]
+];
+
+export const puzzleMini85 = [
+  [20, null, 9, null, null],
+  ["X", null, null, 2, 1],
+  ["X", null, 12, null, 3],
+  ["X", null, null, null, null],
+  ["X", "X", 14, null, null]
+];
+
+export const puzzleMini86 = [
+  ["X", "X", null, null, null],
+  ["X", 16, "X", null, null],
+  ["X", "X", null, 2, 3],
+  ["X", "X", 10, 1, null],
+  ["X", null, 7, null, null]
+];
+
+export const puzzleMini87 = [
+  [null, 10, null, null, null],
+  [null, 1, null, 16, null],
+  [null, 3, 2, null, 23],
+  [null, null, null, null, null],
+  [null, null, null, "X", "X"]
+];
+
+export const puzzleMini88 = [
+  [null, null, null, null, "X"],
+  [3, 1, 7, null, "X"],
+  [null, 2, null, "X", "X"],
+  [null, 14, "X", "X", "X"],
+  [null, "X", "X", "X", "X"]
+];
+
 // Export the list of mini puzzles
 export const puzzlesMini = [
   { name: "20260211", grid: puzzleMini1, number: "1" },
@@ -359,5 +759,55 @@ export const puzzlesMini = [
   { name: "20260317", grid: puzzleMini35, number: "35" },
   { name: "20260318", grid: puzzleMini36, number: "36" },
   { name: "20260319", grid: puzzleMini37, number: "37" },
-  { name: "20260320", grid: puzzleMini38, number: "38" }
+  { name: "20260320", grid: puzzleMini38, number: "38" },
+  { name: "20260321", grid: puzzleMini39, number: "39" },
+  { name: "20260322", grid: puzzleMini40, number: "40" },
+  { name: "20260323", grid: puzzleMini41, number: "41" },
+  { name: "20260324", grid: puzzleMini42, number: "42" },
+  { name: "20260325", grid: puzzleMini43, number: "43" },
+  { name: "20260326", grid: puzzleMini44, number: "44" },
+  { name: "20260327", grid: puzzleMini45, number: "45" },
+  { name: "20260328", grid: puzzleMini46, number: "46" },
+  { name: "20260329", grid: puzzleMini47, number: "47" },
+  { name: "20260330", grid: puzzleMini48, number: "48" },
+  { name: "20260331", grid: puzzleMini49, number: "49" },
+  { name: "20260401", grid: puzzleMini50, number: "50" },
+  { name: "20260402", grid: puzzleMini51, number: "51" },
+  { name: "20260403", grid: puzzleMini52, number: "52" },
+  { name: "20260404", grid: puzzleMini53, number: "53" },
+  { name: "20260405", grid: puzzleMini54, number: "54" },
+  { name: "20260406", grid: puzzleMini55, number: "55" },
+  { name: "20260407", grid: puzzleMini56, number: "56" },
+  { name: "20260408", grid: puzzleMini57, number: "57" },
+  { name: "20260409", grid: puzzleMini58, number: "58" },
+  { name: "20260410", grid: puzzleMini59, number: "59" },
+  { name: "20260411", grid: puzzleMini60, number: "60" },
+  { name: "20260412", grid: puzzleMini61, number: "61" },
+  { name: "20260413", grid: puzzleMini62, number: "62" },
+  { name: "20260414", grid: puzzleMini63, number: "63" },
+  { name: "20260415", grid: puzzleMini64, number: "64" },
+  { name: "20260416", grid: puzzleMini65, number: "65" },
+  { name: "20260417", grid: puzzleMini66, number: "66" },
+  { name: "20260418", grid: puzzleMini67, number: "67" },
+  { name: "20260419", grid: puzzleMini68, number: "68" },
+  { name: "20260420", grid: puzzleMini69, number: "69" },
+  { name: "20260421", grid: puzzleMini70, number: "70" },
+  { name: "20260422", grid: puzzleMini71, number: "71" },
+  { name: "20260423", grid: puzzleMini72, number: "72" },
+  { name: "20260424", grid: puzzleMini73, number: "73" },
+  { name: "20260425", grid: puzzleMini74, number: "74" },
+  { name: "20260426", grid: puzzleMini75, number: "75" },
+  { name: "20260427", grid: puzzleMini76, number: "76" },
+  { name: "20260428", grid: puzzleMini77, number: "77" },
+  { name: "20260429", grid: puzzleMini78, number: "78" },
+  { name: "20260430", grid: puzzleMini79, number: "79" },
+  { name: "20260501", grid: puzzleMini80, number: "80" },
+  { name: "20260502", grid: puzzleMini81, number: "81" },
+  { name: "20260503", grid: puzzleMini82, number: "82" },
+  { name: "20260504", grid: puzzleMini83, number: "83" },
+  { name: "20260505", grid: puzzleMini84, number: "84" },
+  { name: "20260506", grid: puzzleMini85, number: "85" },
+  { name: "20260507", grid: puzzleMini86, number: "86" },
+  { name: "20260508", grid: puzzleMini87, number: "87" },
+  { name: "20260509", grid: puzzleMini88, number: "88" }
 ];
