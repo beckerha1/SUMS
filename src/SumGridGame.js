@@ -700,13 +700,8 @@ if (showStartScreen) {
           setGameMode('mini');
           setShowStartScreen(false);
           if (isResumingSameMode) {
-            if (!gameWon) {
-              setStartTime(Date.now() - (elapsedTime * 1000));
-            }
             if (gameWon) setShowWinScreen(true);
           } else {
-            setStartTime(null);
-            setElapsedTime(0);
             if (window.gtag) window.gtag('event', 'game_start', { game_mode: 'mini' });
           }
         }}
@@ -715,13 +710,8 @@ if (showStartScreen) {
           setGameMode('full');
           setShowStartScreen(false);
           if (isResumingSameMode) {
-            if (!gameWon) {
-              setStartTime(Date.now() - (elapsedTime * 1000));
-            }
             if (gameWon) setShowWinScreen(true);
           } else {
-            setStartTime(null);
-            setElapsedTime(0);
             if (window.gtag) window.gtag('event', 'game_start', { game_mode: 'full' });
           }
         }}
@@ -792,13 +782,7 @@ if (showStartScreen) {
                 setGameMode('mini');
                 setShowStartScreen(false);
                 if (isResumingSameMode) {
-                  if (!gameWon) {
-                    setStartTime(Date.now() - (elapsedTime * 1000));
-                  }
                   if (gameWon) setShowWinScreen(true);
-                } else {
-                  setStartTime(null);
-                  setElapsedTime(0);
                 }
                 setShowInstructions(false);
               }}
@@ -807,13 +791,7 @@ if (showStartScreen) {
                 setGameMode('full');
                 setShowStartScreen(false);
                 if (isResumingSameMode) {
-                  if (!gameWon) {
-                    setStartTime(Date.now() - (elapsedTime * 1000));
-                  }
                   if (gameWon) setShowWinScreen(true);
-                } else {
-                  setStartTime(null);
-                  setElapsedTime(0);
                 }
                 setShowInstructions(false);
               }}
@@ -864,6 +842,7 @@ if (!puzzle || puzzle.length !== grid.length || puzzle[0]?.length !== grid[0]?.l
 
 const solverNextExpected = getNextExpectedNumber(grid, puzzle);
 const isPuzzleComplete = grid.every(row => row.every(cell => cell === "X" || cell !== null));
+const lastSum = puzzle.flat().filter(cell => cell !== "X" && cell !== undefined).length;
 
 return (
   <>
@@ -882,6 +861,7 @@ return (
         currentSum={selectedCells.length > 0
           ? selectedCells.reduce((acc, [r, c]) => acc + grid[r][c], 0)
           : 0}
+        lastSum={lastSum}
         showHelpDropdown={showHelpDropdown}
         setShowHelpDropdown={setShowHelpDropdown}
         setShowInstructions={setShowInstructions}
@@ -1063,13 +1043,7 @@ return (
                 setGameMode('mini');
                 setShowStartScreen(false);
                 if (isResumingSameMode) {
-                  if (!gameWon) {
-                    setStartTime(Date.now() - (elapsedTime * 1000));
-                  }
                   if (gameWon) setShowWinScreen(true);
-                } else {
-                  setStartTime(null);
-                  setElapsedTime(0);
                 }
                 setShowInstructions(false);
               }}
@@ -1078,13 +1052,7 @@ return (
                 setGameMode('full');
                 setShowStartScreen(false);
                 if (isResumingSameMode) {
-                  if (!gameWon) {
-                    setStartTime(Date.now() - (elapsedTime * 1000));
-                  }
                   if (gameWon) setShowWinScreen(true);
-                } else {
-                  setStartTime(null);
-                  setElapsedTime(0);
                 }
                 setShowInstructions(false);
               }}

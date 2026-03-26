@@ -5,6 +5,7 @@ const GameHeader = ({
   elapsedTime,
   nextExpectedNumber,
   currentSum,
+  lastSum,
   showHelpDropdown,
   setShowHelpDropdown,
   setShowInstructions,
@@ -80,6 +81,11 @@ const GameHeader = ({
           <span style={{ color: "#666" }}>
             Current SUM: <strong>{currentSum}</strong>
           </span>
+          {lastSum != null && (
+            <span style={{ color: "#666" }}>
+              Last SUM: <strong>{lastSum}</strong>
+            </span>
+          )}
         </div>
 
         {/* Help icon */}
