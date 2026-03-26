@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from 'react-router-dom';
 
 const overlayStyle = {
   position: "fixed",
@@ -45,11 +46,26 @@ const closeButtonStyle = {
   padding: 0
 };
 
-const StrategyModal = React.memo(({ onClose }) => {
-  return (
-    <div style={overlayStyle}>
-      <div style={modalCardStyle}>
-        {onClose && (
+const pageWrapStyle = {
+  minHeight: "100vh",
+  background: "#f7f7f8",
+  padding: "20px 12px",
+  boxSizing: "border-box"
+};
+
+const homeLinkStyle = {
+  display: "inline-block",
+  marginBottom: "16px",
+  color: "#303036",
+  fontWeight: 600,
+  textDecoration: "none"
+};
+
+const StrategyContent = React.memo(({ onClose, modal = false }) => {
+  const body = (
+    <div style={modalCardStyle}>
+      {modal ? (
+        onClose && (
           <button
             onClick={onClose}
             style={closeButtonStyle}
@@ -57,7 +73,10 @@ const StrategyModal = React.memo(({ onClose }) => {
           >
             ✖
           </button>
-        )}
+        )
+      ) : (
+        <Link to="/" style={homeLinkStyle}>← Back to home</Link>
+      )}
 
         <h1 style={{ fontSize: "2rem", marginBottom: "20px" }}>Strategy Guide</h1>
 
@@ -105,9 +124,11 @@ const StrategyModal = React.memo(({ onClose }) => {
             This keeps weekday play approachable while preserving deep challenge for weekend solvers.
           </p>
         </section>
-      </div>
     </div>
   );
+
+  if (modal) return <div style={overlayStyle}>{body}</div>;
+  return <main style={pageWrapStyle}>{body}</main>;
 });
 
-export default StrategyModal;
+export default StrategyContent;

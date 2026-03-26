@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 const overlayStyle = {
   position: "fixed",
@@ -44,10 +45,25 @@ const closeButtonStyle = {
   padding: 0
 };
 
-const PrivacyPolicyModal = ({ onClose }) => {
-  return (
-    <div style={overlayStyle}>
-      <div style={modalCardStyle}>
+const pageWrapStyle = {
+  minHeight: "100vh",
+  background: "#f7f7f8",
+  padding: "20px 12px",
+  boxSizing: "border-box"
+};
+
+const homeLinkStyle = {
+  display: "inline-block",
+  marginBottom: "16px",
+  color: "#303036",
+  fontWeight: 600,
+  textDecoration: "none"
+};
+
+const PrivacyPolicyContent = ({ onClose, modal = false }) => {
+  const body = (
+    <div style={modalCardStyle}>
+      {modal ? (
         <button
           onClick={onClose}
           style={closeButtonStyle}
@@ -55,6 +71,9 @@ const PrivacyPolicyModal = ({ onClose }) => {
         >
           ✖
         </button>
+      ) : (
+        <Link to="/" style={homeLinkStyle}>← Back to home</Link>
+      )}
 
         <h1 style={{ fontSize: '2rem', marginBottom: '10px' }}>Privacy Policy</h1>
       <p style={{ color: '#666', marginBottom: '30px' }}>
@@ -261,8 +280,10 @@ const PrivacyPolicyModal = ({ onClose }) => {
         </p>
       </section>
     </div>
-    </div>
   );
+
+  if (modal) return <div style={overlayStyle}>{body}</div>;
+  return <main style={pageWrapStyle}>{body}</main>;
 };
 
-export default PrivacyPolicyModal;
+export default PrivacyPolicyContent;
