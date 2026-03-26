@@ -1,51 +1,58 @@
 import React from "react";
 
+const overlayStyle = {
+  position: "fixed",
+  inset: 0,
+  width: "100vw",
+  height: "100dvh",
+  overflowY: "auto",
+  backgroundColor: "rgba(0,0,0,0.6)",
+  zIndex: 2000,
+  padding: "max(8px, env(safe-area-inset-top)) 12px max(8px, env(safe-area-inset-bottom))",
+  boxSizing: "border-box",
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "flex-start",
+  touchAction: "manipulation"
+};
+
+const modalCardStyle = {
+  width: "min(100%, 800px)",
+  maxHeight: "calc(100dvh - 16px)",
+  overflowY: "auto",
+  WebkitOverflowScrolling: "touch",
+  margin: "0 auto",
+  padding: "clamp(20px, 5vw, 40px) clamp(14px, 4vw, 20px)",
+  fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+  lineHeight: "1.6",
+  color: "#333",
+  background: "#fff",
+  borderRadius: "12px",
+  position: "relative",
+  textAlign: "left"
+};
+
+const closeButtonStyle = {
+  position: "absolute",
+  top: "14px",
+  right: "14px",
+  background: "transparent",
+  border: "none",
+  fontSize: "1.5rem",
+  cursor: "pointer",
+  color: "#666",
+  lineHeight: "1",
+  padding: 0
+};
+
 const StrategyModal = React.memo(({ onClose }) => {
   return (
-    <div style={{
-      position: "fixed",
-      top: 0,
-      left: 0,
-      width: "100vw",
-      height: "100vh",
-      overflowY: "auto",
-      backgroundColor: "rgba(0,0,0,0.6)",
-      zIndex: 2000,
-      padding: "16px",
-      boxSizing: "border-box",
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "flex-start",
-      touchAction: "manipulation"
-    }}>
-      <div style={{
-        maxWidth: "800px",
-        margin: "0 auto",
-        padding: "40px 20px",
-        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-        lineHeight: "1.6",
-        color: "#333",
-        background: "#fff",
-        borderRadius: "12px",
-        position: "relative",
-        width: "100%",
-        textAlign: "left"
-      }}>
+    <div style={overlayStyle}>
+      <div style={modalCardStyle}>
         {onClose && (
           <button
             onClick={onClose}
-            style={{
-              position: "absolute",
-              top: "20px",
-              right: "20px",
-              background: "transparent",
-              border: "none",
-              fontSize: "1.5rem",
-              cursor: "pointer",
-              color: "#666",
-              lineHeight: "1",
-              padding: 0
-            }}
+            style={closeButtonStyle}
             aria-label="Close"
           >
             ✖

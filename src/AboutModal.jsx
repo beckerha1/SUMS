@@ -129,7 +129,7 @@ const AboutModal = React.memo(({ onClose }) => {
           Have feedback, found a bug, or just want to say hi? We'd love to hear from you!
         </p>
         <p>
-          Email us at: <a href="mailto:contact@sums.games" style={{ color: '#007bff' }}>contact@sums.games</a>
+          Email us at: <a href="mailto:harrison.x.becker@gmail.com" style={{ color: '#007bff' }}>harrison.x.becker@gmail.com</a>
         </p>
       </section>
     </div>

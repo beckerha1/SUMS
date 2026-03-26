@@ -103,7 +103,7 @@ const StartScreen = ({
           Strategy
         </span>
         <p style={{ marginTop: '10px', fontSize: "clamp(14px, 2.5vw, 14px)", color: "#666" }}>
-          © 2025 Xavier Games
+          © 2026 Xavier Games
         </p>
       </footer>
     </div>
