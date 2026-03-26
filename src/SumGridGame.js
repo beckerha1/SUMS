@@ -65,7 +65,9 @@ export default function SumGridGame() {
   const [showHighScores, setShowHighScores] = useState(false);
   const [highScoresHighlight, setHighScoresHighlight] = useState(null);
   const [hintInProgress, setHintInProgress] = useState(false);
-  const [hintCooldownRemaining, setHintCooldownRemaining] = useState(0);
+  const [hintCooldownByMode, setHintCooldownByMode] = useState({ mini: 0, full: 0 });
+  const [lastSequence, setLastSequence] = useState(null);
+  const [lastPlacedPosition, setLastPlacedPosition] = useState(null);
   const cellSize = Math.min(80, Math.floor(window.innerWidth / (GRID_SIZE + 2)));
 
 const todayStr = new Date().toLocaleDateString("en-US", {
@@ -75,6 +77,7 @@ const todayStr = new Date().toLocaleDateString("en-US", {
 });
 
 const prefilledCells = useRef(new Set());
+const modeStateRef = useRef({ mini: null, full: null });
 const [overlayPoints, setOverlayPoints] = useState([]);
 const gridWrapperRef = useRef(null);
 const clueSkipAnimRef = useRef(null);
@@ -125,12 +128,32 @@ useEffect(() => {
 useEffect(() => {
   if (gameMode) {
     clearClueSkipAnimation();
-    setGrid(puzzle);
-    setHistory([puzzle]);
+    const savedModeState = modeStateRef.current[gameMode];
+
+    if (savedModeState) {
+      setGrid(savedModeState.grid);
+      setHistory(savedModeState.history);
+      setGameWon(savedModeState.gameWon);
+      setShowWinScreen(savedModeState.showWinScreen);
+      setStartTime(savedModeState.startTime);
+      setElapsedTime(savedModeState.elapsedTime);
+      setMoveCount(savedModeState.moveCount);
+      setLastSequence(savedModeState.lastSequence);
+      setLastPlacedPosition(savedModeState.lastPlacedPosition);
+      setWinScreenDismissed(savedModeState.winScreenDismissed);
+    } else {
+      setGrid(puzzle);
+      setHistory([puzzle]);
+      setGameWon(false);
+      setShowWinScreen(false);
+      setStartTime(null);
+      setElapsedTime(0);
+      setMoveCount(0);
+      setLastSequence(null);
+      setLastPlacedPosition(null);
+      setWinScreenDismissed(false);
+    }
     setSelectedCells([]);
-    setGameWon(false);
-    setShowWinScreen(false);
-    setMoveCount(0);
     
     if (timerRef.current) {
       clearInterval(timerRef.current);
@@ -138,6 +161,34 @@ useEffect(() => {
     }
   }
 }, [gameMode, puzzle]);
+
+useEffect(() => {
+  if (!gameMode || !grid || !history) return;
+  modeStateRef.current[gameMode] = {
+    grid: grid.map((row) => [...row]),
+    history: history.map((board) => board.map((row) => [...row])),
+    gameWon,
+    showWinScreen,
+    startTime,
+    elapsedTime,
+    moveCount,
+    lastSequence,
+    lastPlacedPosition,
+    winScreenDismissed
+  };
+}, [
+  gameMode,
+  grid,
+  history,
+  gameWon,
+  showWinScreen,
+  startTime,
+  elapsedTime,
+  moveCount,
+  lastSequence,
+  lastPlacedPosition,
+  winScreenDismissed
+]);
 
 useEffect(() => {
   const prefilled = new Set();
@@ -187,7 +238,7 @@ useEffect(() => {
 }, []);
 
 useEffect(() => {
-  if (startTime && !gameWon && !timerRef.current) {
+  if (startTime && !gameWon && !showStartScreen && !timerRef.current) {
     timerRef.current = setInterval(() => {
       const elapsed = Math.floor((Date.now() - startTime) / 1000);
       setElapsedTime(elapsed);
@@ -196,9 +247,31 @@ useEffect(() => {
   return () => {
     if (timerRef.current) {
       clearInterval(timerRef.current);
+      timerRef.current = null;
     }
   };
-}, [startTime, gameWon]);
+}, [startTime, gameWon, showStartScreen]);
+
+useEffect(() => {
+  const hasProgress = elapsedTime > 0 || history.length > 1;
+  if (!showStartScreen && gameMode && !gameWon && !startTime && hasProgress) {
+    setStartTime(Date.now() - (elapsedTime * 1000));
+  }
+}, [showStartScreen, gameMode, gameWon, startTime, elapsedTime, history]);
+
+useEffect(() => {
+  if (!startTime || gameWon || showStartScreen) return;
+  const syncElapsed = () => {
+    setElapsedTime(Math.floor((Date.now() - startTime) / 1000));
+  };
+
+  window.addEventListener("focus", syncElapsed);
+  document.addEventListener("visibilitychange", syncElapsed);
+  return () => {
+    window.removeEventListener("focus", syncElapsed);
+    document.removeEventListener("visibilitychange", syncElapsed);
+  };
+}, [startTime, gameWon, showStartScreen]);
 
 useEffect(() => {
   if (showWinScreen && window.adsbygoogle && !window.adsbygoogle.initialized) {
@@ -227,15 +300,18 @@ useEffect(() => {
 }, [startTime, gameWon, gameMode, elapsedTime, moveCount]);
 
 useEffect(() => {
-  if (hintCooldownRemaining <= 0) return;
+  const hasCooldown = hintCooldownByMode.mini > 0 || hintCooldownByMode.full > 0;
+  if (!hasCooldown) return;
   const interval = setInterval(() => {
-    setHintCooldownRemaining((prev) => Math.max(0, prev - 100));
+    setHintCooldownByMode((prev) => ({
+      mini: Math.max(0, prev.mini - 100),
+      full: Math.max(0, prev.full - 100)
+    }));
   }, 100);
   return () => clearInterval(interval);
-}, [hintCooldownRemaining]);
+}, [hintCooldownByMode]);
 
-const [lastSequence, setLastSequence] = useState(null);
-const [lastPlacedPosition, setLastPlacedPosition] = useState(null);
+const currentHintCooldownRemaining = gameMode ? hintCooldownByMode[gameMode] : 0;
 
 const closeInstructions = () => setShowInstructions(false);
 
@@ -463,14 +539,16 @@ const applyPlacementMove = (selectionPath, r, c) => {
 };
 
 const handleHint = () => {
-  if (hintInProgress || gameWon || hintCooldownRemaining > 0) return;
+  if (hintInProgress || gameWon || currentHintCooldownRemaining > 0) return;
   if (!startTime) {
-    setStartTime(Date.now());
+    setStartTime(Date.now() - (elapsedTime * 1000));
   }
 
   setSelectedCells([]);
   setHintInProgress(true);
-  setHintCooldownRemaining(HINT_COOLDOWN_MS);
+  if (gameMode) {
+    setHintCooldownByMode((prev) => ({ ...prev, [gameMode]: HINT_COOLDOWN_MS }));
+  }
   const HINT_THINK_DELAY_MS = 80;
   const HINT_SELECTION_STEP_MS = 140;
   const HINT_SELECTION_HOLD_MS = 320;
@@ -520,7 +598,7 @@ const handleCellClick = (r, c, event) => {
 
   if (!startTime) {
     console.log('Setting startTime:', Date.now());
-    setStartTime(Date.now());
+    setStartTime(Date.now() - (elapsedTime * 1000));
   }
 
   const cellValue = grid[r][c];
@@ -618,18 +696,34 @@ if (showStartScreen) {
     <>
       <StartScreen
         onPlayMini={() => {
+          const isResumingSameMode = gameMode === 'mini' && !!grid;
           setGameMode('mini');
           setShowStartScreen(false);
-          setStartTime(null);
-          setElapsedTime(0);
-          if (window.gtag) window.gtag('event', 'game_start', { game_mode: 'mini' });
+          if (isResumingSameMode) {
+            if (!gameWon) {
+              setStartTime(Date.now() - (elapsedTime * 1000));
+            }
+            if (gameWon) setShowWinScreen(true);
+          } else {
+            setStartTime(null);
+            setElapsedTime(0);
+            if (window.gtag) window.gtag('event', 'game_start', { game_mode: 'mini' });
+          }
         }}
         onPlayFull={() => {
+          const isResumingSameMode = gameMode === 'full' && !!grid;
           setGameMode('full');
           setShowStartScreen(false);
-          setStartTime(null);
-          setElapsedTime(0);
-          if (window.gtag) window.gtag('event', 'game_start', { game_mode: 'full' });
+          if (isResumingSameMode) {
+            if (!gameWon) {
+              setStartTime(Date.now() - (elapsedTime * 1000));
+            }
+            if (gameWon) setShowWinScreen(true);
+          } else {
+            setStartTime(null);
+            setElapsedTime(0);
+            if (window.gtag) window.gtag('event', 'game_start', { game_mode: 'full' });
+          }
         }}
         onShowInstructions={() => setShowInstructions(true)}
         onShowStats={() => setShowStats(true)}
@@ -694,17 +788,33 @@ if (showStartScreen) {
                 setShowStartScreen(false);
               }}
               onPlayMini={() => {
+                const isResumingSameMode = gameMode === 'mini' && !!grid;
                 setGameMode('mini');
                 setShowStartScreen(false);
-                setStartTime(null);
-                setElapsedTime(0);
+                if (isResumingSameMode) {
+                  if (!gameWon) {
+                    setStartTime(Date.now() - (elapsedTime * 1000));
+                  }
+                  if (gameWon) setShowWinScreen(true);
+                } else {
+                  setStartTime(null);
+                  setElapsedTime(0);
+                }
                 setShowInstructions(false);
               }}
               onPlayFull={() => {
+                const isResumingSameMode = gameMode === 'full' && !!grid;
                 setGameMode('full');
                 setShowStartScreen(false);
-                setStartTime(null);
-                setElapsedTime(0);
+                if (isResumingSameMode) {
+                  if (!gameWon) {
+                    setStartTime(Date.now() - (elapsedTime * 1000));
+                  }
+                  if (gameWon) setShowWinScreen(true);
+                } else {
+                  setStartTime(null);
+                  setElapsedTime(0);
+                }
                 setShowInstructions(false);
               }}
             />
@@ -786,8 +896,11 @@ return (
               total_moves: moveCount
             });
           }
+          if (startTime && !gameWon) {
+            setElapsedTime(Math.floor((Date.now() - startTime) / 1000));
+            setStartTime(null);
+          }
           setShowStartScreen(true);
-          setGameMode(null);
         }}
         gameMode={gameMode}
         puzzleNumber={currentPuzzleNumber}
@@ -874,7 +987,7 @@ return (
         onClear={handleClear}
         onHint={handleHint}
         hintInProgress={hintInProgress}
-        hintCooldownRemaining={hintCooldownRemaining}
+        hintCooldownRemaining={currentHintCooldownRemaining}
         hintDisabled={gameWon}
         canUndo={history.length > 1}
         gameWon={gameWon}
@@ -946,17 +1059,33 @@ return (
             <InteractiveTutorial 
               onComplete={() => setShowInstructions(false)}
               onPlayMini={() => {
+                const isResumingSameMode = gameMode === 'mini' && !!grid;
                 setGameMode('mini');
                 setShowStartScreen(false);
-                setStartTime(null);
-                setElapsedTime(0);
+                if (isResumingSameMode) {
+                  if (!gameWon) {
+                    setStartTime(Date.now() - (elapsedTime * 1000));
+                  }
+                  if (gameWon) setShowWinScreen(true);
+                } else {
+                  setStartTime(null);
+                  setElapsedTime(0);
+                }
                 setShowInstructions(false);
               }}
               onPlayFull={() => {
+                const isResumingSameMode = gameMode === 'full' && !!grid;
                 setGameMode('full');
                 setShowStartScreen(false);
-                setStartTime(null);
-                setElapsedTime(0);
+                if (isResumingSameMode) {
+                  if (!gameWon) {
+                    setStartTime(Date.now() - (elapsedTime * 1000));
+                  }
+                  if (gameWon) setShowWinScreen(true);
+                } else {
+                  setStartTime(null);
+                  setElapsedTime(0);
+                }
                 setShowInstructions(false);
               }}
             />
