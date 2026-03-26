@@ -699,7 +699,7 @@ return (
     >
       <GameHeader
         elapsedTime={elapsedTime}
-        nextExpectedNumber={headerNextOverride ?? solverNextExpected}
+        nextExpectedNumber={gameWon ? null : (headerNextOverride ?? solverNextExpected)}
         currentSum={selectedCells.length > 0
           ? selectedCells.reduce((acc, [r, c]) => acc + grid[r][c], 0)
           : 0}
