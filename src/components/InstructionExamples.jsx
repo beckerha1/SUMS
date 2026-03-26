@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import CanvasOverlay from './CanvasOverlay';
 import NumberOverlay from './NumberOverlay';
-import { getNextExpectedNumber, getPrefilledCluesSkippedBeforeNext } from '../utils/gameHelpers';
+import { getNextExpectedNumber } from '../utils/gameHelpers';
 
 const InteractiveTutorial = ({ onComplete, onPlayMini, onPlayFull }) => {
   const [tutorialStep, setTutorialStep] = useState(0);
@@ -13,7 +13,6 @@ const InteractiveTutorial = ({ onComplete, onPlayMini, onPlayFull }) => {
   const [userSelectedCorrectly, setUserSelectedCorrectly] = useState(false);
   const [canPlaceNumber, setCanPlaceNumber] = useState(false);
   const [userCompletedPlacement, setUserCompletedPlacement] = useState(false);
-  const [clueFlashCells, setClueFlashCells] = useState([]);
   const [screen3Grid, setScreen3Grid] = useState([[1, 2, null], [3, 4, null], [null, null, 5]]);
   const [screen3Selected, setScreen3Selected] = useState([]);
   const [screen3PlacementPath, setScreen3PlacementPath] = useState([]);
@@ -55,13 +54,9 @@ const InteractiveTutorial = ({ onComplete, onPlayMini, onPlayFull }) => {
     return () => timeouts.forEach(clearTimeout);
   }, [tutorialStep]);
 
-  useEffect(() => {
-    setClueFlashCells([]);
-  }, [tutorialStep]);
-
   // Screen 4 auto-play: 1 + 2 + 3 = 6
   useEffect(() => {
-    if (tutorialStep !== 3) return undefined;
+    if (tutorialStep !== 4) return undefined;
 
     setScreen3Grid([[1, 2, null], [3, 4, null], [null, null, 5]]);
     setScreen3Selected([]);
@@ -95,12 +90,7 @@ const InteractiveTutorial = ({ onComplete, onPlayMini, onPlayFull }) => {
     const cellValue = grid[r][c];
 
     if (canPlaceNumber && r === 1 && c === 1 && grid[r][c] === null) {
-      const prevGrid = grid;
       const newGrid = [[1, 2, null], [3, 4, null], [null, null, 5]];
-      const placedExpected = getNextExpectedNumber(prevGrid, puzzle);
-      const solverNext = getNextExpectedNumber(newGrid, puzzle);
-      const skipChain = getPrefilledCluesSkippedBeforeNext(newGrid, puzzle, placedExpected, solverNext);
-
       setPlacementPath([[1, 0], [r, c]]);
       setTimeout(() => {
         setGrid(newGrid);
@@ -108,19 +98,6 @@ const InteractiveTutorial = ({ onComplete, onPlayMini, onPlayFull }) => {
         setPlacementPath([]);
         setCanPlaceNumber(false);
         setUserCompletedPlacement(true);
-
-        if (skipChain.length > 0) {
-          const PRE_CLUE_FLASH_PAUSE_MS = 500;
-          const CLUE_SKIP_STEP_MS = 500;
-          const CLUE_FLASH_MS = 260;
-
-          skipChain.forEach((seg, idx) => {
-            setTimeout(() => {
-              setClueFlashCells(seg.positions.map(([sr, sc]) => ({ row: sr, col: sc })));
-              setTimeout(() => setClueFlashCells([]), CLUE_FLASH_MS);
-            }, PRE_CLUE_FLASH_PAUSE_MS + idx * CLUE_SKIP_STEP_MS);
-          });
-        }
       }, 200);
       return;
     }
@@ -277,7 +254,6 @@ const InteractiveTutorial = ({ onComplete, onPlayMini, onPlayFull }) => {
     setStep4PlacementPath([]);
     setStep4Complete(false);
     setStep4CanPlace(false);
-    setClueFlashCells([]);
   };
 
   const getDropTargetHighlight = (r, c) => canPlaceNumber && r === 1 && c === 1 && grid[r][c] === null;
@@ -334,7 +310,7 @@ const InteractiveTutorial = ({ onComplete, onPlayMini, onPlayFull }) => {
           grid={g}
           cellSize={cellSize}
           margin={margin}
-          clueFlashCells={clueFlashCells}
+          clueFlashCells={[]}
         />
         <div style={{ position: 'relative', zIndex: 2 }}>
           {g.map((row, rIdx) => (
@@ -423,7 +399,7 @@ const InteractiveTutorial = ({ onComplete, onPlayMini, onPlayFull }) => {
             autoPlayStep === 1 ? "Select 1..." :
             autoPlayStep === 2 ? "Then select 2..." :
             autoPlayStep === 3 ? "Place 3!" :
-            "Done."
+            "Nice."
           )}
           <p style={{
             fontSize: '1.1rem',
@@ -434,7 +410,7 @@ const InteractiveTutorial = ({ onComplete, onPlayMini, onPlayFull }) => {
           }}>
             To place the next number, <strong>select cells that add up to it</strong>, then tap an empty cell next to your selection.
             <br /><br />
-            Here, 1 + 2 = 3 - so <strong>3</strong> is placed next to them.
+            Here, 1 + 2 = 3, so <strong>3</strong> is placed next to them.
           </p>
           <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
             <button onClick={() => setTutorialStep(0)} style={secondaryButtonStyle}>Back</button>
@@ -467,7 +443,7 @@ const InteractiveTutorial = ({ onComplete, onPlayMini, onPlayFull }) => {
               ? "Select 1 and 3 to make 4"
               : userSelectedCorrectly && !userCompletedPlacement
                 ? "Place 4!"
-                : "Nice move!"
+                : "Great move."
           )}
           <p style={{
             fontSize: '1.1rem',
@@ -478,7 +454,7 @@ const InteractiveTutorial = ({ onComplete, onPlayMini, onPlayFull }) => {
           }}>
             Some numbers are already placed as part of the starting grid.
             <br /><br />
-            You must place <strong>4</strong> strategically so there is a valid path to reach the gray <strong>5</strong>.
+            You must place <strong>4</strong> so there is a valid path to reach <strong>5</strong>.
             <br /><br />
             <strong>Place 4</strong> using the grid above.
           </p>
@@ -513,8 +489,37 @@ const InteractiveTutorial = ({ onComplete, onPlayMini, onPlayFull }) => {
         </>
       )}
 
-      {/* ── Screen 3: Multi-number sequences ─────────────── */}
+      {/* ── Screen 3: Prefilled 5 transition ─────────────── */}
       {tutorialStep === 3 && (
+        <>
+          {renderGrid(
+            grid,
+            puzzle,
+            null,
+            null,
+            [],
+            "5 is already in the grid."
+          )}
+          <p style={{
+            fontSize: '1.1rem',
+            color: '#333',
+            marginBottom: '20px',
+            lineHeight: '1.5',
+            textAlign: 'left'
+          }}>
+            The gray <strong>5</strong> is already in the grid and already valid.
+            <br /><br />
+            After placing <strong>4</strong>, your next target is <strong>6</strong>.
+          </p>
+          <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+            <button onClick={() => setTutorialStep(2)} style={secondaryButtonStyle}>Back</button>
+            <button onClick={() => setTutorialStep(4)} style={primaryButtonStyle}>Next</button>
+          </div>
+        </>
+      )}
+
+      {/* ── Screen 4: Multi-number sequences ─────────────── */}
+      {tutorialStep === 4 && (
         <>
           {renderGrid(
             screen3Grid,
@@ -527,7 +532,7 @@ const InteractiveTutorial = ({ onComplete, onPlayMini, onPlayFull }) => {
             autoPlayStep3 === 2 ? "Then select 2..." :
             autoPlayStep3 === 3 ? "Then select 3..." :
             autoPlayStep3 === 4 ? "Place 6!" :
-            "Done."
+            "Nice."
           )}
           <p style={{
             fontSize: '1.1rem',
@@ -538,12 +543,12 @@ const InteractiveTutorial = ({ onComplete, onPlayMini, onPlayFull }) => {
           }}>
             Your selection can include <strong>as many numbers as you need</strong>.
             <br /><br />
-            Here, 1 + 2 + 3 = 6 - as long as each selected cell <strong>touches the next</strong> in the chain.
+            Here, 1 + 2 + 3 = 6, as long as each selected cell <strong>touches the next</strong> in the chain.
           </p>
           <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
             <button
               onClick={() => {
-                setTutorialStep(2);
+                setTutorialStep(3);
                 setAutoPlayStep3(0);
               }}
               style={secondaryButtonStyle}
@@ -557,7 +562,7 @@ const InteractiveTutorial = ({ onComplete, onPlayMini, onPlayFull }) => {
                 setStep4PlacementPath([]);
                 setStep4Complete(false);
                 setStep4CanPlace(false);
-                setTutorialStep(4);
+                setTutorialStep(5);
               }}
               disabled={autoPlayStep3 < 5}
               style={{
@@ -573,8 +578,8 @@ const InteractiveTutorial = ({ onComplete, onPlayMini, onPlayFull }) => {
         </>
       )}
 
-      {/* ── Screen 4: Practice puzzle completion ─────────── */}
-      {tutorialStep === 4 && (
+      {/* ── Screen 5: Practice puzzle completion ─────────── */}
+      {tutorialStep === 5 && (
         <>
           {renderGrid(
             step4Grid,
@@ -582,7 +587,7 @@ const InteractiveTutorial = ({ onComplete, onPlayMini, onPlayFull }) => {
             handleStep4Click,
             getStep4DropTarget,
             step4OverlayPoints,
-            step4Complete ? "You did it! The grid is complete! 🎉" : `Next number to place: ${getNextExpected(step4Grid)}`
+            step4Complete ? "Grid complete." : `Next number: ${getNextExpected(step4Grid)}`
           )}
           <p style={{
             fontSize: '1.1rem',
@@ -591,7 +596,7 @@ const InteractiveTutorial = ({ onComplete, onPlayMini, onPlayFull }) => {
             lineHeight: '1.5',
             textAlign: 'left'
           }}>
-            Now it's your turn - <strong>fill out the rest of the grid</strong> using what you've learned.
+            Now it's your turn. <strong>Fill the rest of the grid</strong> using what you learned.
             <br /><br />
             Select adjacent numbers that sum to the next number, then tap an empty cell to place it.
           </p>
@@ -603,14 +608,14 @@ const InteractiveTutorial = ({ onComplete, onPlayMini, onPlayFull }) => {
                 setStep4CanPlace(false);
                 setStep4Complete(false);
                 setAutoPlayStep3(0);
-                setTutorialStep(3);
+                setTutorialStep(4);
               }}
               style={secondaryButtonStyle}
             >
               Back
             </button>
             <button
-              onClick={() => setTutorialStep(5)}
+              onClick={() => setTutorialStep(6)}
               disabled={!step4Complete}
               style={{
                 ...primaryButtonStyle,
@@ -625,8 +630,8 @@ const InteractiveTutorial = ({ onComplete, onPlayMini, onPlayFull }) => {
         </>
       )}
 
-      {/* ── Screen 5: Choose your game ───────────────────── */}
-      {tutorialStep === 5 && (
+      {/* ── Screen 6: Choose your game ───────────────────── */}
+      {tutorialStep === 6 && (
         <>
           <h3 style={{ fontSize: '1.4rem', marginBottom: '20px', fontWeight: 'bold' }}>
             Ready to Play! 🎉
