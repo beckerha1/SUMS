@@ -7,6 +7,10 @@ const GameControls = ({
   maxSelections,
   onUndo, 
   onClear,
+  onHint,
+  hintInProgress,
+  hintCooldownRemaining,
+  hintDisabled,
   canUndo,
   gameWon 
 }) => {
@@ -73,6 +77,24 @@ const GameControls = ({
           }}
         >
           Clear
+        </button>
+
+        <button
+          onClick={onHint}
+          disabled={hintDisabled || hintInProgress || hintCooldownRemaining > 0}
+          style={{
+            ...fullWidthButton,
+            flex: 1,
+            backgroundColor: (hintDisabled || hintInProgress || hintCooldownRemaining > 0) ? "#e0e0e0" : "#303036",
+            color: (hintDisabled || hintInProgress || hintCooldownRemaining > 0) ? "#999" : "#fff",
+            cursor: (hintDisabled || hintInProgress || hintCooldownRemaining > 0) ? "not-allowed" : "pointer"
+          }}
+        >
+          {hintInProgress
+            ? "Finding..."
+            : hintCooldownRemaining > 0
+              ? `Hint (${Math.ceil(hintCooldownRemaining / 1000)})`
+              : "Hint"}
         </button>
       </div>
     </>
