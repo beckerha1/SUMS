@@ -72,9 +72,11 @@ const GameHeader = ({
           justifyContent: "center",
           flexWrap: "wrap"
         }}>
-          <span style={{ color: "var(--charcoal)" }}>
-            Next SUM: <strong>{nextExpectedNumber}</strong>
-          </span>
+          {nextExpectedNumber != null && (
+            <span style={{ color: "var(--charcoal)" }}>
+              Next SUM: <strong>{nextExpectedNumber}</strong>
+            </span>
+          )}
           <span style={{ color: "#666" }}>
             Current SUM: <strong>{currentSum}</strong>
           </span>
