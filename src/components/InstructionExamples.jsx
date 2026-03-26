@@ -17,9 +17,15 @@ const InteractiveTutorial = ({ onComplete, onPlayMini, onPlayFull }) => {
   const [screen3Grid, setScreen3Grid] = useState([[1, 2, null], [3, 4, null], [null, null, 5]]);
   const [screen3Selected, setScreen3Selected] = useState([]);
   const [screen3PlacementPath, setScreen3PlacementPath] = useState([]);
+  const [step4Grid, setStep4Grid] = useState([[1, 2, null], [3, 4, null], [null, null, 5]]);
+  const [step4Selected, setStep4Selected] = useState([]);
+  const [step4PlacementPath, setStep4PlacementPath] = useState([]);
+  const [step4Complete, setStep4Complete] = useState(false);
+  const [step4CanPlace, setStep4CanPlace] = useState(false);
 
   const puzzle = [[1, 2, null], [null, null, null], [null, null, 5]];
   const screen3Puzzle = [[1, 2, null], [null, null, null], [null, null, 5]];
+  const step4Puzzle = [[1, 2, null], [null, null, null], [null, null, 5]];
   const cellSize = 60;
   const margin = 2;
 
@@ -90,7 +96,7 @@ const InteractiveTutorial = ({ onComplete, onPlayMini, onPlayFull }) => {
 
     if (canPlaceNumber && r === 1 && c === 1 && grid[r][c] === null) {
       const prevGrid = grid;
-      const newGrid = [[1, 2, 3], [null, 4, null], [null, null, 5]];
+      const newGrid = [[1, 2, null], [3, 4, null], [null, null, 5]];
       const placedExpected = getNextExpectedNumber(prevGrid, puzzle);
       const solverNext = getNextExpectedNumber(newGrid, puzzle);
       const skipChain = getPrefilledCluesSkippedBeforeNext(newGrid, puzzle, placedExpected, solverNext);
@@ -162,6 +168,97 @@ const InteractiveTutorial = ({ onComplete, onPlayMini, onPlayFull }) => {
     setCanPlaceNumber(isCorrectSelection);
   };
 
+  const isAdjacentCell = (r1, c1, r2, c2) => {
+    const dr = Math.abs(r1 - r2);
+    const dc = Math.abs(c1 - c2);
+    return dr <= 1 && dc <= 1 && !(dr === 0 && dc === 0);
+  };
+
+  const isConnected = (cells) => {
+    if (cells.length <= 1) return true;
+    const visited = new Set();
+    const queue = [cells[0]];
+    visited.add(cells[0].join(','));
+    while (queue.length) {
+      const [cr, cc] = queue.shift();
+      for (const [nr, nc] of cells) {
+        const key = `${nr},${nc}`;
+        if (!visited.has(key) && isAdjacentCell(cr, cc, nr, nc)) {
+          visited.add(key);
+          queue.push([nr, nc]);
+        }
+      }
+    }
+    return visited.size === cells.length;
+  };
+
+  const getNextExpected = (g) => getNextExpectedNumber(g, step4Puzzle);
+
+  const handleStep4Click = (r, c) => {
+    if (step4Complete) return;
+    const g = step4Grid;
+    const cellValue = g[r][c];
+    const next = getNextExpected(g);
+
+    if (cellValue === null && step4Selected.length > 0) {
+      const sum = step4Selected.reduce((acc, [sr, sc]) => acc + g[sr][sc], 0);
+      const [lr, lc] = step4Selected[step4Selected.length - 1];
+      const adjToLast = isAdjacentCell(lr, lc, r, c);
+      if (sum === next && isConnected(step4Selected) && adjToLast) {
+        setStep4PlacementPath([[lr, lc], [r, c]]);
+        setTimeout(() => {
+          const newGrid = g.map(row => [...row]);
+          newGrid[r][c] = sum;
+          setStep4Grid(newGrid);
+          setStep4Selected([]);
+          setStep4PlacementPath([]);
+          setStep4CanPlace(false);
+          const allFilled = newGrid.flat().every(v => v !== null);
+          if (allFilled) setStep4Complete(true);
+        }, 200);
+      } else {
+        setStep4Selected([]);
+        setStep4CanPlace(false);
+      }
+      return;
+    }
+
+    if (cellValue === null) return;
+    if (step4Selected.length === 0) {
+      setStep4Selected([[r, c]]);
+      return;
+    }
+
+    const selIdx = step4Selected.findIndex(([sr, sc]) => sr === r && sc === c);
+    if (selIdx !== -1) {
+      setStep4Selected(selIdx === 0 && step4Selected.length === 1 ? [] : step4Selected.slice(0, selIdx));
+      setStep4CanPlace(false);
+      return;
+    }
+
+    const [lastR, lastC] = step4Selected[step4Selected.length - 1];
+    if (!isAdjacentCell(lastR, lastC, r, c)) {
+      setStep4Selected([[r, c]]);
+      setStep4CanPlace(false);
+      return;
+    }
+
+    const newSel = [...step4Selected, [r, c]];
+    setStep4Selected(newSel);
+    const sum = newSel.reduce((acc, [sr, sc]) => acc + g[sr][sc], 0);
+    setStep4CanPlace(sum === next && isConnected(newSel));
+  };
+
+  const getStep4DropTarget = (r, c) => {
+    if (step4Grid[r][c] !== null) return false;
+    if (!step4Selected.length) return false;
+    const g = step4Grid;
+    const sum = step4Selected.reduce((acc, [sr, sc]) => acc + g[sr][sc], 0);
+    const next = getNextExpected(g);
+    const [lr, lc] = step4Selected[step4Selected.length - 1];
+    return sum === next && isConnected(step4Selected) && isAdjacentCell(lr, lc, r, c);
+  };
+
   const resetTutorialState = () => {
     setTutorialStep(0);
     setUserCompletedPlacement(false);
@@ -175,6 +272,11 @@ const InteractiveTutorial = ({ onComplete, onPlayMini, onPlayFull }) => {
     setScreen3Grid([[1, 2, null], [3, 4, null], [null, null, 5]]);
     setScreen3Selected([]);
     setScreen3PlacementPath([]);
+    setStep4Grid([[1, 2, null], [3, 4, null], [null, null, 5]]);
+    setStep4Selected([]);
+    setStep4PlacementPath([]);
+    setStep4Complete(false);
+    setStep4CanPlace(false);
     setClueFlashCells([]);
   };
 
@@ -190,6 +292,12 @@ const InteractiveTutorial = ({ onComplete, onPlayMini, onPlayFull }) => {
     row: r,
     col: c,
     placed: idx === arr.length - 1 && screen3PlacementPath.length > 0
+  }));
+
+  const step4OverlayPoints = [...step4Selected, ...step4PlacementPath.slice(step4Selected.length > 0 ? 1 : 0)].map(([r, c], idx, arr) => ({
+    row: r,
+    col: c,
+    placed: idx === arr.length - 1 && step4PlacementPath.length > 0
   }));
 
   // ── Shared styles ────────────────────────────────────────────────
@@ -443,7 +551,14 @@ const InteractiveTutorial = ({ onComplete, onPlayMini, onPlayFull }) => {
               Back
             </button>
             <button
-              onClick={() => setTutorialStep(4)}
+              onClick={() => {
+                setStep4Grid([[1, 2, null], [3, 4, null], [null, null, 5]]);
+                setStep4Selected([]);
+                setStep4PlacementPath([]);
+                setStep4Complete(false);
+                setStep4CanPlace(false);
+                setTutorialStep(4);
+              }}
               disabled={autoPlayStep3 < 5}
               style={{
                 ...primaryButtonStyle,
@@ -458,8 +573,60 @@ const InteractiveTutorial = ({ onComplete, onPlayMini, onPlayFull }) => {
         </>
       )}
 
-      {/* ── Screen 4: Choose your game ───────────────────── */}
+      {/* ── Screen 4: Practice puzzle completion ─────────── */}
       {tutorialStep === 4 && (
+        <>
+          {renderGrid(
+            step4Grid,
+            step4Puzzle,
+            handleStep4Click,
+            getStep4DropTarget,
+            step4OverlayPoints,
+            step4Complete ? "You did it! The grid is complete! 🎉" : `Next number to place: ${getNextExpected(step4Grid)}`
+          )}
+          <p style={{
+            fontSize: '1.1rem',
+            color: '#333',
+            marginBottom: '20px',
+            lineHeight: '1.5',
+            textAlign: 'left'
+          }}>
+            Now it's your turn - <strong>fill out the rest of the grid</strong> using what you've learned.
+            <br /><br />
+            Select adjacent numbers that sum to the next number, then tap an empty cell to place it.
+          </p>
+          <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+            <button
+              onClick={() => {
+                setStep4Selected([]);
+                setStep4PlacementPath([]);
+                setStep4CanPlace(false);
+                setStep4Complete(false);
+                setAutoPlayStep3(0);
+                setTutorialStep(3);
+              }}
+              style={secondaryButtonStyle}
+            >
+              Back
+            </button>
+            <button
+              onClick={() => setTutorialStep(5)}
+              disabled={!step4Complete}
+              style={{
+                ...primaryButtonStyle,
+                backgroundColor: step4Complete ? '#303036' : '#e0e0e0',
+                color: step4Complete ? '#fff' : '#999',
+                cursor: step4Complete ? 'pointer' : 'not-allowed'
+              }}
+            >
+              Next
+            </button>
+          </div>
+        </>
+      )}
+
+      {/* ── Screen 5: Choose your game ───────────────────── */}
+      {tutorialStep === 5 && (
         <>
           <h3 style={{ fontSize: '1.4rem', marginBottom: '20px', fontWeight: 'bold' }}>
             Ready to Play! 🎉
