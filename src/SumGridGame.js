@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { initialGrid, puzzleNumber } from './puzzles/today';
 import { initialGridMini, puzzleNumberMini } from './puzzles/todayMini';
 import CanvasOverlay from "./components/CanvasOverlay";
@@ -28,6 +29,7 @@ import Statistics from './components/Statistics';
 import HighScores from './components/HighScores';
 
 export default function SumGridGame() {
+  const navigate = useNavigate();
   const HINT_COOLDOWN_MS = 5000;
   const [showStartScreen, setShowStartScreen] = useState(true);
   const [gameMode, setGameMode] = useState(null); // 'mini' or 'full'
@@ -724,9 +726,9 @@ if (showStartScreen) {
         todayStr={todayStr}
         puzzleNumber={puzzleNumber}
         puzzleNumberMini={puzzleNumberMini}
-        onShowPrivacy={() => setShowPrivacyModal(true)}
-        onShowAbout={() => setShowAboutModal(true)}
-        onShowStrategy={() => setShowStrategyModal(true)}
+        onShowAbout={() => navigate("/about")}
+        onShowStrategy={() => navigate("/strategy")}
+        onShowPrivacy={() => navigate("/privacy")}
       />
 
       {showInstructions && (
@@ -802,15 +804,15 @@ if (showStartScreen) {
       )}
 
       {showPrivacyModal && (
-        <PrivacyPolicyModal onClose={() => setShowPrivacyModal(false)} />
+        <PrivacyPolicyModal modal onClose={() => setShowPrivacyModal(false)} />
       )}
 
       {showAboutModal && (
-        <AboutModal onClose={() => setShowAboutModal(false)} />
+        <AboutModal modal onClose={() => setShowAboutModal(false)} />
       )}
 
       {showStrategyModal && (
-        <StrategyModal onClose={() => setShowStrategyModal(false)} />
+        <StrategyModal modal onClose={() => setShowStrategyModal(false)} />
       )}
 
       {showStats && (
@@ -1063,7 +1065,7 @@ return (
       )}
 
       <footer style={{ textAlign: 'center', marginTop: '30px', fontSize: '0.9rem' }}>
-        <span 
+        <span
           onClick={(e) => {
             e.stopPropagation();
             setShowPrivacyModal(true);
@@ -1072,7 +1074,7 @@ return (
         >
           Privacy Policy
         </span>
-        <span 
+        <span
           onClick={(e) => {
             e.stopPropagation();
             setShowAboutModal(true);
@@ -1097,15 +1099,15 @@ return (
     </div>
 
     {showPrivacyModal && (
-      <PrivacyPolicyModal onClose={() => setShowPrivacyModal(false)} />
+      <PrivacyPolicyModal modal onClose={() => setShowPrivacyModal(false)} />
     )}
 
     {showAboutModal && (
-      <AboutModal onClose={() => setShowAboutModal(false)} />
+      <AboutModal modal onClose={() => setShowAboutModal(false)} />
     )}
 
     {showStrategyModal && (
-      <StrategyModal onClose={() => setShowStrategyModal(false)} />
+      <StrategyModal modal onClose={() => setShowStrategyModal(false)} />
     )}
 
     {showHighScores && (

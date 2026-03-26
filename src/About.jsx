@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 const overlayStyle = {
   position: "fixed",
@@ -14,6 +15,13 @@ const overlayStyle = {
   justifyContent: "center",
   alignItems: "flex-start",
   touchAction: "manipulation"
+};
+
+const pageWrapStyle = {
+  minHeight: "100vh",
+  background: "#f7f7f8",
+  padding: "20px 12px",
+  boxSizing: "border-box"
 };
 
 const modalCardStyle = {
@@ -44,20 +52,25 @@ const closeButtonStyle = {
   padding: 0
 };
 
-const AboutModal = ({ onClose }) => {
-  return (
-    <div style={overlayStyle}>
-      <div style={modalCardStyle}>
-        <button
-          onClick={onClose}
-          style={closeButtonStyle}
-          aria-label="Close"
-        >
-          ✖
-        </button>
+const homeLinkStyle = {
+  display: "inline-block",
+  marginBottom: "16px",
+  color: "#303036",
+  fontWeight: 600,
+  textDecoration: "none"
+};
 
-        <h1 style={{ fontSize: '2rem', marginBottom: '20px' }}>About Sums</h1>
-      
+const AboutContent = ({ onClose, modal = false }) => {
+  const body = (
+    <div style={modalCardStyle}>
+      {modal ? (
+        <button onClick={onClose} style={closeButtonStyle} aria-label="Close">✖</button>
+      ) : (
+        <Link to="/" style={homeLinkStyle}>← Back to home</Link>
+      )}
+
+      <h1 style={{ fontSize: '2rem', marginBottom: '20px' }}>About Sums</h1>
+
       <section style={{ marginBottom: '30px' }}>
         <h2 style={{ fontSize: '1.5rem', marginBottom: '15px' }}>What is SUMS?</h2>
         <p>
@@ -65,19 +78,20 @@ const AboutModal = ({ onClose }) => {
           Each day brings a new puzzle with a unique solution path.
         </p>
         <p>
-          The goal is simple: fill every empty cell by placing numbers in order (1, 2, 3, 4, 5...) 
-          using addition. Select adjacent numbers that sum to your target, then place the result 
+          The goal is simple: fill every empty cell by placing numbers in order (1, 2, 3, 4, 5...)
+          using addition. Select adjacent numbers that sum to your target, then place the result
           in an empty cell touching your selection.
         </p>
       </section>
 
-            <section style={{ marginBottom: '30px' }}>
+      <section style={{ marginBottom: '30px' }}>
         <h2 style={{ fontSize: '1.5rem', marginBottom: '15px' }}>History of SUMS</h2>
         <p>
           When I was a kid, I always was playing around with puzzles and numbers and loved trying to find order in chaos. My father was a woodworker and always had graph paper lying around that he would use for work.
-          With these two things happening, I began tinkering with the idea for SUMS. In between playing games of Sodoku and others, I would be playing my own SUMS games by hand.</p>
-         <p> 
-          Years later, my love for games has continued and grown to encompass the daily puzzle games that so many others play. I realized I wanted to share the same game I grew up designing as well with others, and now it is possible! 
+          With these two things happening, I began tinkering with the idea for SUMS. In between playing games of Sodoku and others, I would be playing my own SUMS games by hand.
+        </p>
+        <p>
+          Years later, my love for games has continued and grown to encompass the daily puzzle games that so many others play. I realized I wanted to share the same game I grew up designing as well with others, and now it is possible!
           I hope you enjoy playing as much as I do and have the same satisfaction as I do in solving puzzles!
         </p>
       </section>
@@ -119,28 +133,28 @@ const AboutModal = ({ onClose }) => {
       <section style={{ marginBottom: '30px' }}>
         <h2 style={{ fontSize: '1.5rem', marginBottom: '15px' }}>About Xavier Games</h2>
         <p>
-          Sums is created by Xavier Games, dedicated to bringing you engaging daily puzzle 
-          experiences. We believe in simple, elegant games that challenge your mind without 
+          Sums is created by Xavier Games, dedicated to bringing you engaging daily puzzle
+          experiences. We believe in simple, elegant games that challenge your mind without
           overwhelming you.
         </p>
         <p>
-          Our games are free to play, ad-supported, and respect your privacy. We don't collect 
+          Our games are free to play, ad-supported, and respect your privacy. We don't collect
           personal information or require accounts - just open and play.
         </p>
       </section>
 
       <section>
         <h2 style={{ fontSize: '1.5rem', marginBottom: '15px' }}>Contact</h2>
-        <p>
-          Have feedback, found a bug, or just want to say hi? We'd love to hear from you!
-        </p>
+        <p>Have feedback, found a bug, or just want to say hi? We'd love to hear from you!</p>
         <p>
           Email us at: <a href="mailto:harrison.x.becker@gmail.com" style={{ color: '#007bff' }}>harrison.x.becker@gmail.com</a>
         </p>
       </section>
     </div>
-    </div>
   );
+
+  if (modal) return <div style={overlayStyle}>{body}</div>;
+  return <main style={pageWrapStyle}>{body}</main>;
 };
 
-export default AboutModal;
+export default AboutContent;
