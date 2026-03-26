@@ -22,6 +22,7 @@ import WinScreen from './components/WinScreen';
 import GameControls from './components/GameControls';
 import PrivacyPolicyModal from './PrivacyPolicy';
 import AboutModal from './About';
+import StrategyModal from './StrategyModal';
 import Statistics from './components/Statistics';
 import HighScores from './components/HighScores';
 
@@ -57,6 +58,7 @@ export default function SumGridGame() {
   const [winScreenDismissed, setWinScreenDismissed] = useState(false);
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
   const [showAboutModal, setShowAboutModal] = useState(false);
+  const [showStrategyModal, setShowStrategyModal] = useState(false);
   const [showStats, setShowStats] = useState(false);
   const [showHighScores, setShowHighScores] = useState(false);
   const [highScoresHighlight, setHighScoresHighlight] = useState(null);
@@ -572,6 +574,7 @@ if (showStartScreen) {
         puzzleNumberMini={puzzleNumberMini}
         onShowPrivacy={() => setShowPrivacyModal(true)}
         onShowAbout={() => setShowAboutModal(true)}
+        onShowStrategy={() => setShowStrategyModal(true)}
       />
 
       {showInstructions && (
@@ -648,6 +651,10 @@ if (showStartScreen) {
 
       {showAboutModal && (
         <AboutModal onClose={() => setShowAboutModal(false)} />
+      )}
+
+      {showStrategyModal && (
+        <StrategyModal onClose={() => setShowStrategyModal(false)} />
       )}
 
       {showStats && (
@@ -904,6 +911,15 @@ return (
         >
           About
         </span>
+        <span
+          onClick={(e) => {
+            e.stopPropagation();
+            setShowStrategyModal(true);
+          }}
+          style={{ margin: '0 10px', color: '#666', textDecoration: 'none', cursor: 'pointer' }}
+        >
+          Strategy
+        </span>
         <p style={{ marginTop: '10px', fontSize: "clamp(14px, 2.5vw, 14px)", color: "#666" }}>
           © 2025 Xavier Games
         </p>
@@ -916,6 +932,10 @@ return (
 
     {showAboutModal && (
       <AboutModal onClose={() => setShowAboutModal(false)} />
+    )}
+
+    {showStrategyModal && (
+      <StrategyModal onClose={() => setShowStrategyModal(false)} />
     )}
 
     {showHighScores && (

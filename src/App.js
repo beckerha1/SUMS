@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import SumGridGame from './SumGridGame';
 import PrivacyPolicy from './PrivacyPolicy';
 import About from './About';
+import Strategy from './Strategy';
 
 function App() {
   return (
@@ -11,6 +12,7 @@ function App() {
         <Route path="/" element={<SumGridGame />} />
         <Route path="/privacy" element={<PrivacyPolicy />} />
         <Route path="/about" element={<About />} />
+        <Route path="/strategy" element={<Strategy />} />
       </Routes>
     </BrowserRouter>
   );
