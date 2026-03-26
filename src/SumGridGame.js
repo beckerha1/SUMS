@@ -136,10 +136,7 @@ useEffect(() => {
       setGameWon(savedModeState.gameWon);
       setShowWinScreen(savedModeState.showWinScreen);
       setStartTime(savedModeState.startTime);
-      const liveElapsed = savedModeState.startTime && !savedModeState.gameWon
-        ? Math.floor((Date.now() - savedModeState.startTime) / 1000)
-        : savedModeState.elapsedTime;
-      setElapsedTime(liveElapsed);
+      setElapsedTime(savedModeState.elapsedTime);
       setMoveCount(savedModeState.moveCount);
       setLastSequence(savedModeState.lastSequence);
       setLastPlacedPosition(savedModeState.lastPlacedPosition);
@@ -241,7 +238,7 @@ useEffect(() => {
 }, []);
 
 useEffect(() => {
-  if (startTime && !gameWon && !timerRef.current) {
+  if (startTime && !gameWon && !showStartScreen && !timerRef.current) {
     timerRef.current = setInterval(() => {
       const elapsed = Math.floor((Date.now() - startTime) / 1000);
       setElapsedTime(elapsed);
@@ -253,10 +250,17 @@ useEffect(() => {
       timerRef.current = null;
     }
   };
-}, [startTime, gameWon]);
+}, [startTime, gameWon, showStartScreen]);
 
 useEffect(() => {
-  if (!startTime || gameWon) return;
+  const hasProgress = elapsedTime > 0 || history.length > 1;
+  if (!showStartScreen && gameMode && !gameWon && !startTime && hasProgress) {
+    setStartTime(Date.now() - (elapsedTime * 1000));
+  }
+}, [showStartScreen, gameMode, gameWon, startTime, elapsedTime, history]);
+
+useEffect(() => {
+  if (!startTime || gameWon || showStartScreen) return;
   const syncElapsed = () => {
     setElapsedTime(Math.floor((Date.now() - startTime) / 1000));
   };
@@ -267,7 +271,7 @@ useEffect(() => {
     window.removeEventListener("focus", syncElapsed);
     document.removeEventListener("visibilitychange", syncElapsed);
   };
-}, [startTime, gameWon]);
+}, [startTime, gameWon, showStartScreen]);
 
 useEffect(() => {
   if (showWinScreen && window.adsbygoogle && !window.adsbygoogle.initialized) {
@@ -537,7 +541,7 @@ const applyPlacementMove = (selectionPath, r, c) => {
 const handleHint = () => {
   if (hintInProgress || gameWon || currentHintCooldownRemaining > 0) return;
   if (!startTime) {
-    setStartTime(Date.now());
+    setStartTime(Date.now() - (elapsedTime * 1000));
   }
 
   setSelectedCells([]);
@@ -594,7 +598,7 @@ const handleCellClick = (r, c, event) => {
 
   if (!startTime) {
     console.log('Setting startTime:', Date.now());
-    setStartTime(Date.now());
+    setStartTime(Date.now() - (elapsedTime * 1000));
   }
 
   const cellValue = grid[r][c];
@@ -696,6 +700,9 @@ if (showStartScreen) {
           setGameMode('mini');
           setShowStartScreen(false);
           if (isResumingSameMode) {
+            if (!gameWon) {
+              setStartTime(Date.now() - (elapsedTime * 1000));
+            }
             if (gameWon) setShowWinScreen(true);
           } else {
             setStartTime(null);
@@ -708,6 +715,9 @@ if (showStartScreen) {
           setGameMode('full');
           setShowStartScreen(false);
           if (isResumingSameMode) {
+            if (!gameWon) {
+              setStartTime(Date.now() - (elapsedTime * 1000));
+            }
             if (gameWon) setShowWinScreen(true);
           } else {
             setStartTime(null);
@@ -782,6 +792,9 @@ if (showStartScreen) {
                 setGameMode('mini');
                 setShowStartScreen(false);
                 if (isResumingSameMode) {
+                  if (!gameWon) {
+                    setStartTime(Date.now() - (elapsedTime * 1000));
+                  }
                   if (gameWon) setShowWinScreen(true);
                 } else {
                   setStartTime(null);
@@ -794,6 +807,9 @@ if (showStartScreen) {
                 setGameMode('full');
                 setShowStartScreen(false);
                 if (isResumingSameMode) {
+                  if (!gameWon) {
+                    setStartTime(Date.now() - (elapsedTime * 1000));
+                  }
                   if (gameWon) setShowWinScreen(true);
                 } else {
                   setStartTime(null);
@@ -879,6 +895,10 @@ return (
               time_played_seconds: elapsedTime,
               total_moves: moveCount
             });
+          }
+          if (startTime && !gameWon) {
+            setElapsedTime(Math.floor((Date.now() - startTime) / 1000));
+            setStartTime(null);
           }
           setShowStartScreen(true);
         }}
@@ -1043,6 +1063,9 @@ return (
                 setGameMode('mini');
                 setShowStartScreen(false);
                 if (isResumingSameMode) {
+                  if (!gameWon) {
+                    setStartTime(Date.now() - (elapsedTime * 1000));
+                  }
                   if (gameWon) setShowWinScreen(true);
                 } else {
                   setStartTime(null);
@@ -1055,6 +1078,9 @@ return (
                 setGameMode('full');
                 setShowStartScreen(false);
                 if (isResumingSameMode) {
+                  if (!gameWon) {
+                    setStartTime(Date.now() - (elapsedTime * 1000));
+                  }
                   if (gameWon) setShowWinScreen(true);
                 } else {
                   setStartTime(null);
