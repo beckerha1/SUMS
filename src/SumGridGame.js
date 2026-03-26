@@ -13,7 +13,8 @@ import {
   getMaxSelection,
   getNextExpectedNumber,
   getPrefilledCluesSkippedBeforeNext,
-  isNextNumberBlockedByClue
+  isNextNumberBlockedByClue,
+  getHintMove
 } from './utils/gameHelpers';
 
 import StartScreen from './components/StartScreen';
@@ -27,6 +28,7 @@ import Statistics from './components/Statistics';
 import HighScores from './components/HighScores';
 
 export default function SumGridGame() {
+  const HINT_COOLDOWN_MS = 5000;
   const [showStartScreen, setShowStartScreen] = useState(true);
   const [gameMode, setGameMode] = useState(null); // 'mini' or 'full'
   
@@ -62,6 +64,8 @@ export default function SumGridGame() {
   const [showStats, setShowStats] = useState(false);
   const [showHighScores, setShowHighScores] = useState(false);
   const [highScoresHighlight, setHighScoresHighlight] = useState(null);
+  const [hintInProgress, setHintInProgress] = useState(false);
+  const [hintCooldownRemaining, setHintCooldownRemaining] = useState(0);
   const cellSize = Math.min(80, Math.floor(window.innerWidth / (GRID_SIZE + 2)));
 
 const todayStr = new Date().toLocaleDateString("en-US", {
@@ -222,6 +226,14 @@ useEffect(() => {
   return () => window.removeEventListener('beforeunload', handleBeforeUnload);
 }, [startTime, gameWon, gameMode, elapsedTime, moveCount]);
 
+useEffect(() => {
+  if (hintCooldownRemaining <= 0) return;
+  const interval = setInterval(() => {
+    setHintCooldownRemaining((prev) => Math.max(0, prev - 100));
+  }, 100);
+  return () => clearInterval(interval);
+}, [hintCooldownRemaining]);
+
 const [lastSequence, setLastSequence] = useState(null);
 const [lastPlacedPosition, setLastPlacedPosition] = useState(null);
 
@@ -283,6 +295,211 @@ const isNextToLastSelected = (r, c) => {
   if (!selectedCells.length) return false;
   const [lr, lc] = selectedCells[selectedCells.length - 1];
   return getAdjacent([lr, lc], grid).some(([ar, ac]) => ar === r && ac === c);
+};
+
+const applyPlacementMove = (selectionPath, r, c) => {
+  const sum = selectionPath.reduce((acc, [sr, sc]) => acc + grid[sr][sc], 0);
+  const expected = getNextExpectedNumber(grid, puzzle);
+  const canPlace = isConnectedGroup(selectionPath, grid) &&
+    sum === expected &&
+    selectionPath.length > 0 &&
+    getAdjacent(selectionPath[selectionPath.length - 1], grid).some(([ar, ac]) => ar === r && ac === c);
+
+  if (!canPlace) return false;
+
+  const nextAfter = expected + 1;
+  const clueIsBlocked = puzzle.flat().includes(nextAfter) && isNextNumberBlockedByClue(grid, puzzle);
+
+  if (clueIsBlocked) {
+    setAlertMessage(`Cannot continue: ${nextAfter} is prefilled but not reachable by any valid sum.`);
+    setShowAlertModal(true);
+    return false;
+  }
+
+  const placedKey = `${r},${c}`;
+  const newGrid = grid.map(row => [...row]);
+  newGrid[r][c] = sum;
+
+  const sequence = selectionPath.map(([sr, sc]) => grid[sr][sc]);
+  setLastSequence(sequence);
+
+  setGrid(newGrid);
+  setHistory(prev => [...prev, newGrid]);
+  setLastPlacedPosition([r, c]);
+  setMoveCount(prev => prev + 1);
+
+  const lastSelected = selectionPath[selectionPath.length - 1];
+  setPlacementPath([lastSelected, [r, c]]);
+  setPoppingCells((prev) => [...prev, placedKey]);
+
+  setTimeout(() => {
+    setPoppingCells((prev) => prev.filter((k) => k !== placedKey));
+    setPlacementPath([]);
+    setSelectedCells([]);
+    setOverlayPoints([]);
+    setHintInProgress(false);
+  }, 10);
+
+  const nextNum = expected + 1;
+  const nextIsClue = puzzle.flat().includes(nextNum);
+  if (nextIsClue) {
+    const tempGrid = newGrid;
+    const nextClueCells = [];
+    for (let rr = 0; rr < tempGrid.length; rr++) {
+      for (let cc = 0; cc < tempGrid[rr].length; cc++) {
+        if (tempGrid[rr][cc] === nextNum && puzzle?.[rr]?.[cc] === nextNum) {
+          nextClueCells.push([rr, cc]);
+        }
+      }
+    }
+
+    if (nextClueCells.length > 0) {
+      const candidates = [];
+      for (let rr = 0; rr < tempGrid.length; rr++) {
+        for (let cc = 0; cc < tempGrid[rr].length; cc++) {
+          const val = tempGrid[rr][cc];
+          if (typeof val === "number" && val !== nextNum) {
+            candidates.push([rr, cc]);
+          }
+        }
+      }
+
+      const groups = findConnectedGroupsThatSum(tempGrid, candidates, nextNum);
+      let hasValidGroup = false;
+
+      for (const [cr, cc] of nextClueCells) {
+        for (const group of groups) {
+          const gsum = group.reduce((acc, [gr, gc]) => acc + tempGrid[gr][gc], 0);
+          const connected = isConnectedGroup(group, grid);
+          const touchesClue = getAdjacent([cr, cc], tempGrid).some(([ar, ac]) =>
+            group.some(([gr, gc]) => gr === ar && gc === ac)
+          );
+
+          if (gsum === nextNum && connected && touchesClue) {
+            hasValidGroup = true;
+            break;
+          }
+        }
+        if (hasValidGroup) break;
+      }
+
+      if (!hasValidGroup) {
+        setAlertMessage(`Your next SUM ${nextNum} is pre-populated but does not have a legal SUMS chain. Your last move has been undone. Please create a valid path to ${nextNum}.`);
+        setShowAlertModal(true);
+        if (history.length > 0) {
+          setGrid(history[history.length - 1]);
+        }
+        setSelectedCells([]);
+        setHintInProgress(false);
+        return false;
+      }
+    }
+  }
+
+  const solverNext = getNextExpectedNumber(newGrid, puzzle);
+  const skipChain = getPrefilledCluesSkippedBeforeNext(newGrid, puzzle, expected, solverNext);
+  clearClueSkipAnimation();
+  const PRE_CLUE_FLASH_PAUSE_MS = 500;
+  const CLUE_SKIP_STEP_MS = 500;
+  if (skipChain.length > 0) {
+    let step = 0;
+    const runStep = () => {
+      if (step >= skipChain.length) {
+        setClueSkipFlashKeys([]);
+        setHeaderNextOverride(null);
+        clueSkipAnimRef.current = null;
+        return;
+      }
+      const seg = skipChain[step];
+      setHeaderNextOverride(seg.value);
+      setClueSkipFlashKeys(seg.positions.map(([sr, sc]) => `${sr},${sc}`));
+      step++;
+      clueSkipAnimRef.current = setTimeout(runStep, CLUE_SKIP_STEP_MS);
+    };
+    clueSkipAnimRef.current = setTimeout(runStep, PRE_CLUE_FLASH_PAUSE_MS);
+  }
+
+  const allFilled = newGrid.every(row => row.every(cell => cell === "X" || cell !== null));
+  if (allFilled) {
+    clearInterval(timerRef.current);
+    triggerFlipAnimation();
+    const cellsToFlip = grid.flat().filter(cell => cell !== undefined && cell !== "X").length;
+    const delay = cellsToFlip * 80 + 500;
+
+    const finalTime = Math.floor((Date.now() - startTime) / 1000);
+    const finalMoves = moveCount + 1;
+
+    setTimeout(() => {
+      setGameWon(true);
+      setShowWinScreen(true);
+
+      if (window.gtag) {
+        window.gtag('event', 'game_complete', {
+          game_mode: gameMode,
+          completion_time_seconds: finalTime,
+          total_moves: finalMoves
+        });
+      }
+    }, delay);
+
+    if (gameMode === 'mini') {
+      if (!bestTimeMini || finalTime < bestTimeMini) {
+        setBestTimeMini(finalTime);
+        localStorage.setItem("sums-best-time-mini", finalTime.toString());
+      }
+    } else if (gameMode === 'full') {
+      if (!bestTimeFull || finalTime < bestTimeFull) {
+        setBestTimeFull(finalTime);
+        localStorage.setItem("sums-best-time-full", finalTime.toString());
+      }
+    }
+
+    const updatedHistory = [...gameHistory, { time: finalTime, mode: gameMode, date: new Date().toISOString() }];
+    setGameHistory(updatedHistory);
+    localStorage.setItem("sums-game-history", JSON.stringify(updatedHistory));
+  }
+
+  return true;
+};
+
+const handleHint = () => {
+  if (hintInProgress || gameWon || hintCooldownRemaining > 0) return;
+  if (!startTime) {
+    setStartTime(Date.now());
+  }
+
+  setSelectedCells([]);
+  setHintInProgress(true);
+  setHintCooldownRemaining(HINT_COOLDOWN_MS);
+  const HINT_THINK_DELAY_MS = 80;
+  const HINT_SELECTION_STEP_MS = 140;
+  const HINT_SELECTION_HOLD_MS = 320;
+
+  setTimeout(() => {
+    const hintMove = getHintMove(grid, puzzle, hardMode);
+    if (!hintMove) {
+      setHintInProgress(false);
+      setAlertMessage("No legal hint is available from this board state.");
+      setShowAlertModal(true);
+      return;
+    }
+
+    setSelectedCells([]);
+    hintMove.selectedPath.forEach((_, idx) => {
+      setTimeout(() => {
+        setSelectedCells(hintMove.selectedPath.slice(0, idx + 1));
+      }, idx * HINT_SELECTION_STEP_MS);
+    });
+
+    const totalSelectionMs = hintMove.selectedPath.length * HINT_SELECTION_STEP_MS;
+    setTimeout(() => {
+      const [pr, pc] = hintMove.placeCell;
+      const placed = applyPlacementMove(hintMove.selectedPath, pr, pc);
+      if (!placed) {
+        setHintInProgress(false);
+      }
+    }, totalSelectionMs + HINT_SELECTION_HOLD_MS);
+  }, HINT_THINK_DELAY_MS);
 };
 
 const handleCellClick = (r, c, event) => {
@@ -354,156 +571,7 @@ const handleCellClick = (r, c, event) => {
     }
 
     if (canPlace) {
-      const nextAfter = expected + 1;
-      const clueIsBlocked = puzzle.flat().includes(nextAfter) && isNextNumberBlockedByClue(grid, puzzle);
-
-      if (clueIsBlocked) {
-        setAlertMessage(`Cannot continue: ${nextAfter} is prefilled but not reachable by any valid sum.`);
-        setShowAlertModal(true);
-        return;
-      }
-
-      const placedKey = `${r},${c}`;
-      const newGrid = grid.map(row => [...row]);
-      newGrid[r][c] = sum;
-
-      const sequence = selectedCells.map(([r, c]) => grid[r][c]);
-      setLastSequence(sequence);
-
-      setGrid(newGrid);
-      setHistory([...history, newGrid]);
-      setLastPlacedPosition([r, c]);
-      setMoveCount(prev => prev + 1);
-
-      const lastSelected = selectedCells[selectedCells.length - 1];
-      setPlacementPath([lastSelected, [r, c]]);
-      setPoppingCells((prev) => [...prev, placedKey]);
-
-      setTimeout(() => {
-        setPoppingCells((prev) => prev.filter((k) => k !== placedKey));
-        setPlacementPath([]);
-        setSelectedCells([]);
-        setOverlayPoints([]);
-      }, 10);
-
-      const nextNum = expected + 1;
-      const nextIsClue = puzzle.flat().includes(nextNum);
-      if (nextIsClue) {
-        const tempGrid = newGrid;
-        const nextClueCells = [];
-        for (let r = 0; r < tempGrid.length; r++) {
-          for (let c = 0; c < tempGrid[r].length; c++) {
-            if (tempGrid[r][c] === nextNum && puzzle?.[r]?.[c] === nextNum) {
-              nextClueCells.push([r, c]);
-            }
-          }
-        }
-        
-        if (nextClueCells.length > 0) {
-          const candidates = [];
-          for (let r = 0; r < tempGrid.length; r++) {
-            for (let c = 0; c < tempGrid[r].length; c++) {
-              const val = tempGrid[r][c];
-              if (typeof val === "number" && val !== nextNum) {
-                candidates.push([r, c]);
-              }
-            }
-          }
-          
-          const groups = findConnectedGroupsThatSum(tempGrid, candidates, nextNum);
-          let hasValidGroup = false;
-          
-          for (const [cr, cc] of nextClueCells) {
-            for (const group of groups) {
-              const gsum = group.reduce((acc, [gr, gc]) => acc + tempGrid[gr][gc], 0);
-              const connected = isConnectedGroup(group, grid);
-              const touchesClue = getAdjacent([cr, cc], tempGrid).some(([ar, ac]) =>
-                group.some(([gr, gc]) => gr === ar && gc === ac)
-              );
-              
-              if (gsum === nextNum && connected && touchesClue) {
-                hasValidGroup = true;
-                break;
-              }
-            }
-            if (hasValidGroup) break;
-          }
-          
-          if (!hasValidGroup) {
-            setAlertMessage(`Your next SUM ${nextNum} is pre-populated but does not have a legal SUMS chain. Your last move has been undone. Please create a valid path to ${nextNum}.`);
-            setShowAlertModal(true);
-            
-            if (history.length > 0) {
-              setGrid(history[history.length - 1]);
-            }
-            setSelectedCells([]);
-            return;
-          }
-        }
-      }
-
-      const solverNext = getNextExpectedNumber(newGrid, puzzle);
-      const skipChain = getPrefilledCluesSkippedBeforeNext(newGrid, puzzle, expected, solverNext);
-      clearClueSkipAnimation();
-      const PRE_CLUE_FLASH_PAUSE_MS = 500;
-      const CLUE_SKIP_STEP_MS = 500;
-      if (skipChain.length > 0) {
-        let step = 0;
-        const runStep = () => {
-          if (step >= skipChain.length) {
-            setClueSkipFlashKeys([]);
-            setHeaderNextOverride(null);
-            clueSkipAnimRef.current = null;
-            return;
-          }
-          const seg = skipChain[step];
-          setHeaderNextOverride(seg.value);
-          setClueSkipFlashKeys(seg.positions.map(([sr, sc]) => `${sr},${sc}`));
-          step++;
-          clueSkipAnimRef.current = setTimeout(runStep, CLUE_SKIP_STEP_MS);
-        };
-        clueSkipAnimRef.current = setTimeout(runStep, PRE_CLUE_FLASH_PAUSE_MS);
-      }
-
-      const allFilled = newGrid.every(row => row.every(cell => cell === "X" || cell !== null));
-      if (allFilled) {
-        clearInterval(timerRef.current);     
-        triggerFlipAnimation();
-        const cellsToFlip = grid.flat().filter(cell => cell !== undefined && cell !== "X").length;
-        const delay = cellsToFlip * 80 + 500; 
-
-        const finalTime = Math.floor((Date.now() - startTime) / 1000);
-        const finalMoves = moveCount + 1;
-
-        setTimeout(() => {
-          setGameWon(true);
-          setShowWinScreen(true);
-          
-          if (window.gtag) {
-            window.gtag('event', 'game_complete', {
-              game_mode: gameMode,
-              completion_time_seconds: finalTime,
-              total_moves: finalMoves
-            });
-          }
-        }, delay);
-
-        if (gameMode === 'mini') {
-          if (!bestTimeMini || finalTime < bestTimeMini) {
-            setBestTimeMini(finalTime);
-            localStorage.setItem("sums-best-time-mini", finalTime.toString());
-          }
-        } else if (gameMode === 'full') {
-          if (!bestTimeFull || finalTime < bestTimeFull) {
-            setBestTimeFull(finalTime);
-            localStorage.setItem("sums-best-time-full", finalTime.toString());
-          }
-        }
-
-        const updatedHistory = [...gameHistory, { time: finalTime, mode: gameMode, date: new Date().toISOString() }];
-        setGameHistory(updatedHistory);
-        localStorage.setItem("sums-game-history", JSON.stringify(updatedHistory));
-      }
+      applyPlacementMove(selectedCells, r, c);
     }
   }
 };
@@ -804,6 +872,10 @@ return (
         puzzle={puzzle}
         onUndo={handleUndo}
         onClear={handleClear}
+        onHint={handleHint}
+        hintInProgress={hintInProgress}
+        hintCooldownRemaining={hintCooldownRemaining}
+        hintDisabled={gameWon}
         canUndo={history.length > 1}
         gameWon={gameWon}
       />

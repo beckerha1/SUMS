@@ -198,3 +198,202 @@ export const isNextNumberBlockedByClue = (grid, puzzle) => {
 
   return true; // No clue is reachable
 };
+
+const getCellKey = (r, c) => `${r},${c}`;
+
+const getEmptyDensityScore = (grid, row, col, radius = 2) => {
+  let score = 0;
+  for (let r = Math.max(0, row - radius); r <= Math.min(grid.length - 1, row + radius); r++) {
+    for (let c = Math.max(0, col - radius); c <= Math.min(grid[0].length - 1, col + radius); c++) {
+      if (r === row && c === col) continue;
+      if (grid[r][c] === null) score += 1;
+    }
+  }
+  return score;
+};
+
+const getBlackWallScore = (grid, row, col) => {
+  let score = 0;
+  for (const [ar, ac] of getAdjacent([row, col], grid)) {
+    if (grid[ar][ac] === "X") score += 2;
+  }
+  return score;
+};
+
+const getPlacementFutureScore = (grid, row, col) => {
+  let score = 0;
+  for (const [ar, ac] of getAdjacent([row, col], grid)) {
+    const v = grid[ar][ac];
+    if (v === null) score += 2;
+    if (typeof v === "number") score += 1;
+  }
+  return score;
+};
+
+const getNumberCellsForTarget = (grid, target) => {
+  const cells = [];
+  for (let r = 0; r < grid.length; r++) {
+    for (let c = 0; c < grid[r].length; c++) {
+      const v = grid[r][c];
+      if (typeof v === "number" && v > 0 && v <= target) {
+        cells.push([r, c]);
+      }
+    }
+  }
+  return cells;
+};
+
+// Lightweight "can this target be built?" probe used for strategic hint ranking.
+const estimateTargetFlexibility = (grid, puzzle, target, hardMode) => {
+  const maxSelection = getMaxSelection(hardMode, puzzle);
+  const dynamicCap = Math.max(4, Math.min(8, target));
+  const depthCap = Number.isFinite(maxSelection) ? Math.min(maxSelection, dynamicCap) : dynamicCap;
+  const numberCells = getNumberCellsForTarget(grid, target);
+  const pathLimit = 48;
+  let legalPlacements = 0;
+
+  const maybeCollectPlacement = (path) => {
+    const [lr, lc] = path[path.length - 1];
+    for (const [ar, ac] of getAdjacent([lr, lc], grid)) {
+      if (grid[ar][ac] !== null) continue;
+      if (puzzle?.[ar]?.[ac] !== null && puzzle?.[ar]?.[ac] !== undefined) continue;
+      legalPlacements++;
+      if (legalPlacements >= pathLimit) return true;
+    }
+    return false;
+  };
+
+  const dfs = (path, sum, visited) => {
+    if (sum > target) return false;
+    if (path.length > depthCap) return false;
+    if (sum === target) return maybeCollectPlacement(path);
+
+    const [lr, lc] = path[path.length - 1];
+    for (const [nr, nc] of getAdjacent([lr, lc], grid)) {
+      const key = getCellKey(nr, nc);
+      if (visited.has(key)) continue;
+      const v = grid[nr][nc];
+      if (typeof v !== "number") continue;
+      if (v <= 0 || v > target) continue;
+      visited.add(key);
+      path.push([nr, nc]);
+      const hitLimit = dfs(path, sum + v, visited);
+      path.pop();
+      visited.delete(key);
+      if (hitLimit) return true;
+    }
+    return false;
+  };
+
+  for (const [sr, sc] of numberCells) {
+    const visited = new Set([getCellKey(sr, sc)]);
+    const hitLimit = dfs([[sr, sc]], grid[sr][sc], visited);
+    if (hitLimit) break;
+  }
+
+  return legalPlacements;
+};
+
+/**
+ * Finds a legal, strategic hint move for the next expected number.
+ * Returns:
+ *  - selectedPath: ordered list of number cells to "select"
+ *  - placeCell: [r,c] where the next number should be placed
+ */
+export const getHintMove = (grid, puzzle, hardMode) => {
+  const target = getNextExpectedNumber(grid, puzzle);
+  const maxSelection = getMaxSelection(hardMode, puzzle);
+  const dynamicCap = Math.max(4, Math.min(8, target));
+  const depthCap = Number.isFinite(maxSelection) ? Math.min(maxSelection, dynamicCap) : dynamicCap;
+
+  const numberCells = [];
+  for (let r = 0; r < grid.length; r++) {
+    for (let c = 0; c < grid[r].length; c++) {
+      const v = grid[r][c];
+      if (typeof v === "number" && v > 0 && v <= target) {
+        numberCells.push([r, c]);
+      }
+    }
+  }
+
+  const results = [];
+
+  const scorePlacement = (path, placeRow, placeCol) => {
+    const nextGrid = grid.map((row) => [...row]);
+    nextGrid[placeRow][placeCol] = target;
+    const nextTarget = target + 1;
+    const nextIsClue = puzzle.flat().includes(nextTarget);
+    if (nextIsClue && isNextNumberBlockedByClue(nextGrid, puzzle)) {
+      return Number.NEGATIVE_INFINITY;
+    }
+
+    const emptyDensity = getEmptyDensityScore(grid, placeRow, placeCol, 2);
+    const blackWall = getBlackWallScore(grid, placeRow, placeCol);
+    const future = getPlacementFutureScore(nextGrid, placeRow, placeCol);
+    const shorterPathBonus = Math.max(0, 10 - path.length);
+
+    // Stronger strategic signal: prefer states with many legal next-target continuations.
+    const nextFlex = estimateTargetFlexibility(nextGrid, puzzle, nextTarget, hardMode);
+    // Also probe one more target ahead, but keep it cheap by only checking if next has any options.
+    const twoStepFlex = nextFlex > 0
+      ? estimateTargetFlexibility(nextGrid, puzzle, nextTarget + 1, hardMode)
+      : 0;
+
+    return (emptyDensity * 1.5) +
+      (blackWall * 3) +
+      (future * 1.5) +
+      (shorterPathBonus * 0.5) +
+      (nextFlex * 4) +
+      (twoStepFlex * 1.75);
+  };
+
+  const maybeCollectPlacement = (path) => {
+    const [lr, lc] = path[path.length - 1];
+    for (const [ar, ac] of getAdjacent([lr, lc], grid)) {
+      if (grid[ar][ac] !== null) continue;
+      if (puzzle?.[ar]?.[ac] !== null && puzzle?.[ar]?.[ac] !== undefined) continue;
+      const score = scorePlacement(path, ar, ac);
+      if (Number.isFinite(score)) {
+        results.push({
+          selectedPath: [...path],
+          placeCell: [ar, ac],
+          score
+        });
+      }
+    }
+  };
+
+  const dfs = (path, sum, visited) => {
+    if (sum > target) return;
+    if (path.length > depthCap) return;
+    if (sum === target) {
+      maybeCollectPlacement(path);
+      return;
+    }
+
+    const [lr, lc] = path[path.length - 1];
+    for (const [nr, nc] of getAdjacent([lr, lc], grid)) {
+      const key = getCellKey(nr, nc);
+      if (visited.has(key)) continue;
+      const v = grid[nr][nc];
+      if (typeof v !== "number") continue;
+      if (v <= 0 || v > target) continue;
+      visited.add(key);
+      path.push([nr, nc]);
+      dfs(path, sum + v, visited);
+      path.pop();
+      visited.delete(key);
+    }
+  };
+
+  for (const [sr, sc] of numberCells) {
+    const startVal = grid[sr][sc];
+    const startPath = [[sr, sc]];
+    const visited = new Set([getCellKey(sr, sc)]);
+    dfs(startPath, startVal, visited);
+  }
+
+  if (!results.length) return null;
+  results.sort((a, b) => b.score - a.score);
+  return results[0];
+};
