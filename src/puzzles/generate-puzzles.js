@@ -8,6 +8,7 @@
 // ================================================================
 
 const ALL8 = [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]];
+const readline = require('readline');
 
 function get8(r, c, SIZE) {
   return ALL8.map(([dr,dc])=>[r+dr,c+dc])
@@ -189,6 +190,30 @@ function fillRemaining(grid, placedPos, SIZE, targetN) {
   return fillGreedyLookahead(grid, placedPos, SIZE, 4, targetN);
 }
 
+// Reject masks that feel like deleted rows/columns.
+function isInterestingMask(grid, SIZE) {
+  const rowOpen = Array(SIZE).fill(0);
+  const colOpen = Array(SIZE).fill(0);
+  for (let r = 0; r < SIZE; r++) {
+    for (let c = 0; c < SIZE; c++) {
+      if (grid[r][c] !== 'X') {
+        rowOpen[r]++;
+        colOpen[c]++;
+      }
+    }
+  }
+
+  // Hard reject: fully deleted row/column.
+  if (rowOpen.some(v => v === 0) || colOpen.some(v => v === 0)) return false;
+
+  // Also reject near-deleted bands to avoid "5x7" style feel.
+  const nearDeletedRows = rowOpen.filter(v => v <= 2).length;
+  const nearDeletedCols = colOpen.filter(v => v <= 2).length;
+  if (nearDeletedRows > 1 || nearDeletedCols > 1) return false;
+
+  return true;
+}
+
 function tryGenerate(SIZE, targetN, density) {
   const seed = tryInitial123(SIZE);
   if (!seed) return null;
@@ -211,6 +236,7 @@ function tryGenerate(SIZE, targetN, density) {
     const[r,c]=placedPos[idx]; hintGrid[r][c]=idx+1;
   }
 
+  if(!isInterestingMask(finalGrid, SIZE)) return null;
   if(!verifyPlayable(hintGrid, finalGrid, SIZE, targetN, placedPos)) return null;
 
   return{grid:hintGrid,solution:finalGrid,placedPos,N:targetN};
@@ -283,44 +309,247 @@ const miniConfigs=[
 
 function addDays(s,d){const dt=new Date(s.slice(0,4)+'-'+s.slice(4,6)+'-'+s.slice(6,8));dt.setDate(dt.getDate()+d);return`${dt.getFullYear()}${String(dt.getMonth()+1).padStart(2,'0')}${String(dt.getDate()).padStart(2,'0')}`;}
 function formatGrid(g){return'[\n'+g.map(row=>'  ['+row.map(c=>c==='X'?'"X"':c===null?'null':String(c)).join(', ')+']').join(',\n')+'\n]';}
+function toYYYYMMDD(s){return s.replace(/-/g,'').trim();}
+function isValidDateString(s){return /^\d{8}$/.test(s);}
+function isValidNumberString(s){return /^\d+$/.test(s);}
+function pickConfig(configs, index) {
+  return configs[index % configs.length];
+}
+function weekdayDifficulty(dateStr){
+  // 0=Sun..6=Sat -> Mon=1 ... Sun=7
+  const dt = new Date(dateStr.slice(0,4)+'-'+dateStr.slice(4,6)+'-'+dateStr.slice(6,8)+'T00:00:00');
+  const day = dt.getDay();
+  return day === 0 ? 7 : day;
+}
+function openNeighborCount(grid, r, c) {
+  let count = 0;
+  for (const [nr, nc] of get8(r, c, grid.length)) {
+    if (grid[nr][nc] !== 'X') count++;
+  }
+  return count;
+}
+function estimateWallSnakeFactor(grid, size) {
+  const seen = Array.from({ length: size }, () => Array(size).fill(false));
+  const blackComponents = [];
+  const cardinal = [[-1,0],[1,0],[0,-1],[0,1]];
 
-const FULL_COUNT=15,MINI_COUNT=15;
-console.log('Generating full 7x7 puzzles (correct chain mechanic)...');
-const fullResults=[];
-for(let i=0;i<FULL_COUNT;i++){
-  const{N,density}=fullConfigs[i];
-  process.stdout.write(`  [${i+1}] N=${N} ${density}... `);
-  const r=generatePuzzle(7,N,density);
-  if(r){fullResults.push(r);process.stdout.write(`OK (N=${r.N}) ✓\n`);}
-  else process.stdout.write(`FAILED\n`);
+  function inBounds(r, c) {
+    return r >= 0 && r < size && c >= 0 && c < size;
+  }
+
+  // Find connected black-square components (4-dir connectivity).
+  for (let r = 0; r < size; r++) {
+    for (let c = 0; c < size; c++) {
+      if (grid[r][c] !== 'X' || seen[r][c]) continue;
+      const stack = [[r, c]];
+      seen[r][c] = true;
+      const cells = [];
+      while (stack.length) {
+        const [cr, cc] = stack.pop();
+        cells.push([cr, cc]);
+        for (const [dr, dc] of cardinal) {
+          const nr = cr + dr;
+          const nc = cc + dc;
+          if (!inBounds(nr, nc)) continue;
+          if (seen[nr][nc] || grid[nr][nc] !== 'X') continue;
+          seen[nr][nc] = true;
+          stack.push([nr, nc]);
+        }
+      }
+      blackComponents.push(cells);
+    }
+  }
+
+  let longWallCells = 0;
+  let wallTouchOpenCells = 0;
+  let wallForcedCells = 0;
+  let compCount = 0;
+
+  for (const comp of blackComponents) {
+    // Only treat larger components as "walls".
+    if (comp.length < 4) continue;
+    compCount++;
+    longWallCells += comp.length;
+
+    const perimeterOpen = new Set();
+    for (const [br, bc] of comp) {
+      for (const [nr, nc] of get8(br, bc, size)) {
+        if (grid[nr][nc] !== 'X') perimeterOpen.add(`${nr},${nc}`);
+      }
+    }
+
+    for (const key of perimeterOpen) {
+      const [or, oc] = key.split(',').map(Number);
+      wallTouchOpenCells++;
+      const exits = openNeighborCount(grid, or, oc);
+      if (exits <= 3) wallForcedCells++;
+    }
+  }
+
+  const totalOpen = size * size - blackComponents.reduce((sum, comp) => sum + comp.length, 0);
+  const wallPressure = wallTouchOpenCells > 0 ? wallForcedCells / wallTouchOpenCells : 0;
+  const wallCoverage = totalOpen > 0 ? Math.min(1, longWallCells / totalOpen) : 0;
+  const compBonus = Math.min(1, compCount / 3);
+
+  // Higher means stronger "snake around wall" pressure.
+  return wallPressure * 0.65 + wallCoverage * 0.25 + compBonus * 0.1;
 }
-console.log('\nGenerating mini 5x5 puzzles...');
-const miniResults=[];
-for(let i=0;i<MINI_COUNT;i++){
-  const{N,density}=miniConfigs[i];
-  process.stdout.write(`  [${i+1}] N=${N} ${density}... `);
-  const r=generatePuzzle(5,N,density);
-  if(r){miniResults.push(r);process.stdout.write(`OK (N=${r.N}) ✓\n`);}
-  else process.stdout.write(`FAILED\n`);
+function computeRawDifficulty(result, size) {
+  const total = size * size;
+  let black = 0;
+  let hints = 0;
+  let lowHints = 0;
+  let tightOpenCells = 0;
+  for (let r = 0; r < size; r++) {
+    for (let c = 0; c < size; c++) {
+      const v = result.grid[r][c];
+      if (v === 'X') {
+        black++;
+        continue;
+      }
+      if (typeof v === 'number') {
+        hints++;
+        if (v <= Math.max(10, Math.floor(result.N * 0.35))) lowHints++;
+      }
+      if (openNeighborCount(result.grid, r, c) <= 3) tightOpenCells++;
+    }
+  }
+  const openCells = total - black;
+  const toPlace = Math.max(0, result.N - hints);
+  const placeRatio = openCells > 0 ? toPlace / openCells : 0;
+  const lowHintRatio = hints > 0 ? lowHints / hints : 0;
+  const tightRatio = openCells > 0 ? tightOpenCells / openCells : 0;
+  const blackRatio = black / total;
+  const wallSnakeFactor = estimateWallSnakeFactor(result.grid, size);
+
+  // Higher = harder
+  return (
+    result.N * 1.35 +
+    toPlace * 0.9 +
+    placeRatio * 18 +
+    lowHintRatio * 10 +
+    tightRatio * 9 -
+    blackRatio * 10 +
+    wallSnakeFactor * 16
+  );
+}
+function assignByWeekdayDifficulty(results, startDate, size) {
+  const slots = results.map((_, i) => {
+    const date = addDays(startDate, i);
+    return {
+      index: i,
+      date,
+      difficulty: weekdayDifficulty(date)
+    };
+  });
+  const puzzles = results.map((r, i) => ({
+    ...r,
+    rawDifficulty: computeRawDifficulty(r, size),
+    sourceIndex: i
+  }));
+
+  // Match easier puzzles to easier weekdays, harder to harder weekdays.
+  const sortedSlots = [...slots].sort((a, b) => a.difficulty - b.difficulty || a.index - b.index);
+  const sortedPuzzles = [...puzzles].sort((a, b) => a.rawDifficulty - b.rawDifficulty);
+  const assigned = Array(results.length);
+  for (let i = 0; i < sortedSlots.length; i++) {
+    const slot = sortedSlots[i];
+    assigned[slot.index] = {
+      ...sortedPuzzles[i],
+      date: slot.date,
+      difficulty: slot.difficulty
+    };
+  }
+  return assigned;
+}
+async function promptWithDefault(rl, prompt, fallback) {
+  const value = await new Promise(resolve => rl.question(`${prompt} [${fallback}]: `, resolve));
+  const trimmed = (value || '').trim();
+  return trimmed || fallback;
+}
+async function collectStartInputs() {
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+  });
+  try {
+    const startDateInput = await promptWithDefault(rl, 'Next start date for BOTH FULL and MINI (YYYYMMDD or YYYY-MM-DD)', '20260304');
+    const puzzleCountInput = await promptWithDefault(rl, 'How many puzzles to generate for EACH mode (full + mini)', '15');
+
+    const startDate = toYYYYMMDD(startDateInput);
+    if (!isValidDateString(startDate)) {
+      throw new Error('Invalid date format. Use YYYYMMDD or YYYY-MM-DD.');
+    }
+    if (!isValidNumberString(puzzleCountInput)) {
+      throw new Error('Invalid number input. Use positive integer values.');
+    }
+    const puzzleCount = Number(puzzleCountInput);
+    if (puzzleCount < 1) throw new Error('Puzzle count must be at least 1.');
+
+    return {
+      startDate,
+      puzzleCount
+    };
+  } finally {
+    rl.close();
+  }
 }
 
-const FULL_START=22,MINI_START=24;
-let fullDate='20260304',miniDate='20260306';
-let fullCode='',miniCode='';
-const fullEntries=[],miniEntries=[];
-for(let i=0;i<fullResults.length;i++){
-  const num=FULL_START+i,name=fullDate;fullDate=addDays(fullDate,1);
-  fullCode+=`export const puzzle${num} = ${formatGrid(fullResults[i].grid)};\n\n`;
-  fullEntries.push(`  { name: "${name}", grid: puzzle${num}, number: "${num}" }`);
+async function main() {
+  const {
+    startDate,
+    puzzleCount
+  } = await collectStartInputs();
+
+  console.log('\nGenerating full 7x7 puzzles (correct chain mechanic)...');
+  const fullResults=[];
+  for(let i=0;i<puzzleCount;i++){
+    const{N,density}=pickConfig(fullConfigs, i);
+    process.stdout.write(`  [${i+1}] N=${N} ${density}... `);
+    const r=generatePuzzle(7,N,density);
+    if(r){fullResults.push(r);process.stdout.write(`OK (N=${r.N}) ✓\n`);}
+    else process.stdout.write(`FAILED\n`);
+  }
+
+  console.log('\nGenerating mini 5x5 puzzles...');
+  const miniResults=[];
+  for(let i=0;i<puzzleCount;i++){
+    const{N,density}=pickConfig(miniConfigs, i);
+    process.stdout.write(`  [${i+1}] N=${N} ${density}... `);
+    const r=generatePuzzle(5,N,density);
+    if(r){miniResults.push(r);process.stdout.write(`OK (N=${r.N}) ✓\n`);}
+    else process.stdout.write(`FAILED\n`);
+  }
+
+  const scheduledFull = assignByWeekdayDifficulty(fullResults, startDate, 7);
+  const scheduledMini = assignByWeekdayDifficulty(miniResults, startDate, 5);
+  let fullCode='',miniCode='';
+  const fullEntries=[],miniEntries=[];
+
+  for(let i=0;i<scheduledFull.length;i++){
+    const p = scheduledFull[i];
+    fullEntries.push(`  { name: "${p.date}", grid: ${formatGrid(p.grid)} }`);
+  }
+
+  for(let i=0;i<scheduledMini.length;i++){
+    const p = scheduledMini[i];
+    miniEntries.push(`  { name: "${p.date}", grid: ${formatGrid(p.grid)} }`);
+  }
+
+  const fs=require('fs');
+  const path=require('path');
+  const outDir=__dirname;
+  fullCode = `export const newFullPuzzles = [\n${fullEntries.join(',\n')}\n];\n`;
+  miniCode = `export const newMiniPuzzles = [\n${miniEntries.join(',\n')}\n];\n`;
+  fs.writeFileSync(path.join(outDir,'new-full-puzzles.js'),fullCode);
+  fs.writeFileSync(path.join(outDir,'new-mini-puzzles.js'),miniCode);
+
+  console.log(`\n✅ Full: ${fullResults.length}/${puzzleCount}, Mini: ${miniResults.length}/${puzzleCount}`);
+  console.log('✅ Output written to src/puzzles/new-full-puzzles.js and src/puzzles/new-mini-puzzles.js');
+  console.log('✅ Output now uses compact entries: { name, grid }');
 }
-for(let i=0;i<miniResults.length;i++){
-  const num=MINI_START+i,name=miniDate;miniDate=addDays(miniDate,1);
-  miniCode+=`export const puzzleMini${num} = ${formatGrid(miniResults[i].grid)};\n\n`;
-  miniEntries.push(`  { name: "${name}", grid: puzzleMini${num}, number: "${num}" }`);
-}
-const fs=require('fs');
-const path=require('path');
-const outDir=__dirname;
-fs.writeFileSync(path.join(outDir,'new-full-puzzles.js'),fullCode+`\n// ENTRIES:\n// ${fullEntries.join(',\n// ')}\n`);
-fs.writeFileSync(path.join(outDir,'new-mini-puzzles.js'),miniCode+`\n// ENTRIES:\n// ${miniEntries.join(',\n// ')}\n`);
-console.log(`\n✅ Full: ${fullResults.length}/15, Mini: ${miniResults.length}/15`);
+
+main().catch(err => {
+  console.error('\nGenerator failed:', err.message);
+  process.exit(1);
+});
