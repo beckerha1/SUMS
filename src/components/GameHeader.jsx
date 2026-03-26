@@ -43,22 +43,20 @@ const GameHeader = ({
       />
 
       <div style={{
-        position: "relative",
-        display: "flex",
-        justifyContent: "center",
+        display: "grid",
+        gridTemplateColumns: "auto 1fr auto",
         alignItems: "center",
-        padding: "2px 5vw",
+        columnGap: "8px",
+        padding: "2px 3vw",
         marginBottom: "7px",
         minHeight: "32px"
       }}>
         {/* Clock */}
         <div style={{
-          position: "absolute",
-          left: 0,
           display: "flex",
           alignItems: "center",
           gap: "6px",
-          fontSize: "clamp(14px, 2.5vw, 16px)",
+          fontSize: "clamp(11px, 2.8vw, 16px)",
           color: "var(--charcoal)"
         }}>
           <span role="img" aria-label="clock">🕒</span> {formatTime(elapsedTime)}
@@ -66,24 +64,25 @@ const GameHeader = ({
 
         {/* Centered Info */}
         <div style={{
-          fontSize: "clamp(14px, 2.5vw, 18px)",
+          fontSize: "clamp(11px, 2.8vw, 18px)",
           display: "flex",
-          gap: "12px",
+          gap: "clamp(6px, 2vw, 12px)",
           color: "#333",
           justifyContent: "center",
-          flexWrap: "wrap"
+          flexWrap: "wrap",
+          minWidth: 0
         }}>
           {nextExpectedNumber != null && (
             <span style={{ color: "var(--charcoal)" }}>
-              Next SUM: <strong>{nextExpectedNumber}</strong>
+              Next: <strong>{nextExpectedNumber}</strong>
             </span>
           )}
           <span style={{ color: "#666" }}>
-            Current SUM: <strong>{currentSum}</strong>
+            Current: <strong>{currentSum}</strong>
           </span>
           {lastSum != null && (
             <span style={{ color: "#666" }}>
-              Last SUM: <strong>{lastSum}</strong>
+              Last: <strong>{lastSum}</strong>
             </span>
           )}
         </div>
@@ -92,8 +91,6 @@ const GameHeader = ({
         <div 
           ref={dropdownRef}
           style={{
-            position: "absolute",
-            right: 0,
             display: "flex",
             alignItems: "center",
             color: "var(--charcoal)"
