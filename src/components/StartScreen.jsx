@@ -10,7 +10,8 @@ const StartScreen = ({
   puzzleNumber,
   puzzleNumberMini,
   onShowPrivacy,
-  onShowAbout
+  onShowAbout,
+  onShowStrategy
 }) => {
   const mobileButton = {
     padding: "10px 20px",
@@ -91,6 +92,15 @@ const StartScreen = ({
           style={{ margin: '0 10px', color: '#666', textDecoration: 'none', cursor: 'pointer' }}
         >
           About
+        </span>
+        <span
+          onClick={(e) => {
+            e.stopPropagation();
+            onShowStrategy();
+          }}
+          style={{ margin: '0 10px', color: '#666', textDecoration: 'none', cursor: 'pointer' }}
+        >
+          Strategy
         </span>
         <p style={{ marginTop: '10px', fontSize: "clamp(14px, 2.5vw, 14px)", color: "#666" }}>
           © 2025 Xavier Games

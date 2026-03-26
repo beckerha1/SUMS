@@ -13,8 +13,10 @@ const getTodayPuzzleName = () => {
 };
 
 const todayName = getTodayPuzzleName();
-const todayPuzzleMini = puzzlesMini.find(p => p.name === todayName) || puzzlesMini[puzzlesMini.length - 1];
+const todayIndexMini = puzzlesMini.findIndex(p => p.name === todayName);
+const safeIndexMini = todayIndexMini >= 0 ? todayIndexMini : puzzlesMini.length - 1;
+const todayPuzzleMini = puzzlesMini[safeIndexMini];
 
 export const initialGridMini = todayPuzzleMini.grid;
 export const puzzleNameMini = todayPuzzleMini.name;
-export const puzzleNumberMini = todayPuzzleMini.number;
+export const puzzleNumberMini = String(safeIndexMini + 1);
