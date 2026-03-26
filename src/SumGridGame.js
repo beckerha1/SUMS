@@ -685,6 +685,7 @@ if (!puzzle || puzzle.length !== grid.length || puzzle[0]?.length !== grid[0]?.l
 }
 
 const solverNextExpected = getNextExpectedNumber(grid, puzzle);
+const isPuzzleComplete = grid.every(row => row.every(cell => cell === "X" || cell !== null));
 
 return (
   <>
@@ -699,7 +700,7 @@ return (
     >
       <GameHeader
         elapsedTime={elapsedTime}
-        nextExpectedNumber={gameWon ? null : (headerNextOverride ?? solverNextExpected)}
+        nextExpectedNumber={isPuzzleComplete ? null : (headerNextOverride ?? solverNextExpected)}
         currentSum={selectedCells.length > 0
           ? selectedCells.reduce((acc, [r, c]) => acc + grid[r][c], 0)
           : 0}
