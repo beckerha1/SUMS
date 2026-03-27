@@ -47,7 +47,7 @@ const GameHeader = ({
         gridTemplateColumns: "auto 1fr auto",
         alignItems: "center",
         columnGap: "6px",
-        padding: "2px clamp(8px, 2vw, 14px)",
+        padding: "2px 0",
         marginBottom: "7px",
         minHeight: "32px"
       }}>
