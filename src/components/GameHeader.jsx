@@ -46,8 +46,8 @@ const GameHeader = ({
         display: "grid",
         gridTemplateColumns: "auto 1fr auto",
         alignItems: "center",
-        columnGap: "8px",
-        padding: "2px 3vw",
+        columnGap: "6px",
+        padding: "2px clamp(8px, 2vw, 14px)",
         marginBottom: "7px",
         minHeight: "32px"
       }}>
@@ -56,6 +56,7 @@ const GameHeader = ({
           display: "flex",
           alignItems: "center",
           gap: "6px",
+          justifySelf: "start",
           fontSize: "clamp(11px, 2.8vw, 16px)",
           color: "var(--charcoal)"
         }}>
@@ -64,7 +65,7 @@ const GameHeader = ({
 
         {/* Centered Info */}
         <div style={{
-          fontSize: "clamp(11px, 2.8vw, 18px)",
+          fontSize: "clamp(12px, 3.1vw, 19px)",
           display: "flex",
           gap: "clamp(6px, 2vw, 12px)",
           color: "#333",
@@ -93,6 +94,7 @@ const GameHeader = ({
           style={{
             display: "flex",
             alignItems: "center",
+            justifySelf: "end",
             color: "var(--charcoal)"
           }}>
           <button
