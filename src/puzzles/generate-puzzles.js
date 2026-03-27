@@ -67,6 +67,44 @@ function findPlacementCells(grid, SIZE, N) {
   return [...result].map(k=>k.split(',').map(Number));
 }
 
+// Find all non-wall cells that can be touched by a valid chain summing to N.
+// Used to validate whether a prefilled clue N is "currently reachable".
+function findReachableNeighborCells(grid, SIZE, N) {
+  const result = new Set();
+
+  function dfs(r, c, sum, visited) {
+    if (sum === N) {
+      for (const [nr, nc] of get8(r, c, SIZE)) {
+        if (grid[nr][nc] !== 'X') result.add(`${nr},${nc}`);
+      }
+      return;
+    }
+    for (const [nr, nc] of get8(r, c, SIZE)) {
+      const val = grid[nr][nc];
+      if (val === null || val === 'X') continue;
+      if (typeof val !== 'number' || val >= N) continue;
+      const key = `${nr},${nc}`;
+      if (visited.has(key)) continue;
+      const newSum = sum + val;
+      if (newSum > N) continue;
+      visited.add(key);
+      dfs(nr, nc, newSum, visited);
+      visited.delete(key);
+    }
+  }
+
+  for (let r = 0; r < SIZE; r++) {
+    for (let c = 0; c < SIZE; c++) {
+      const val = grid[r][c];
+      if (typeof val !== 'number' || val >= N) continue;
+      const visited = new Set([`${r},${c}`]);
+      dfs(r, c, val, visited);
+    }
+  }
+
+  return [...result].map(k => k.split(',').map(Number));
+}
+
 const DIR8 = [[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[-1,1],[1,-1],[1,1]];
 
 function tryInitial123(SIZE) {
@@ -245,17 +283,46 @@ function tryGenerate(SIZE, targetN, density) {
 // Simulate play: starting from hints only, place 4..N in order using
 // the solution's positions. Each must be reachable via chain mechanic.
 function verifyPlayable(hintGrid, solution, SIZE, N, placedPos) {
-  const sim = hintGrid.map(row=>[...row]);
-  for(let val=4;val<=N;val++) {
-    const [solR,solC] = placedPos[val-1];
-    // Is solution cell already a hint? If so skip (it's pre-placed)
-    if(sim[solR][solC]===val) continue;
-    // Check it's reachable as a placement via chain
-    const cands = findPlacementCells(sim, SIZE, val);
-    if(!cands.some(([r,c])=>r===solR&&c===solC)) return false;
-    sim[solR][solC]=val;
+  const sim = hintGrid.map(row => [...row]);
+
+  function isClueSatisfied(val) {
+    const [r, c] = placedPos[val - 1];
+    if (hintGrid[r][c] !== val || sim[r][c] !== val) return false;
+    const reachable = findReachableNeighborCells(sim, SIZE, val);
+    return reachable.some(([rr, cc]) => rr === r && cc === c);
   }
-  return true;
+
+  function getNextExpected() {
+    let val = 4;
+    while (val <= N) {
+      const [r, c] = placedPos[val - 1];
+      if (sim[r][c] !== val) return val;
+      const isClue = hintGrid[r][c] === val;
+      if (!isClue) {
+        val++;
+        continue;
+      }
+      if (!isClueSatisfied(val)) return val;
+      val++;
+    }
+    return N + 1;
+  }
+
+  while (true) {
+    const val = getNextExpected();
+    if (val > N) return true;
+
+    const [solR, solC] = placedPos[val - 1];
+    const isClue = hintGrid[solR][solC] === val;
+    if (isClue) {
+      // Clue exists on board but is not currently reachable.
+      return false;
+    }
+
+    const cands = findPlacementCells(sim, SIZE, val);
+    if (!cands.some(([r, c]) => r === solR && c === solC)) return false;
+    sim[solR][solC] = val;
+  }
 }
 
 function pickHints(N, density) {
@@ -468,6 +535,22 @@ async function promptWithDefault(rl, prompt, fallback) {
   return trimmed || fallback;
 }
 async function collectStartInputs() {
+  const cliStartDateInput = process.argv[2];
+  const cliPuzzleCountInput = process.argv[3];
+  if (cliStartDateInput || cliPuzzleCountInput) {
+    const startDate = toYYYYMMDD(cliStartDateInput || '20260304');
+    const puzzleCountRaw = (cliPuzzleCountInput || '15').trim();
+    if (!isValidDateString(startDate)) {
+      throw new Error('Invalid date format. Use YYYYMMDD or YYYY-MM-DD.');
+    }
+    if (!isValidNumberString(puzzleCountRaw)) {
+      throw new Error('Invalid number input. Use positive integer values.');
+    }
+    const puzzleCount = Number(puzzleCountRaw);
+    if (puzzleCount < 1) throw new Error('Puzzle count must be at least 1.');
+    return { startDate, puzzleCount };
+  }
+
   const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout

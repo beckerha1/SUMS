@@ -399,7 +399,7 @@ export const puzzles = [
   { name: "20260327", grid: [
     [null, null, null, null, "X", "X", "X"],
     [null, null, null, 32, "X", "X", "X"],
-    [null, null, null, 28, null, "X", "X"],
+    [null, null, null, 28, null, null, "X"],
     [null, null, 1, null, null, "X", null],
     [null, null, 3, 2, null, 36, "X"],
     [10, null, null, null, null, null, "X"],
