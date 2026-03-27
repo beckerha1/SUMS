@@ -57,7 +57,7 @@ const GameHeader = ({
           alignItems: "center",
           gap: "6px",
           justifySelf: "start",
-          fontSize: "clamp(11px, 2.8vw, 16px)",
+          fontSize: "clamp(12px, 3vw, 17px)",
           color: "var(--charcoal)"
         }}>
           <span role="img" aria-label="clock">🕒</span> {formatTime(elapsedTime)}
@@ -65,7 +65,7 @@ const GameHeader = ({
 
         {/* Centered Info */}
         <div style={{
-          fontSize: "clamp(12px, 3.1vw, 19px)",
+          fontSize: "clamp(13px, 3.4vw, 21px)",
           display: "flex",
           gap: "clamp(6px, 2vw, 12px)",
           color: "#333",
@@ -102,7 +102,7 @@ const GameHeader = ({
             style={{
               width: "clamp(24px, 6vw, 25px)",
               height: "clamp(24px, 6vw, 25px)",
-              fontSize: "clamp(14px, 3vw, 18px)",
+              fontSize: "clamp(15px, 3.2vw, 19px)",
               borderRadius: "50%",
               border: "2px solid #303036",
               backgroundColor: "#fff",
