@@ -424,13 +424,13 @@ export const puzzles = [
     [null, null, null, null, null, "X", "X"]
   ] },
   { name: "20260330", grid: [
-    [null, null, null, null, null, null, null],
-    [null, null, null, 3, null, null, null],
-    [null, null, null, 1, 2, null, null],
-    [null, null, null, "X", null, null, null],
-    [null, null, "X", "X", "X", null, null],
-    [null, "X", "X", "X", "X", "X", null],
-    ["X", "X", null, null, null, "X", "X"]
+    [18, "X", "X", "X", "X", "X", "X"],
+    [null, "X", null, null, "X", null, "X"],
+    [null, 3, 1, "X", 11, "X", null],
+    [null, 21, 2, null, null, null, "X"],
+    ["X", "X", null, null, null, null, "X"],
+    ["X", null, "X", null, 15, "X", "X"],
+    ["X", "X", 26, null, null, "X", "X"]
   ] },
   { name: "20260331", grid: [
     ["X", "X", "X", null, "X", "X", "X"],
