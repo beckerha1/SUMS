@@ -252,6 +252,39 @@ function isInterestingMask(grid, SIZE) {
   return true;
 }
 
+// Ensure all non-wall cells are in one 8-connected region.
+// This prevents isolated "islands" that can become unreachable.
+function hasSingleOpenComponent(grid, SIZE) {
+  let start = null;
+  let totalOpen = 0;
+  for (let r = 0; r < SIZE; r++) {
+    for (let c = 0; c < SIZE; c++) {
+      if (grid[r][c] !== 'X') {
+        totalOpen++;
+        if (!start) start = [r, c];
+      }
+    }
+  }
+  if (!start) return false;
+
+  const seen = new Set();
+  const stack = [start];
+  seen.add(`${start[0]},${start[1]}`);
+
+  while (stack.length) {
+    const [r, c] = stack.pop();
+    for (const [nr, nc] of get8(r, c, SIZE)) {
+      if (grid[nr][nc] === 'X') continue;
+      const key = `${nr},${nc}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      stack.push([nr, nc]);
+    }
+  }
+
+  return seen.size === totalOpen;
+}
+
 function tryGenerate(SIZE, targetN, density) {
   const seed = tryInitial123(SIZE);
   if (!seed) return null;
@@ -275,6 +308,7 @@ function tryGenerate(SIZE, targetN, density) {
   }
 
   if(!isInterestingMask(finalGrid, SIZE)) return null;
+  if(!hasSingleOpenComponent(finalGrid, SIZE)) return null;
   if(!verifyPlayable(hintGrid, finalGrid, SIZE, targetN, placedPos)) return null;
 
   return{grid:hintGrid,solution:finalGrid,placedPos,N:targetN};
