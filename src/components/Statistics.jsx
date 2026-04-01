@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { formatTime } from '../utils/gameHelpers';
 
-const Statistics = ({ onClose, bestTimeMini, bestTimeFull, gameHistory, onResetStats }) => {
+const Statistics = ({ onClose, bestTimeMini, bestTimeFull, gameHistory, dailyStreakMini = 0, dailyStreakFull = 0, onResetStats }) => {
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const miniGames = gameHistory.filter(g => g.mode === 'mini' && g.time);
   const fullGames = gameHistory.filter(g => g.mode === 'full' && g.time);
@@ -96,6 +96,31 @@ const Statistics = ({ onClose, bestTimeMini, bestTimeFull, gameHistory, onResetS
         }}>
           Personal Statistics 📊
         </h2>
+
+        <div style={statBoxStyle}>
+          <h3 style={{
+            marginBottom: '12px',
+            fontSize: '1.05rem',
+            color: '#303036',
+            borderBottom: '2px solid #303036',
+            paddingBottom: '6px',
+            fontWeight: 'bold'
+          }}>
+            Daily streaks
+          </h3>
+          <div style={{ ...statRowStyle, marginBottom: '8px' }}>
+            <span style={labelStyle}>Mini (5×5):</span>
+            <span style={valueStyle}>
+              {dailyStreakMini > 0 ? `${dailyStreakMini} day${dailyStreakMini === 1 ? '' : 's'}` : '—'}
+            </span>
+          </div>
+          <div style={{ ...statRowStyle, marginBottom: 0 }}>
+            <span style={labelStyle}>Full (7×7):</span>
+            <span style={valueStyle}>
+              {dailyStreakFull > 0 ? `${dailyStreakFull} day${dailyStreakFull === 1 ? '' : 's'}` : '—'}
+            </span>
+          </div>
+        </div>
 
         {/* Mini SUMS Stats */}
         <div style={statBoxStyle}>
