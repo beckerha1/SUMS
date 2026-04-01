@@ -8,7 +8,8 @@ const WinScreen = ({
   onClose,
   onShare,
   gameMode,
-  onViewHighScores
+  onViewHighScores,
+  streakCount = 0
 }) => {
   const [adLoaded, setAdLoaded] = useState(false);
   const [nameInput, setNameInput] = useState('');
@@ -143,9 +144,25 @@ const WinScreen = ({
         }}>
           {formatTime(elapsedTime)}
         </p>
-        <p style={{ fontSize: '0.85rem', color: '#aaa', marginBottom: '24px' }}>
+        <p style={{ fontSize: '0.85rem', color: '#aaa', marginBottom: '12px' }}>
           New puzzle in: <strong style={{ color: '#555' }}>{countdownToMidnight}</strong>
         </p>
+
+        {streakCount > 0 && (
+          <p style={{
+            fontSize: '0.92rem',
+            color: '#166534',
+            fontWeight: '600',
+            marginBottom: '20px',
+            lineHeight: 1.35,
+            backgroundColor: '#f0fdf4',
+            borderRadius: '10px',
+            padding: '10px 12px',
+            border: '1px solid #86efac'
+          }}>
+            🔥 {streakCount}-day {gameMode === 'mini' ? 'mini' : 'full'} streak
+          </p>
+        )}
 
         {/* Divider */}
         <hr style={{ border: 'none', borderTop: '1px solid #eee', marginBottom: '20px' }} />

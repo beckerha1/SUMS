@@ -9,10 +9,35 @@ const StartScreen = ({
   todayStr,
   puzzleNumber,
   puzzleNumberMini,
+  streakMini = { count: 0, wonToday: false, needsPlayToday: false },
+  streakFull = { count: 0, wonToday: false, needsPlayToday: false },
   onShowPrivacy,
   onShowAbout,
   onShowStrategy
 }) => {
+  const streakLine = (label, info) => {
+    if (info.count < 1) return null;
+    const urgent = info.needsPlayToday;
+    return (
+      <div
+        key={label}
+        style={{
+          padding: '8px 10px',
+          borderRadius: '8px',
+          fontSize: '0.9rem',
+          fontWeight: '600',
+          backgroundColor: urgent ? '#fff7ed' : '#f0fdf4',
+          color: urgent ? '#9a3412' : '#166534',
+          border: urgent ? '1px solid #fdba74' : '1px solid #86efac'
+        }}
+      >
+        {label}: 🔥 {info.count} day{info.count === 1 ? '' : 's'}
+      </div>
+    );
+  };
+
+  const anyStreak = streakMini.count > 0 || streakFull.count > 0;
+
   const mobileButton = {
     padding: "10px 20px",
     fontSize: "clamp(14px, 2.5vw, 16px)",
@@ -36,6 +61,27 @@ const StartScreen = ({
         alt="Sums Logo"
         style={{ maxWidth: "200px", marginBottom: "20px" }}
       />
+
+      <div style={{
+        maxWidth: '320px',
+        margin: '0 auto 18px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '8px'
+      }}>
+        {streakLine('Mini', streakMini)}
+        {streakLine('Full', streakFull)}
+        {!anyStreak && (
+          <p style={{
+            margin: 0,
+            fontSize: '0.88rem',
+            color: '#888',
+            lineHeight: 1.35
+          }}>
+            Mini and full use separate daily streaks (Eastern time).
+          </p>
+        )}
+      </div>
 
       <div style={{
         display: 'flex',

@@ -27,6 +27,7 @@ import AboutModal from './About';
 import StrategyModal from './StrategyModal';
 import Statistics from './components/Statistics';
 import HighScores from './components/HighScores';
+import { getDailyStreakInfo, recordDailyPuzzleWin, clearDailyStreak } from './utils/dailyStreak';
 
 export default function SumGridGame() {
   const navigate = useNavigate();
@@ -70,6 +71,8 @@ export default function SumGridGame() {
   const [hintCooldownByMode, setHintCooldownByMode] = useState({ mini: 0, full: 0 });
   const [lastSequence, setLastSequence] = useState(null);
   const [lastPlacedPosition, setLastPlacedPosition] = useState(null);
+  const [dailyStreakInfo, setDailyStreakInfo] = useState(() => getDailyStreakInfo());
+  const [lastWinStreakCount, setLastWinStreakCount] = useState(0);
   const cellSize = Math.min(80, Math.floor(window.innerWidth / (GRID_SIZE + 2)));
 
 const todayStr = new Date().toLocaleDateString("en-US", {
@@ -203,6 +206,12 @@ useEffect(() => {
   }
   prefilledCells.current = prefilled;
 }, [puzzle]);
+
+useEffect(() => {
+  if (showStartScreen) {
+    setDailyStreakInfo(getDailyStreakInfo());
+  }
+}, [showStartScreen]);
 
 useEffect(() => {
   const updateCountdown = () => {
@@ -507,15 +516,22 @@ const applyPlacementMove = (selectionPath, r, c) => {
     const finalTime = Math.floor((Date.now() - startTime) / 1000);
     const finalMoves = moveCount + 1;
 
+    const streakResult = recordDailyPuzzleWin(gameMode);
+    setLastWinStreakCount(streakResult.count);
+    setDailyStreakInfo(getDailyStreakInfo());
+
     setTimeout(() => {
       setGameWon(true);
       setShowWinScreen(true);
 
       if (window.gtag) {
+        const streaks = getDailyStreakInfo();
         window.gtag('event', 'game_complete', {
           game_mode: gameMode,
           completion_time_seconds: finalTime,
-          total_moves: finalMoves
+          total_moves: finalMoves,
+          daily_streak_mini: streaks.mini.count,
+          daily_streak_full: streaks.full.count
         });
       }
     }, delay);
@@ -691,6 +707,8 @@ const handleResetStats = () => {
   localStorage.removeItem('sums-best-time-full');
   localStorage.removeItem('sums-game-history');
   localStorage.removeItem('sums-best-time');
+  clearDailyStreak();
+  setDailyStreakInfo(getDailyStreakInfo());
 };
 
 if (showStartScreen) {
@@ -726,6 +744,8 @@ if (showStartScreen) {
         todayStr={todayStr}
         puzzleNumber={puzzleNumber}
         puzzleNumberMini={puzzleNumberMini}
+        streakMini={dailyStreakInfo.mini}
+        streakFull={dailyStreakInfo.full}
         onShowAbout={() => navigate("/about")}
         onShowStrategy={() => navigate("/strategy")}
         onShowPrivacy={() => navigate("/privacy")}
@@ -821,6 +841,8 @@ if (showStartScreen) {
           bestTimeMini={bestTimeMini}
           bestTimeFull={bestTimeFull}
           gameHistory={gameHistory}
+          dailyStreakMini={dailyStreakInfo.mini.count}
+          dailyStreakFull={dailyStreakInfo.full.count}
           onResetStats={handleResetStats}
         />
       )}
@@ -985,6 +1007,7 @@ return (
           }}
           onShare={shareWinMessage}
           gameMode={gameMode}
+          streakCount={lastWinStreakCount}
           onViewHighScores={(highlight) => {
             setHighScoresHighlight(highlight);
             setShowHighScores(true);
