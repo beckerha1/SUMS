@@ -89,6 +89,11 @@ const StartScreen = ({
       </div>
 
       <footer style={{ textAlign: 'center', marginTop: '30px', fontSize: '0.9rem' }}>
+        <img
+          src={`${process.env.PUBLIC_URL}/certified-slim-anim-light.svg`}
+          alt="Certified Independent Puzzler badge"
+          style={{ display: 'block', margin: '0 auto 12px', maxWidth: '240px', width: '100%', height: 'auto' }}
+        />
         <span 
           onClick={(e) => {
             e.stopPropagation();
