@@ -89,21 +89,23 @@ const StartScreen = ({
       </div>
 
       <footer style={{ textAlign: 'center', marginTop: '30px', fontSize: '0.9rem' }}>
-        <a
-          href="https://puzzled.online/?ref=cert-badge&site=https%3A%2F%2Fsums.games"
-          aria-label="Certified Independent Puzzler — puzzled.online"
-          target="_blank"
-          rel="noreferrer"
-          style={{ display: 'inline-block', marginBottom: '12px' }}
-        >
-          <img
-            src="https://puzzled.online/badges/certified-slim-anim-light.svg"
-            alt="Certified Independent Puzzler — puzzled.online"
-            width="180"
-            height="52"
-            style={{ height: 'auto' }}
-          />
-        </a>
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '12px' }}>
+          <a
+            href="https://puzzled.online/?ref=cert-badge&site=https%3A%2F%2Fsums.games"
+            aria-label="Certified Independent Puzzler — puzzled.online"
+            target="_blank"
+            rel="noreferrer"
+            style={{ display: 'block', lineHeight: 0 }}
+          >
+            <img
+              src="https://puzzled.online/badges/certified-slim-anim-light.svg"
+              alt="Certified Independent Puzzler — puzzled.online"
+              width="180"
+              height="52"
+              style={{ display: 'block', width: '180px', height: 'auto' }}
+            />
+          </a>
+        </div>
         <span 
           onClick={(e) => {
             e.stopPropagation();
