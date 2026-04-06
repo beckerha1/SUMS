@@ -36,7 +36,7 @@ const StartScreen = ({
     whiteSpace: "nowrap",
     overflow: "hidden",
     textOverflow: "ellipsis",
-    maxWidth: "min(100%, 320px)",
+    maxWidth: "300px",
     boxSizing: "border-box",
   };
 
@@ -89,11 +89,21 @@ const StartScreen = ({
       </div>
 
       <footer style={{ textAlign: 'center', marginTop: '30px', fontSize: '0.9rem' }}>
-        <img
-          src={`${process.env.PUBLIC_URL}/certified-slim-anim-light.svg`}
-          alt="Certified Independent Puzzler badge"
-          style={{ display: 'block', margin: '0 auto 12px', maxWidth: '240px', width: '100%', height: 'auto' }}
-        />
+        <a
+          href="https://puzzled.online/?ref=cert-badge&site=https%3A%2F%2Fsums.games"
+          aria-label="Certified Independent Puzzler — puzzled.online"
+          target="_blank"
+          rel="noreferrer"
+          style={{ display: 'inline-block', marginBottom: '12px' }}
+        >
+          <img
+            src="https://puzzled.online/badges/certified-slim-anim-light.svg"
+            alt="Certified Independent Puzzler — puzzled.online"
+            width="180"
+            height="52"
+            style={{ height: 'auto' }}
+          />
+        </a>
         <span 
           onClick={(e) => {
             e.stopPropagation();
