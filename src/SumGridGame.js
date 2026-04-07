@@ -410,23 +410,6 @@ const applyPlacementMove = (selectionPath, r, c) => {
   const sequence = selectionPath.map(([sr, sc]) => grid[sr][sc]);
   setLastSequence(sequence);
 
-  setGrid(newGrid);
-  setHistory(prev => [...prev, newGrid]);
-  setLastPlacedPosition([r, c]);
-  setMoveCount(prev => prev + 1);
-
-  const lastSelected = selectionPath[selectionPath.length - 1];
-  setPlacementPath([lastSelected, [r, c]]);
-  setPoppingCells((prev) => [...prev, placedKey]);
-
-  setTimeout(() => {
-    setPoppingCells((prev) => prev.filter((k) => k !== placedKey));
-    setPlacementPath([]);
-    setSelectedCells([]);
-    setOverlayPoints([]);
-    setHintInProgress(false);
-  }, 10);
-
   const nextNum = expected + 1;
   const nextIsClue = puzzle.flat().includes(nextNum);
   if (nextIsClue) {
@@ -457,7 +440,7 @@ const applyPlacementMove = (selectionPath, r, c) => {
       for (const [cr, cc] of nextClueCells) {
         for (const group of groups) {
           const gsum = group.reduce((acc, [gr, gc]) => acc + tempGrid[gr][gc], 0);
-          const connected = isConnectedGroup(group, grid);
+          const connected = isConnectedGroup(group, tempGrid);
           const touchesClue = getAdjacent([cr, cc], tempGrid).some(([ar, ac]) =>
             group.some(([gr, gc]) => gr === ar && gc === ac)
           );
@@ -473,15 +456,31 @@ const applyPlacementMove = (selectionPath, r, c) => {
       if (!hasValidGroup) {
         setAlertMessage(`Your next SUM ${nextNum} is pre-populated but does not have a legal SUMS chain. Your last move has been undone. Please create a valid path to ${nextNum}.`);
         setShowAlertModal(true);
-        if (history.length > 0) {
-          setGrid(history[history.length - 1]);
-        }
         setSelectedCells([]);
         setHintInProgress(false);
+        setPlacementPath([]);
+        setOverlayPoints([]);
         return false;
       }
     }
   }
+
+  setGrid(newGrid);
+  setHistory(prev => [...prev, newGrid]);
+  setLastPlacedPosition([r, c]);
+  setMoveCount(prev => prev + 1);
+
+  const lastSelected = selectionPath[selectionPath.length - 1];
+  setPlacementPath([lastSelected, [r, c]]);
+  setPoppingCells((prev) => [...prev, placedKey]);
+
+  setTimeout(() => {
+    setPoppingCells((prev) => prev.filter((k) => k !== placedKey));
+    setPlacementPath([]);
+    setSelectedCells([]);
+    setOverlayPoints([]);
+    setHintInProgress(false);
+  }, 10);
 
   const solverNext = getNextExpectedNumber(newGrid, puzzle);
   const skipChain = getPrefilledCluesSkippedBeforeNext(newGrid, puzzle, expected, solverNext);
