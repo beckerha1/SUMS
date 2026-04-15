@@ -568,11 +568,11 @@ export const puzzles = [
     ["X", "X", "X", "X", 27, null, null]
   ] },
   { name: "20260415", grid: [
-    [14, null, null, null, "X", "X", "X"],
+    [null, null, null, null, "X", "X", "X"],
     [null, null, null, 26, null, "X", "X"],
-    [1, null, null, null, null, "X", null],
-    [3, 2, null, null, null, null, null],
-    [null, null, 9, 22, 33, "X", null],
+    [null, null, 1, null, null, "X", null],
+    [null, null, 2, 3, null, null, null],
+    [null, null, null, 22, 33, "X", null],
     [null, null, 19, null, null, "X", "X"],
     [null, null, null, null, "X", "X", "X"]
   ] },
