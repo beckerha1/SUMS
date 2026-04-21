@@ -622,12 +622,12 @@ export const puzzles = [
     ["X", "X", null, null, null, null, null]
   ] },
   { name: "20260421", grid: [
-    ["X", "X", "X", null, "X", "X", "X"],
-    ["X", "X", "X", "X", 26, null, null],
+    ["X", "X", null, null, 26, null, null],
+    ["X", "X", "X", 27, null, null, null],
     ["X", null, "X", null, null, null, null],
     [null, null, "X", null, null, null, null],
-    ["X", null, null, null, null, 2, null],
-    ["X", "X", null, null, 3, 1, null],
+    [null, null, null, null, null, 2, null],
+    ["X", null, null, null, 3, 1, null],
     ["X", "X", 18, 11, null, null, null]
   ] },
   { name: "20260422", grid: [
