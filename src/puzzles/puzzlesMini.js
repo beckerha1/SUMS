@@ -492,7 +492,7 @@ export const puzzlesMini = [
   ] },
   { name: "20260422", grid: [
     [null, null, 1, null, null],
-    [null, 2, 3, "X", null],
+    [null, 2, 3, null, null],
     [null, null, null, "X", null],
     [13, "X", null, null, "X"],
     ["X", null, null, null, "X"]
