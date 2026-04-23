@@ -643,8 +643,8 @@ export const puzzles = [
     [null, null, null, null, null, null, "X"],
     [10, null, null, null, null, 31, "X"],
     [null, 2, 3, 15, null, 35, "X"],
-    [null, null, 1, 27, 24, "X", null],
-    [null, null, null, null, null, "X", "X"],
+    [null, null, 1, 27, 24, null, null],
+    [null, null, null, null, null, null, "X"],
     [20, null, null, null, null, "X", "X"],
     [null, null, "X", "X", "X", "X", "X"]
   ] },
