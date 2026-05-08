@@ -776,7 +776,7 @@ export const puzzles = [
   ] },
   { name: "20260508", grid: [
     ["X", "X", "X", null, null, null, null],
-    [15, null, null, null, null, null, "X"],
+    [25, null, null, null, null, 26, "X"],
     ["X", null, null, 12, null, null, null],
     [null, null, null, null, null, "X", null],
     [null, 1, 2, null, null, null, null],
