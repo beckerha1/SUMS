@@ -1,137 +1,137 @@
 export const newFullPuzzles = [
-  { name: "20260326", grid: [
-  [null, "X", "X", "X", "X", "X", "X"],
+  { name: "20260410", grid: [
+  ["X", null, null, "X", "X", "X", "X"],
   [null, null, "X", null, "X", "X", "X"],
-  ["X", null, "X", null, null, "X", "X"],
-  [null, "X", 2, 3, null, "X", "X"],
-  ["X", null, null, 1, null, null, "X"],
-  [null, 29, null, null, null, null, null],
-  ["X", null, null, null, null, null, null]
+  [null, null, null, "X", "X", 29, "X"],
+  [null, null, null, 2, null, null, null],
+  [null, null, 3, 1, null, "X", "X"],
+  [null, null, null, null, null, "X", "X"],
+  ["X", "X", null, "X", null, null, "X"]
 ] },
-  { name: "20260327", grid: [
-  ["X", 33, "X", "X", "X", null, "X"],
-  ["X", "X", null, "X", null, "X", null],
-  [null, null, 22, 1, null, null, null],
-  ["X", null, 9, 2, 3, null, null],
-  ["X", null, null, "X", 14, null, null],
-  [null, null, null, "X", null, "X", null],
-  [null, null, null, "X", "X", null, null]
+  { name: "20260411", grid: [
+  ["X", "X", "X", "X", null, null, null],
+  ["X", null, "X", "X", null, null, "X"],
+  [null, "X", null, null, null, 35, "X"],
+  ["X", 24, 1, 3, null, null, "X"],
+  ["X", null, 2, null, null, 10, null],
+  [null, null, null, null, null, null, null],
+  [null, null, "X", null, 15, null, null]
 ] },
-  { name: "20260328", grid: [
-  ["X", "X", null, 15, 3, null, null],
-  ["X", "X", null, null, 1, 2, null],
-  [null, null, "X", null, 10, null, null],
-  ["X", null, null, null, null, null, null],
-  [null, null, null, null, null, 24, null],
-  [null, "X", null, null, null, null, "X"],
-  ["X", "X", "X", 35, "X", "X", "X"]
-] },
-  { name: "20260329", grid: [
-  ["X", "X", "X", null, "X", "X", "X"],
-  ["X", null, null, 26, null, null, null],
-  [null, null, 17, null, null, null, null],
-  [39, null, null, null, null, 11, null],
-  ["X", null, null, null, null, 1, null],
-  ["X", null, null, null, null, 3, 2],
-  ["X", null, null, null, null, null, null]
-] },
-  { name: "20260330", grid: [
-  [18, "X", "X", "X", "X", "X", "X"],
-  [null, "X", null, null, "X", null, "X"],
-  [null, 3, 1, "X", 11, "X", null],
-  [null, 21, 2, null, null, null, "X"],
-  ["X", "X", null, null, null, null, "X"],
-  ["X", null, "X", null, 15, "X", "X"],
-  ["X", "X", 26, null, null, "X", "X"]
-] },
-  { name: "20260331", grid: [
-  ["X", "X", "X", "X", null, null, 30],
-  ["X", "X", "X", "X", 21, null, null],
-  ["X", "X", null, "X", null, null, null],
-  ["X", null, 13, 1, 2, null, null],
-  ["X", null, 9, 3, null, null, null],
-  ["X", null, null, null, "X", null, null],
-  [null, "X", null, null, "X", "X", "X"]
-] },
-  { name: "20260401", grid: [
+  { name: "20260412", grid: [
   ["X", "X", null, "X", "X", "X", "X"],
-  [null, null, null, "X", "X", "X", "X"],
-  [null, null, "X", null, "X", "X", "X"],
-  [null, null, 1, "X", null, null, "X"],
-  [null, null, 3, 2, null, null, 28],
-  [null, null, null, null, null, null, "X"],
+  [39, null, null, "X", null, null, "X"],
+  [null, "X", null, null, null, null, "X"],
+  [null, null, null, null, null, null, null],
+  [null, null, null, null, null, null, null],
+  [11, null, 1, null, null, 17, null],
+  [null, null, 3, 2, null, 26, null]
+] },
+  { name: "20260413", grid: [
+  ["X", "X", "X", "X", null, "X", "X"],
+  ["X", "X", "X", null, "X", null, 21],
+  [null, "X", "X", null, null, "X", "X"],
+  ["X", 18, null, 2, 1, "X", "X"],
+  ["X", null, null, null, 3, null, "X"],
+  [null, null, null, null, null, 11, null],
+  [15, "X", "X", null, "X", 26, "X"]
+] },
+  { name: "20260414", grid: [
+  [31, "X", null, "X", "X", "X", "X"],
+  [null, 18, null, null, null, null, "X"],
+  ["X", null, null, 13, null, "X", "X"],
+  [null, "X", 2, 1, null, "X", "X"],
+  [null, 24, null, 3, null, "X", "X"],
+  [null, 21, null, null, null, null, null],
+  ["X", "X", "X", 9, "X", null, null]
+] },
+  { name: "20260415", grid: [
+  ["X", "X", null, null, null, null, "X"],
+  ["X", null, null, null, null, 1, null],
+  ["X", null, null, 10, 2, 3, null],
+  [null, null, 15, null, null, 20, null],
+  ["X", null, null, 23, "X", null, null],
+  ["X", "X", "X", 34, 27, null, null],
+  ["X", "X", "X", "X", null, null, "X"]
+] },
+  { name: "20260416", grid: [
+  ["X", "X", "X", "X", null, null, null],
+  ["X", "X", "X", "X", null, null, null],
+  ["X", "X", null, null, null, null, null],
+  ["X", 9, 14, null, 3, 2, null],
+  [null, null, null, null, 1, null, null],
+  [22, null, null, null, 33, null, "X"],
+  [null, "X", "X", null, "X", "X", null]
+] },
+  { name: "20260417", grid: [
+  ["X", "X", null, null, null, null, null],
+  ["X", null, 14, 2, 1, null, null],
+  ["X", null, null, 3, null, 9, null],
+  [33, null, null, null, null, null, null],
+  ["X", null, null, null, "X", null, "X"],
+  ["X", 22, null, null, null, "X", "X"],
+  ["X", "X", "X", null, "X", "X", "X"]
+] },
+  { name: "20260418", grid: [
+  [null, null, null, null, null, "X", null],
+  ["X", 10, null, "X", null, null, null],
+  [null, null, null, null, null, 24, null],
+  [null, null, null, 1, null, "X", null],
+  [null, null, null, 3, 2, null, "X"],
+  ["X", "X", null, null, "X", null, "X"],
+  ["X", 36, null, 15, "X", "X", "X"]
+] },
+  { name: "20260419", grid: [
+  ["X", "X", null, null, null, "X", null],
+  ["X", null, "X", null, null, null, "X"],
+  [null, null, null, null, 1, null, null],
+  [null, null, null, null, 3, 2, null],
+  [null, null, null, null, null, null, null],
+  ["X", null, 37, null, null, null, null],
+  [null, "X", "X", "X", "X", null, "X"]
+] },
+  { name: "20260420", grid: [
+  ["X", "X", 21, 19, "X", "X", "X"],
+  ["X", "X", "X", null, null, 27, "X"],
+  ["X", "X", "X", null, null, null, "X"],
+  ["X", null, null, 1, 2, "X", null],
+  [null, null, null, 3, null, 12, null],
+  [16, null, null, "X", null, "X", "X"],
+  [null, "X", null, "X", null, "X", "X"]
+] },
+  { name: "20260421", grid: [
+  ["X", "X", "X", null, null, null, 13],
+  [null, null, null, 3, "X", null, null],
+  [null, null, null, 1, 2, null, "X"],
+  [null, null, null, null, 21, null, "X"],
+  [9, null, null, "X", "X", "X", null],
+  [null, "X", null, 30, "X", "X", "X"],
+  ["X", "X", null, "X", "X", "X", "X"]
+] },
+  { name: "20260422", grid: [
+  ["X", null, "X", null, "X", null, "X"],
+  [null, null, null, null, null, "X", null],
+  ["X", null, null, null, null, null, "X"],
+  [null, "X", 2, 1, null, "X", "X"],
+  [28, null, "X", 3, null, "X", "X"],
+  ["X", "X", null, null, "X", "X", null],
   ["X", "X", "X", null, null, null, "X"]
 ] },
-  { name: "20260402", grid: [
-  ["X", null, null, "X", "X", "X", "X"],
-  [null, 14, null, null, "X", null, "X"],
-  [null, 1, 3, null, null, "X", "X"],
-  [null, null, 2, null, null, null, null],
-  [null, "X", null, "X", null, 22, "X"],
-  [null, null, 9, null, "X", "X", null],
-  [null, null, null, null, 33, "X", "X"]
+  { name: "20260423", grid: [
+  ["X", null, null, "X", null, null, "X"],
+  [null, "X", null, null, null, null, null],
+  [32, null, null, null, null, null, null],
+  ["X", null, null, 2, 3, null, 9],
+  ["X", null, 14, 1, null, "X", null],
+  ["X", "X", null, null, "X", "X", 22],
+  ["X", "X", "X", "X", null, "X", "X"]
 ] },
-  { name: "20260403", grid: [
-  ["X", null, null, null, null, null, null],
-  [16, null, null, 11, null, null, null],
-  [null, null, null, 2, 3, "X", null],
-  [null, null, 30, "X", 1, null, null],
-  ["X", null, null, null, 38, null, null],
-  ["X", "X", 33, 26, null, null, 22],
-  ["X", "X", "X", null, "X", null, "X"]
-] },
-  { name: "20260404", grid: [
-  [null, null, "X", "X", null, null, null],
-  [null, null, null, null, null, null, "X"],
-  [null, null, null, "X", null, null, null],
-  [null, null, 2, 3, "X", "X", "X"],
-  [null, 10, null, 1, 15, null, "X"],
-  [null, null, null, null, "X", "X", "X"],
-  [null, 24, null, null, 36, "X", "X"]
-] },
-  { name: "20260405", grid: [
-  ["X", "X", "X", null, "X", "X", "X"],
-  [null, null, null, null, "X", "X", "X"],
-  [null, null, null, 37, null, null, "X"],
-  [null, null, null, 2, null, null, "X"],
-  [null, null, 1, 3, null, "X", null],
-  [null, null, null, null, null, null, null],
-  [null, null, null, null, null, null, null]
-] },
-  { name: "20260406", grid: [
-  ["X", "X", null, null, "X", 16, "X"],
-  ["X", null, null, "X", null, 21, null],
-  ["X", "X", "X", 2, 3, null, null],
-  [null, null, null, null, 1, null, null],
-  ["X", 12, "X", null, "X", "X", 19],
-  ["X", "X", null, null, null, "X", null],
-  ["X", "X", "X", "X", 27, "X", "X"]
-] },
-  { name: "20260407", grid: [
-  ["X", "X", "X", null, null, 13, null],
-  ["X", "X", null, "X", 31, null, null],
-  [null, null, "X", null, 2, null, null],
-  ["X", null, null, 1, 3, 18, null],
-  ["X", 24, "X", null, 21, null, null],
-  ["X", "X", null, null, "X", null, 9],
-  ["X", "X", "X", "X", "X", null, null]
-] },
-  { name: "20260408", grid: [
-  [null, null, null, null, null, "X", "X"],
-  ["X", null, null, null, null, null, 32],
-  [null, null, null, null, 9, null, "X"],
-  ["X", 14, 1, 3, null, null, "X"],
-  [null, "X", 2, "X", null, null, "X"],
-  ["X", null, null, null, 22, "X", "X"],
-  ["X", "X", null, "X", null, "X", "X"]
-] },
-  { name: "20260409", grid: [
-  ["X", null, 23, null, null, null, null],
-  [null, 10, null, 3, 1, null, "X"],
-  ["X", null, 27, null, 2, "X", null],
-  ["X", null, "X", null, null, null, null],
-  ["X", "X", null, "X", null, null, null],
-  ["X", null, null, "X", 20, 15, null],
-  ["X", "X", "X", "X", 34, null, null]
+  { name: "20260424", grid: [
+  [null, "X", null, null, null, 33, null],
+  ["X", null, null, null, 3, "X", null],
+  [38, 30, null, null, 2, 1, null],
+  [null, null, null, null, 22, null, null],
+  [26, null, null, null, null, 11, null],
+  ["X", null, "X", null, null, null, 16],
+  ["X", "X", "X", "X", "X", null, "X"]
 ] }
 ];
