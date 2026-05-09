@@ -622,12 +622,12 @@ export const puzzles = [
     ["X", "X", null, null, null, null, null]
   ] },
   { name: "20260421", grid: [
-    ["X", "X", "X", null, "X", "X", "X"],
-    ["X", "X", "X", "X", 26, null, null],
+    ["X", null, null, null, 26, null, null],
+    ["X", "X", null, null, null, null, null],
     ["X", null, "X", null, null, null, null],
     [null, null, "X", null, null, null, null],
-    ["X", null, null, null, null, 2, null],
-    ["X", "X", null, null, 3, 1, null],
+    [null, null, null, null, null, 2, null],
+    ["X", null, null, null, 3, 1, null],
     ["X", "X", 18, 11, null, null, null]
   ] },
   { name: "20260422", grid: [
@@ -643,8 +643,8 @@ export const puzzles = [
     [null, null, null, null, null, null, "X"],
     [10, null, null, null, null, 31, "X"],
     [null, 2, 3, 15, null, 35, "X"],
-    [null, null, 1, 27, 24, "X", null],
-    [null, null, null, null, null, "X", "X"],
+    [null, null, 1, 27, 24, null, null],
+    [null, null, null, null, null, null, "X"],
     [20, null, null, null, null, "X", "X"],
     [null, null, "X", "X", "X", "X", "X"]
   ] },
@@ -686,9 +686,9 @@ export const puzzles = [
   ] },
   { name: "20260428", grid: [
     ["X", "X", "X", null, "X", "X", "X"],
-    ["X", "X", null, null, null, "X", "X"],
-    [20, null, null, null, "X", "X", "X"],
-    [23, null, null, null, 29, "X", "X"],
+    ["X", "X", null, null, null, null, "X"],
+    [null, null, null, null, null, "X", "X"],
+    [23, null, null, null, null, null, "X"],
     [null, null, null, 13, null, "X", null],
     [null, null, 3, 2, null, null, null],
     [null, 8, 1, null, null, null, 17]
@@ -766,11 +766,11 @@ export const puzzles = [
     [null, null, null, null, null, null, null]
   ] },
   { name: "20260507", grid: [
-    ["X", "X", "X", null, "X", "X", "X"],
-    [null, null, null, 30, "X", "X", "X"],
-    [null, null, null, null, null, "X", null],
-    [null, null, null, null, null, "X", null],
-    [null, null, 2, null, null, "X", null],
+    ["X", "X", "X", null, null, "X", null],
+    [null, null, null, null, "X", null, "X"],
+    ["X", null, "X", "X", null, "X", null],
+    [null, null, null, null, null, null, null],
+    [null, null, 2, null, null, null, null],
     [null, 1, 3, null, null, "X", "X"],
     [null, null, null, null, null, null, "X"]
   ] },
