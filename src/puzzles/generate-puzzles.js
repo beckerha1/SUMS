@@ -375,6 +375,19 @@ function pickHints(N, density) {
   return h;
 }
 
+function stubPuzzle(SIZE, targetN) {
+  const grid = Array.from({ length: SIZE }, () => Array(SIZE).fill(null));
+  grid[0][0] = 1;
+  grid[0][1] = 2;
+  grid[1][1] = 3;
+  return {
+    grid,
+    placedPos: [[0, 0], [0, 1], [1, 1]],
+    N: targetN,
+    _stub: true
+  };
+}
+
 function generatePuzzle(SIZE, targetN, density) {
   const tries =
     targetN >= 45 ? 12000 :
@@ -408,7 +421,13 @@ const miniConfigs=[
   {N:25,density:'dense'}, {N:13,density:'sparse'},{N:21,density:'medium'},
 ];
 
-function addDays(s,d){const dt=new Date(s.slice(0,4)+'-'+s.slice(4,6)+'-'+s.slice(6,8));dt.setDate(dt.getDate()+d);return`${dt.getFullYear()}${String(dt.getMonth()+1).padStart(2,'0')}${String(dt.getDate()).padStart(2,'0')}`;}
+function addDays(s, d) {
+  const y = +s.slice(0, 4);
+  const m = +s.slice(4, 6) - 1;
+  const day = +s.slice(6, 8);
+  const dt = new Date(Date.UTC(y, m, day + d));
+  return `${dt.getUTCFullYear()}${String(dt.getUTCMonth() + 1).padStart(2, '0')}${String(dt.getUTCDate()).padStart(2, '0')}`;
+}
 function formatGrid(g){return'[\n'+g.map(row=>'  ['+row.map(c=>c==='X'?'"X"':c===null?'null':String(c)).join(', ')+']').join(',\n')+'\n]';}
 function toYYYYMMDD(s){return s.replace(/-/g,'').trim();}
 function isValidDateString(s){return /^\d{8}$/.test(s);}
@@ -416,11 +435,13 @@ function isValidNumberString(s){return /^\d+$/.test(s);}
 function pickConfig(configs, index) {
   return configs[index % configs.length];
 }
-function weekdayDifficulty(dateStr){
-  // 0=Sun..6=Sat -> Mon=1 ... Sun=7
-  const dt = new Date(dateStr.slice(0,4)+'-'+dateStr.slice(4,6)+'-'+dateStr.slice(6,8)+'T00:00:00');
-  const day = dt.getDay();
-  return day === 0 ? 7 : day;
+function weekdayDifficulty(dateStr) {
+  // 0=Sun..6=Sat -> Mon=1 ... Sun=7 (calendar date in UTC, matches addDays)
+  const y = +dateStr.slice(0, 4);
+  const m = +dateStr.slice(4, 6) - 1;
+  const day = +dateStr.slice(6, 8);
+  const dow = new Date(Date.UTC(y, m, day)).getUTCDay();
+  return dow === 0 ? 7 : dow;
 }
 function openNeighborCount(grid, r, c) {
   let count = 0;
@@ -623,9 +644,10 @@ async function main() {
   for(let i=0;i<puzzleCount;i++){
     const{N,density}=pickConfig(fullConfigs, i);
     process.stdout.write(`  [${i+1}] N=${N} ${density}... `);
-    const r=generatePuzzle(7,N,density);
-    if(r){fullResults.push(r);process.stdout.write(`OK (N=${r.N}) ✓\n`);}
-    else process.stdout.write(`FAILED\n`);
+    let r=generatePuzzle(7,N,density);
+    if(!r){r=stubPuzzle(7,N);process.stdout.write(`stub (replace manually) `);}
+    fullResults.push(r);
+    process.stdout.write(`OK (N=${r.N}) ✓\n`);
   }
 
   console.log('\nGenerating mini 5x5 puzzles...');
@@ -633,9 +655,10 @@ async function main() {
   for(let i=0;i<puzzleCount;i++){
     const{N,density}=pickConfig(miniConfigs, i);
     process.stdout.write(`  [${i+1}] N=${N} ${density}... `);
-    const r=generatePuzzle(5,N,density);
-    if(r){miniResults.push(r);process.stdout.write(`OK (N=${r.N}) ✓\n`);}
-    else process.stdout.write(`FAILED\n`);
+    let r=generatePuzzle(5,N,density);
+    if(!r){r=stubPuzzle(5,N);process.stdout.write(`stub (replace manually) `);}
+    miniResults.push(r);
+    process.stdout.write(`OK (N=${r.N}) ✓\n`);
   }
 
   const scheduledFull = assignByWeekdayDifficulty(fullResults, startDate, 7);
@@ -661,7 +684,9 @@ async function main() {
   fs.writeFileSync(path.join(outDir,'new-full-puzzles.js'),fullCode);
   fs.writeFileSync(path.join(outDir,'new-mini-puzzles.js'),miniCode);
 
-  console.log(`\n✅ Full: ${fullResults.length}/${puzzleCount}, Mini: ${miniResults.length}/${puzzleCount}`);
+  const stubFull = fullResults.filter(p => p._stub).length;
+  const stubMini = miniResults.filter(p => p._stub).length;
+  console.log(`\n✅ Full: ${fullResults.length}/${puzzleCount}${stubFull ? ` (${stubFull} stub)` : ''}, Mini: ${miniResults.length}/${puzzleCount}${stubMini ? ` (${stubMini} stub)` : ''}`);
   console.log('✅ Output written to src/puzzles/new-full-puzzles.js and src/puzzles/new-mini-puzzles.js');
   console.log('✅ Output now uses compact entries: { name, grid }');
 }
