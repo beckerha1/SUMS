@@ -908,5 +908,14 @@ export const puzzles = [
     [26, null, null, null, null, 11, null],
     ["X", null, "X", null, null, null, 16],
     ["X", "X", "X", "X", "X", null, "X"]
+  ] },
+  { name: "20260525", grid: [
+    [null, "X", null, null, 23, null, null],
+    ["X", null, null, null, 3, "X", null],
+    [null, 19, null, null, 2, 1, null],
+    [null, null, null, null, 22, null, null],
+    [null, null, null, null, null, null, null],
+    ["X", null, "X", null, null, null, null],
+    [null, "X", 21, null, null, null, "X"]
   ] }
 ];
