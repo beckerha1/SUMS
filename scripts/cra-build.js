@@ -18,4 +18,16 @@ const result = spawnSync(process.execPath, nodeArgs, {
 if (result.signal) {
   process.exit(1);
 }
-process.exit(result.status === null ? 1 : result.status);
+if (result.status === null || result.status !== 0) {
+  process.exit(result.status === null ? 1 : result.status);
+}
+
+const inject = spawnSync(process.execPath, [require.resolve('./inject-seo-html.js')], {
+  stdio: 'inherit',
+  env: process.env,
+  shell: false,
+});
+if (inject.signal) {
+  process.exit(1);
+}
+process.exit(inject.status === null ? 1 : inject.status);

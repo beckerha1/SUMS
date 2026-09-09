@@ -21,8 +21,11 @@
       "purpose": "any"
     }
   ],
-  "start_url": ".",
+  "start_url": "/",
   "display": "standalone",
+  "lang": "en",
+  "description": "Free daily number logic puzzle. Play Mini (5×5) and Full (7×7) SUMS boards. New puzzles every day.",
+  "categories": ["games", "puzzle"],
   "theme_color": "#303036",
   "background_color": "#303036"
 }

@@ -1,0 +1,60 @@
+# SUMS
+
+SUMS is a free daily number puzzle game at https://sums.games, created by Xavier Games. You fill a grid by placing numbers in order (1, 2, 3, and so on). To place the next number, select two or more adjacent cells that add up to it, then tap an empty cell touching the start or end of that selection. Fill every empty cell to win.
+
+There are two puzzles each day:
+- Mini SUMS: 5×5 grid for a short solve.
+- Full SUMS: 7×7 grid with more planning, clues, and walls.
+
+New Mini and Full puzzles publish every day at midnight Eastern Time (America/New_York). The game is free, ad-supported, and does not require an account. Personal statistics, streaks, and best times are stored in the browser.
+
+Hard mode limits how many cells you can select at once, typically three or four. There is no time limit.
+
+Weekly difficulty ramps from Monday (difficulty 1) to Sunday (difficulty 7).
+
+## How to play
+
+1. Read the starting grid. Gray numbers are pre-filled clues. Empty cells are yours to fill. Black squares block movement.
+2. Place numbers in order, starting at 1. If a clue already shows the next number, that clue counts as placed.
+3. Select cells that add up to the next number. Each selected cell must touch the next cell in the chain. Example: 1 + 2 = 3.
+4. Place the sum in a touching empty cell.
+5. Use later clues to plan ahead so a path still exists when those numbers come up.
+6. Fill every empty cell. Undo is available if a placement blocks the rest of the path.
+
+## FAQ
+
+### What is SUMS?
+SUMS is a free daily number puzzle game at sums.games. You fill a grid by placing numbers in order using adjacent sums.
+
+### How do you play SUMS?
+Look at the gray clue numbers. Place numbers in sequence, starting from 1. Select a connected chain of cells whose values add up to your next number, then place that number in an empty cell that touches the start or end of the chain.
+
+### Is SUMS free to play?
+Yes. You do not need an account, app download, or subscription.
+
+### What is the difference between Mini SUMS and Full SUMS?
+Mini is 5×5 and usually takes a few minutes. Full is 7×7 and needs more planning. Both refresh daily.
+
+### When does the daily SUMS puzzle reset?
+Midnight Eastern Time.
+
+### Do I need an account to play SUMS?
+No. Open https://sums.games and play immediately.
+
+### What is Hard mode in SUMS?
+Hard mode limits how many cells you can select at once, typically to three or four.
+
+### Is there a time limit?
+No. Completion time is tracked for personal stats and optional high scores.
+
+### Who created SUMS?
+Xavier Games. Contact: harrison.x.becker@gmail.com.
+
+## Site map
+
+- https://sums.games/
+- https://sums.games/how-to-play
+- https://sums.games/faq
+- https://sums.games/strategy
+- https://sums.games/about
+- https://sums.games/privacy
