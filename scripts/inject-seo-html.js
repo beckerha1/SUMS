@@ -182,57 +182,91 @@ function howToSchema() {
   };
 }
 
+function replaceOnce(html, pattern, replacement, label) {
+  const next = html.replace(pattern, replacement);
+  if (next === html) {
+    throw new Error(`Failed to replace ${label} in built index.html`);
+  }
+  return next;
+}
+
 function applyPage(html, page, pathname) {
   const url = `${ORIGIN}${pathname}`;
+  const title = escapeHtml(page.title);
+  const description = escapeHtml(page.description);
   let next = html;
-  next = next.replace(/<title>[\s\S]*?<\/title>/, `<title>${page.title}</title>`);
-  next = next.replace(
-    /<meta name="title" content="[^"]*" \/>/,
-    `<meta name="title" content="${escapeHtml(page.title)}" />`
+  next = replaceOnce(next, /<title>[\s\S]*?<\/title>/, `<title>${page.title}</title>`, 'title');
+  next = replaceOnce(
+    next,
+    /<meta name="title" content="[^"]*"\s*\/?>/,
+    `<meta name="title" content="${title}"/>`,
+    'meta title'
   );
-  next = next.replace(
-    /<meta name="description" content="[^"]*" \/>/,
-    `<meta name="description" content="${escapeHtml(page.description)}" />`
+  next = replaceOnce(
+    next,
+    /<meta name="description" content="[^"]*"\s*\/?>/,
+    `<meta name="description" content="${description}"/>`,
+    'meta description'
   );
-  next = next.replace(
-    /<link rel="canonical" href="[^"]*" \/>/,
-    `<link rel="canonical" href="${url}" />`
+  next = replaceOnce(
+    next,
+    /<link rel="canonical" href="[^"]*"\s*\/?>/,
+    `<link rel="canonical" href="${url}"/>`,
+    'canonical'
   );
-  next = next.replace(
-    /<meta property="og:url" content="[^"]*" \/>/,
-    `<meta property="og:url" content="${url}" />`
+  next = replaceOnce(
+    next,
+    /<meta property="og:url" content="[^"]*"\s*\/?>/,
+    `<meta property="og:url" content="${url}"/>`,
+    'og:url'
   );
-  next = next.replace(
-    /<meta property="og:title" content="[^"]*" \/>/,
-    `<meta property="og:title" content="${escapeHtml(page.title)}" />`
+  next = replaceOnce(
+    next,
+    /<meta property="og:title" content="[^"]*"\s*\/?>/,
+    `<meta property="og:title" content="${title}"/>`,
+    'og:title'
   );
-  next = next.replace(
-    /<meta property="og:description" content="[^"]*" \/>/,
-    `<meta property="og:description" content="${escapeHtml(page.description)}" />`
+  next = replaceOnce(
+    next,
+    /<meta property="og:description" content="[^"]*"\s*\/?>/,
+    `<meta property="og:description" content="${description}"/>`,
+    'og:description'
   );
-  next = next.replace(
-    /<meta property="og:type" content="[^"]*" \/>/,
-    `<meta property="og:type" content="article" />`
+  next = replaceOnce(
+    next,
+    /<meta property="og:type" content="[^"]*"\s*\/?>/,
+    `<meta property="og:type" content="article"/>`,
+    'og:type'
   );
-  next = next.replace(
-    /<meta property="twitter:url" content="[^"]*" \/>/,
-    `<meta property="twitter:url" content="${url}" />`
+  next = replaceOnce(
+    next,
+    /<meta property="twitter:url" content="[^"]*"\s*\/?>/,
+    `<meta property="twitter:url" content="${url}"/>`,
+    'twitter:url'
   );
-  next = next.replace(
-    /<meta property="twitter:title" content="[^"]*" \/>/,
-    `<meta property="twitter:title" content="${escapeHtml(page.title)}" />`
+  next = replaceOnce(
+    next,
+    /<meta property="twitter:title" content="[^"]*"\s*\/?>/,
+    `<meta property="twitter:title" content="${title}"/>`,
+    'twitter:title'
   );
-  next = next.replace(
-    /<meta property="twitter:description" content="[^"]*" \/>/,
-    `<meta property="twitter:description" content="${escapeHtml(page.description)}" />`
+  next = replaceOnce(
+    next,
+    /<meta property="twitter:description" content="[^"]*"\s*\/?>/,
+    `<meta property="twitter:description" content="${description}"/>`,
+    'twitter:description'
   );
-  next = next.replace(
+  next = replaceOnce(
+    next,
     /<script type="application\/ld\+json" id="page-schema">[\s\S]*?<\/script>/,
-    `<script type="application/ld+json" id="page-schema">\n${JSON.stringify(page.schema, null, 2)}\n  </script>`
+    `<script type="application/ld+json" id="page-schema">${JSON.stringify(page.schema)}</script>`,
+    'page schema'
   );
-  next = next.replace(
+  next = replaceOnce(
+    next,
     /<article id="crawler-content"[^>]*>[\s\S]*?<\/article>/,
-    `<article id="crawler-content" style="max-width:720px;margin:24px auto;padding:0 16px;font-family:Arial,sans-serif;line-height:1.6;color:#222;">${page.crawler}</article>`
+    `<article id="crawler-content" style="max-width:720px;margin:24px auto;padding:0 16px;font-family:Arial,sans-serif;line-height:1.6;color:#222;">${page.crawler}</article>`,
+    'crawler content'
   );
   return next;
 }
