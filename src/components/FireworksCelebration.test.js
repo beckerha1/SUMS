@@ -16,6 +16,8 @@ const makeCtx = () => ({
   stroke: jest.fn(),
   save: jest.fn(),
   restore: jest.fn(),
+  translate: jest.fn(),
+  rotate: jest.fn(),
 });
 
 beforeEach(() => {

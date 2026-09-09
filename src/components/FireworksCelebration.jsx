@@ -1,13 +1,13 @@
 import React, { useEffect, useRef } from 'react';
 
-export const WIN_CELEBRATION_MS = 2600;
+export const WIN_CELEBRATION_MS = 3800;
 export const WIN_CELEBRATION_REDUCED_MS = 450;
 
 const TAU = Math.PI * 2;
 const PALETTE = [
-  '#ffd700', '#fff4c2', '#ffffff', '#ff6b3d',
-  '#ff2d95', '#7af7ff', '#7cff6b', '#b388ff',
-  '#ff9f1c', '#00f5d4', '#ff4d6d'
+  '#e8b923', '#f4d35e', '#f7a072', '#ee6c4d',
+  '#7ebdc2', '#5c9ead', '#c084fc', '#f472b6',
+  '#86efac', '#fde68a', '#fb923c'
 ];
 
 function rand(min, max) {
@@ -35,63 +35,33 @@ function playCelebrationAudio() {
     if (!AudioCtx) return null;
 
     const ctx = new AudioCtx();
-  const master = ctx.createGain();
-  master.gain.value = 0.22;
-  master.connect(ctx.destination);
+    const master = ctx.createGain();
+    master.gain.value = 0.1;
+    master.connect(ctx.destination);
 
-  const resume = () => {
     if (ctx.state === 'suspended') {
       ctx.resume().catch(() => {});
     }
-  };
-  resume();
 
-  const now = ctx.currentTime;
+    const now = ctx.currentTime;
+    const tone = (freq, start, dur, peak) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, start);
+      gain.gain.setValueAtTime(0.0001, start);
+      gain.gain.exponentialRampToValueAtTime(peak, start + 0.06);
+      gain.gain.exponentialRampToValueAtTime(0.0001, start + dur);
+      osc.connect(gain).connect(master);
+      osc.start(start);
+      osc.stop(start + dur + 0.05);
+    };
 
-  const tone = (freq, start, dur, type, peak) => {
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = type;
-    osc.frequency.setValueAtTime(freq, start);
-    gain.gain.setValueAtTime(0.0001, start);
-    gain.gain.exponentialRampToValueAtTime(peak, start + 0.02);
-    gain.gain.exponentialRampToValueAtTime(0.0001, start + dur);
-    osc.connect(gain).connect(master);
-    osc.start(start);
-    osc.stop(start + dur + 0.05);
-  };
-
-  // Bright opening fanfare
-  [523.25, 659.25, 783.99, 1046.5].forEach((freq, i) => {
-    tone(freq, now + i * 0.07, 0.55, 'triangle', 0.22);
-  });
-  tone(261.63, now, 0.9, 'sine', 0.12);
-
-  const crackle = (when, strength) => {
-    const duration = 0.18;
-    const buffer = ctx.createBuffer(1, Math.max(1, (ctx.sampleRate * duration) | 0), ctx.sampleRate);
-    const data = buffer.getChannelData(0);
-    for (let i = 0; i < data.length; i++) {
-      data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / data.length, 2.2);
-    }
-    const src = ctx.createBufferSource();
-    src.buffer = buffer;
-    const filter = ctx.createBiquadFilter();
-    filter.type = 'bandpass';
-    filter.frequency.value = rand(700, 2400);
-    filter.Q.value = 1.2;
-    const gain = ctx.createGain();
-    gain.gain.setValueAtTime(strength, when);
-    gain.gain.exponentialRampToValueAtTime(0.0001, when + duration);
-    src.connect(filter).connect(gain).connect(master);
-    src.start(when);
-
-    tone(rand(140, 280), when, 0.22, 'sine', strength * 0.45);
-  };
-
-  [0.12, 0.28, 0.5, 0.72, 1.05, 1.35, 1.7, 2.05, 2.45, 2.9, 3.4].forEach((offset, i) => {
-    crackle(now + offset, i === 0 ? 0.28 : rand(0.1, 0.2));
-  });
+    // Soft, unhurried chime — no crackles
+    [523.25, 659.25, 783.99].forEach((freq, i) => {
+      tone(freq, now + i * 0.16, 0.9, 0.16);
+    });
+    tone(392.0, now, 1.3, 0.07);
 
     return ctx;
   } catch (err) {
@@ -99,137 +69,42 @@ function playCelebrationAudio() {
   }
 }
 
-function spawnRocket(width, height) {
+function spawnPiece(width, height, mode) {
   const color = pick(PALETTE);
+  const fromTop = mode === 'fall';
   return {
-    kind: 'rocket',
-    x: rand(width * 0.08, width * 0.92),
-    y: height + 8,
-    vx: rand(-1.1, 1.1),
-    vy: -rand(11, 18) * Math.max(0.9, height / 900),
-    targetY: rand(height * 0.1, height * 0.46),
-    color,
+    x: fromTop ? rand(-12, width + 12) : width * 0.5 + rand(-width * 0.18, width * 0.18),
+    y: fromTop ? rand(-80, -12) : height * 0.22 + rand(-20, 24),
+    vx: fromTop ? rand(-0.35, 0.35) : rand(-1.6, 1.6),
+    vy: fromTop ? rand(0.55, 1.15) : rand(-1.1, 0.55),
+    gravity: rand(0.006, 0.012),
+    sway: rand(0.35, 0.9),
+    wobble: rand(0, TAU),
+    wobbleSpeed: rand(0.018, 0.04),
+    rotation: rand(0, TAU),
+    spin: rand(-0.035, 0.035),
+    w: rand(5, 11),
+    h: rand(8, 15),
     rgb: hexToRgb(color),
-    trail: [],
-    trailAcc: 0,
-    age: 0,
-    life: 1,
-    exploded: false
+    alpha: rand(0.78, 1)
   };
 }
 
-function spawnExplosion(x, y, color, style) {
-  const rgb = hexToRgb(color);
-  const sparks = [];
-  const count = style === 'ring' ? 40 : style === 'willow' ? 52 : (70 + ((Math.random() * 28) | 0));
-  const baseSpeed = style === 'willow' ? 4.8 : style === 'ring' ? 7.2 : rand(5.5, 9.2);
-
-  sparks.push({
-    kind: 'flash',
-    x,
-    y,
-    life: 1,
-    decay: 0.045,
-    radius: rand(90, 170),
-    rgb
-  });
-
-  for (let i = 0; i < count; i++) {
-    const angle = style === 'ring'
-      ? (i / count) * TAU + rand(-0.04, 0.04)
-      : rand(0, TAU);
-    const speed = style === 'ring'
-      ? baseSpeed * rand(0.88, 1.12)
-      : baseSpeed * rand(0.45, 1.35);
-    sparks.push({
-      kind: 'spark',
-      x,
-      y,
-      vx: Math.cos(angle) * speed,
-      vy: Math.sin(angle) * speed,
-      life: 1,
-      decay: style === 'willow' ? rand(0.006, 0.011) : rand(0.008, 0.016),
-      gravity: style === 'willow' ? 0.055 : 0.038,
-      size: rand(2.8, 6.4),
-      rgb,
-      glitter: style === 'willow' || Math.random() < 0.45
-    });
-  }
-
-  for (let i = 0; i < 18; i++) {
-    const angle = rand(0, TAU);
-    const speed = rand(0.8, 3.2);
-    sparks.push({
-      kind: 'spark',
-      x,
-      y,
-      vx: Math.cos(angle) * speed,
-      vy: Math.sin(angle) * speed,
-      life: 1,
-      decay: 0.03,
-      gravity: 0.015,
-      size: rand(3.5, 7.2),
-      rgb: { r: 255, g: 255, b: 255 },
-      glitter: false
-    });
-  }
-
-  return sparks;
-}
-
-function drawParticle(ctx, p) {
-  const alpha = Math.max(0, Math.min(1, p.life));
-  if (alpha <= 0) return;
+function drawPiece(ctx, p) {
   if (!Number.isFinite(p.x) || !Number.isFinite(p.y)) return;
-
-  if (p.kind === 'flash') {
-    const radius = Math.max(8, p.radius * (0.65 + (1 - alpha) * 0.55));
-    const gradient = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, radius);
-    gradient.addColorStop(0, `rgba(255,255,255,${alpha * 0.95})`);
-    gradient.addColorStop(0.2, `rgba(${p.rgb.r},${p.rgb.g},${p.rgb.b},${alpha * 0.75})`);
-    gradient.addColorStop(0.55, `rgba(${p.rgb.r},${p.rgb.g},${p.rgb.b},${alpha * 0.28})`);
-    gradient.addColorStop(1, `rgba(${p.rgb.r},${p.rgb.g},${p.rgb.b},0)`);
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, radius, 0, TAU);
-    ctx.fillStyle = gradient;
-    ctx.fill();
-    return;
-  }
-
-  if (p.kind === 'rocket') {
-    p.trail.forEach((t, i) => {
-      const ta = (i / p.trail.length) * 0.7;
-      ctx.beginPath();
-      ctx.arc(t.x, t.y, 2.4, 0, TAU);
-      ctx.fillStyle = `rgba(${p.rgb.r},${p.rgb.g},${p.rgb.b},${ta})`;
-      ctx.fill();
-    });
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, 3.4, 0, TAU);
-    ctx.fillStyle = `rgba(255,255,240,${0.95 * alpha})`;
-    ctx.fill();
-    return;
-  }
-
-  const glow = Math.max(4, p.size * 6.2);
-  const gradient = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, glow);
-  gradient.addColorStop(0, `rgba(255,255,255,${alpha})`);
-  gradient.addColorStop(0.22, `rgba(${p.rgb.r},${p.rgb.g},${p.rgb.b},${alpha * 0.95})`);
-  gradient.addColorStop(1, `rgba(${p.rgb.r},${p.rgb.g},${p.rgb.b},0)`);
-  ctx.beginPath();
-  ctx.arc(p.x, p.y, glow, 0, TAU);
-  ctx.fillStyle = gradient;
-  ctx.fill();
-
-  ctx.beginPath();
-  ctx.arc(p.x, p.y, Math.max(1, p.size * 0.7), 0, TAU);
-  ctx.fillStyle = `rgba(255,255,255,${alpha})`;
-  ctx.fill();
+  const flutter = 0.55 + 0.45 * Math.cos(p.wobble);
+  ctx.save();
+  ctx.translate(p.x, p.y);
+  ctx.rotate(p.rotation);
+  ctx.globalAlpha = p.alpha;
+  ctx.fillStyle = `rgb(${p.rgb.r},${p.rgb.g},${p.rgb.b})`;
+  ctx.fillRect(-p.w * 0.5, -p.h * 0.5, p.w * flutter, p.h);
+  ctx.restore();
 }
 
 /**
- * Full-screen fireworks overlay shown after a puzzle is solved.
- * pointer-events none when linger is true so the win modal stays clickable.
+ * Slow confetti overlay shown after a puzzle is solved.
+ * pointer-events none so the win modal stays clickable while pieces linger.
  */
 export default function FireworksCelebration({
   active = false,
@@ -255,10 +130,8 @@ export default function FireworksCelebration({
     let width = 0;
     let height = 0;
     let particles = [];
-    let bloom = 1;
     let start = performance.now();
     let running = true;
-    const explodeTimers = [];
 
     const resize = () => {
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -276,38 +149,23 @@ export default function FireworksCelebration({
 
     audioRef.current = playCelebrationAudio();
 
-    const explodeRocket = (rocket) => {
-      if (!running || rocket.exploded) return [];
-      rocket.exploded = true;
-      const style = pick(['burst', 'burst', 'burst', 'ring', 'willow']);
-      const x = Number.isFinite(rocket.x) ? rocket.x : width * 0.5;
-      const y = Number.isFinite(rocket.y) ? rocket.y : height * 0.3;
-      bloom = Math.min(1, bloom + (style === 'willow' ? 0.28 : 0.5));
-      return spawnExplosion(x, y, rocket.color, style);
-    };
-
-    const launchSalvo = (count) => {
+    const drop = (count, mode) => {
       for (let i = 0; i < count; i++) {
-        const rocket = spawnRocket(width, height);
-        particles.push(rocket);
-        const id = window.setTimeout(() => {
-          if (!running || rocket.exploded) return;
-          particles.push(...explodeRocket(rocket));
-        }, rand(550, 1200));
-        explodeTimers.push(id);
+        particles.push(spawnPiece(width, height, mode));
       }
     };
 
-    launchSalvo(6);
+    drop(36, 'fall');
+    drop(22, 'burst');
 
     const spawnId = window.setInterval(() => {
       if (!running) return;
       const elapsed = performance.now() - start;
       const lingering = lingerRef.current;
-      const launchUntil = lingering ? 16000 : 10000;
-      if (elapsed > launchUntil) return;
-      launchSalvo(elapsed < 4000 ? 2 : 1);
-    }, 220);
+      const until = lingering ? 14000 : 8000;
+      if (elapsed > until) return;
+      drop(elapsed < 2500 ? 7 : 4, 'fall');
+    }, 320);
 
     let lastTs = start;
     const FRAME = 16.667;
@@ -333,53 +191,24 @@ export default function FireworksCelebration({
           resize();
         }
 
-        liveCtx.setTransform(Math.min(window.devicePixelRatio || 1, 2), 0, 0, Math.min(window.devicePixelRatio || 1, 2), 0, 0);
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        liveCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
         liveCtx.clearRect(0, 0, width, height);
-        liveCtx.globalCompositeOperation = 'lighter';
+        liveCtx.globalCompositeOperation = 'source-over';
 
         const next = [];
         for (const p of particles) {
-          if (p.kind === 'rocket' && !p.exploded) {
-            p.age += dt;
-            p.x += p.vx * dt;
-            p.y += p.vy * dt;
-            p.vy += 0.085 * dt;
-            p.trailAcc += dt;
-            if (p.trailAcc >= 0.85) {
-              p.trail.push({ x: p.x, y: p.y });
-              if (p.trail.length > 18) p.trail.shift();
-              p.trailAcc = 0;
-            }
-            if (p.y <= p.targetY || p.vy >= -0.6 || p.age > 80) {
-              next.push(...explodeRocket(p));
-            } else {
-              next.push(p);
-            }
-          } else if (p.kind === 'flash') {
-            p.life -= p.decay * dt;
-            if (p.life > 0) next.push(p);
-          } else if (p.kind === 'spark') {
-            p.x += p.vx * dt;
-            p.y += p.vy * dt;
-            p.vy += p.gravity * dt;
-            const drag = Math.pow(0.985, dt);
-            p.vx *= drag;
-            p.vy *= drag;
-            p.life -= p.decay * dt;
-            if (p.life > 0) next.push(p);
-          }
+          p.wobble += p.wobbleSpeed * dt;
+          p.x += (p.vx + Math.sin(p.wobble) * p.sway) * dt;
+          p.y += p.vy * dt;
+          p.vy += p.gravity * dt;
+          p.rotation += p.spin * dt;
+          if (p.y < height + 24) next.push(p);
         }
-        particles = next.slice(-1800);
+        particles = next.slice(-900);
 
         for (let i = 0; i < particles.length; i++) {
-          drawParticle(liveCtx, particles[i]);
-        }
-
-        if (bloom > 0.002) {
-          liveCtx.globalCompositeOperation = 'source-over';
-          liveCtx.fillStyle = `rgba(255, 236, 180, ${bloom * 0.28})`;
-          liveCtx.fillRect(0, 0, width, height);
-          bloom *= Math.pow(0.86, dt);
+          drawPiece(liveCtx, particles[i]);
         }
       } catch (err) {
         // Keep the loop alive even if a single frame fails to draw.
@@ -403,14 +232,13 @@ export default function FireworksCelebration({
       window.cancelAnimationFrame(rafRef.current);
       window.clearInterval(watchdogId);
       window.clearInterval(spawnId);
-      explodeTimers.forEach((id) => window.clearTimeout(id));
       window.removeEventListener('resize', resize);
       if (audioRef.current) {
         const ctxToClose = audioRef.current;
         audioRef.current = null;
         window.setTimeout(() => {
           ctxToClose.close().catch(() => {});
-        }, 4000);
+        }, 2500);
       }
     };
   }, [active]);
@@ -424,7 +252,6 @@ export default function FireworksCelebration({
       aria-hidden="true"
     >
       <div className="fireworks-sky" />
-      <div className="fireworks-flash" />
       <canvas
         ref={canvasRef}
         className="fireworks-canvas"

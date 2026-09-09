@@ -406,7 +406,7 @@ const triggerWinCellCelebration = (origin, board = grid) => {
   cells.forEach(([r, c], idx) => {
     const id = setTimeout(() => {
       setCelebratingCells(prev => [...prev, `${r},${c}`]);
-    }, idx * 42);
+    }, idx * 70);
     celebrationTimersRef.current.push(id);
   });
 };

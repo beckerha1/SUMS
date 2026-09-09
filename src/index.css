@@ -65,23 +65,12 @@ button:disabled {
 .fireworks-sky {
   position: absolute;
   inset: 0;
-  background:
-    radial-gradient(ellipse at 50% 115%, rgba(90, 20, 80, 0.28), transparent 55%),
-    radial-gradient(ellipse at 50% 0%, rgba(8, 4, 28, 0.35), rgba(6, 2, 18, 0.55));
-  animation: fireworks-sky-in 0.45s ease-out forwards;
+  background: radial-gradient(ellipse at 50% 0%, rgba(255, 244, 214, 0.22), rgba(255, 255, 255, 0.08) 55%, transparent 78%);
+  animation: fireworks-sky-in 0.8s ease-out forwards;
 }
 
 .fireworks-celebration--linger .fireworks-sky {
-  opacity: 0.72;
-}
-
-.fireworks-flash {
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(circle at 50% 42%, rgba(255, 248, 210, 1) 0%, rgba(255, 196, 70, 0.7) 34%, rgba(255, 255, 255, 0.28) 62%, transparent 78%);
-  animation: fireworks-screen-flash 0.85s ease-out forwards;
-  mix-blend-mode: screen;
+  opacity: 0.55;
 }
 
 .fireworks-canvas {
@@ -101,36 +90,29 @@ button:disabled {
   justify-content: center;
   text-align: center;
   padding: 24px;
-  animation: fireworks-banner-pop 0.7s cubic-bezier(0.18, 1.4, 0.32, 1) both;
+  animation: fireworks-banner-pop 1.05s ease-out both;
 }
 
 .fireworks-banner-kicker {
   font-size: clamp(0.85rem, 2.6vw, 1.1rem);
   letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: #ffe9a3;
-  text-shadow: 0 0 18px rgba(255, 210, 80, 0.85);
+  color: #8a6a12;
   margin-bottom: 8px;
   font-weight: 700;
 }
 
 .fireworks-banner-title {
-  font-size: clamp(2.6rem, 10vw, 5.4rem);
+  font-size: clamp(2.4rem, 9vw, 4.6rem);
   line-height: 0.95;
   font-weight: 800;
   letter-spacing: 0.04em;
-  color: #fffce8;
-  text-shadow:
-    0 0 12px rgba(255, 220, 80, 0.95),
-    0 0 36px rgba(255, 80, 180, 0.55),
-    0 0 64px rgba(80, 200, 255, 0.45),
-    0 6px 18px rgba(0, 0, 0, 0.45);
+  color: #303036;
+  text-shadow: 0 2px 10px rgba(255, 255, 255, 0.7);
 }
 
 .win-screen-overlay {
-  background:
-    radial-gradient(circle at 50% 30%, rgba(90, 30, 70, 0.2), transparent 42%),
-    rgba(5, 0, 16, 0.38);
+  background: rgba(48, 48, 54, 0.28);
 }
 
 .win-screen-card {
@@ -154,12 +136,12 @@ button:disabled {
 }
 
 .sums-cell-ignite {
-  animation: sums-cell-ignite 0.7s ease-out forwards;
+  animation: sums-cell-ignite 1.1s ease-out forwards;
   z-index: 3 !important;
 }
 
 .sums-grid-celebrating {
-  filter: drop-shadow(0 0 16px rgba(255, 210, 70, 0.55));
+  filter: drop-shadow(0 0 8px rgba(255, 214, 110, 0.28));
 }
 
 @keyframes fireworks-sky-in {
@@ -167,15 +149,8 @@ button:disabled {
   to { opacity: 1; }
 }
 
-@keyframes fireworks-screen-flash {
-  0% { opacity: 1; }
-  28% { opacity: 0.9; }
-  100% { opacity: 0; }
-}
-
 @keyframes fireworks-banner-pop {
-  0% { transform: scale(0.55); opacity: 0; }
-  60% { transform: scale(1.08); opacity: 1; }
+  0% { transform: scale(0.92); opacity: 0; }
   100% { transform: scale(1); opacity: 1; }
 }
 
@@ -196,19 +171,18 @@ button:disabled {
     box-shadow: none;
   }
   40% {
-    transform: scale(1.16);
-    background-color: #fff3b0;
-    box-shadow: 0 0 18px 6px rgba(255, 210, 70, 0.95);
+    transform: scale(1.06);
+    background-color: #fff6d0;
+    box-shadow: 0 0 10px 2px rgba(255, 214, 110, 0.45);
   }
   100% {
     transform: scale(1);
-    background-color: #ffe58a;
-    box-shadow: 0 0 10px 2px rgba(255, 200, 80, 0.45);
+    background-color: #fff3b8;
+    box-shadow: 0 0 6px 1px rgba(255, 210, 90, 0.28);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .fireworks-flash,
   .fireworks-sky,
   .fireworks-banner,
   .win-screen-emoji,
