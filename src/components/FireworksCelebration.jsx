@@ -106,7 +106,7 @@ function spawnRocket(width, height) {
     x: rand(width * 0.08, width * 0.92),
     y: height + 8,
     vx: rand(-1.1, 1.1),
-    vy: -rand(9.5, 15.5) * Math.max(0.85, height / 900),
+    vy: -rand(11, 18) * Math.max(0.9, height / 900),
     targetY: rand(height * 0.1, height * 0.46),
     color,
     rgb: hexToRgb(color),
@@ -119,16 +119,26 @@ function spawnRocket(width, height) {
 function spawnExplosion(x, y, color, style) {
   const rgb = hexToRgb(color);
   const sparks = [];
-  const count = style === 'ring' ? 42 : style === 'willow' ? 55 : (70 + ((Math.random() * 40) | 0));
-  const baseSpeed = style === 'willow' ? 3.2 : style === 'ring' ? 5.4 : rand(3.4, 6.6);
+  const count = style === 'ring' ? 56 : style === 'willow' ? 70 : (110 + ((Math.random() * 50) | 0));
+  const baseSpeed = style === 'willow' ? 4.8 : style === 'ring' ? 7.2 : rand(5.5, 9.2);
+
+  sparks.push({
+    kind: 'flash',
+    x,
+    y,
+    life: 1,
+    decay: 0.045,
+    radius: rand(90, 170),
+    rgb
+  });
 
   for (let i = 0; i < count; i++) {
     const angle = style === 'ring'
       ? (i / count) * TAU + rand(-0.04, 0.04)
       : rand(0, TAU);
     const speed = style === 'ring'
-      ? baseSpeed * rand(0.92, 1.08)
-      : baseSpeed * rand(0.35, 1.25);
+      ? baseSpeed * rand(0.88, 1.12)
+      : baseSpeed * rand(0.45, 1.35);
     sparks.push({
       kind: 'spark',
       x,
@@ -136,18 +146,17 @@ function spawnExplosion(x, y, color, style) {
       vx: Math.cos(angle) * speed,
       vy: Math.sin(angle) * speed,
       life: 1,
-      decay: style === 'willow' ? rand(0.008, 0.014) : rand(0.012, 0.024),
-      gravity: style === 'willow' ? 0.065 : 0.045,
-      size: rand(1.4, 3.1),
+      decay: style === 'willow' ? rand(0.006, 0.011) : rand(0.008, 0.016),
+      gravity: style === 'willow' ? 0.055 : 0.038,
+      size: rand(2.8, 6.4),
       rgb,
-      glitter: style === 'willow' || Math.random() < 0.35
+      glitter: style === 'willow' || Math.random() < 0.45
     });
   }
 
-  // Inner white flash core
-  for (let i = 0; i < 14; i++) {
+  for (let i = 0; i < 18; i++) {
     const angle = rand(0, TAU);
-    const speed = rand(0.6, 2.4);
+    const speed = rand(0.8, 3.2);
     sparks.push({
       kind: 'spark',
       x,
@@ -155,9 +164,9 @@ function spawnExplosion(x, y, color, style) {
       vx: Math.cos(angle) * speed,
       vy: Math.sin(angle) * speed,
       life: 1,
-      decay: 0.04,
-      gravity: 0.02,
-      size: rand(2.2, 4.4),
+      decay: 0.03,
+      gravity: 0.015,
+      size: rand(3.5, 7.2),
       rgb: { r: 255, g: 255, b: 255 },
       glitter: false
     });
@@ -170,29 +179,48 @@ function drawParticle(ctx, p) {
   const alpha = Math.max(0, p.life);
   if (alpha <= 0) return;
 
-  if (p.kind === 'rocket') {
-    p.trail.forEach((t, i) => {
-      const ta = (i / p.trail.length) * 0.55;
-      ctx.beginPath();
-      ctx.arc(t.x, t.y, 1.6, 0, TAU);
-      ctx.fillStyle = `rgba(${p.rgb.r},${p.rgb.g},${p.rgb.b},${ta})`;
-      ctx.fill();
-    });
+  if (p.kind === 'flash') {
+    const radius = p.radius * (0.65 + (1 - alpha) * 0.55);
+    const gradient = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, radius);
+    gradient.addColorStop(0, `rgba(255,255,255,${alpha * 0.95})`);
+    gradient.addColorStop(0.2, `rgba(${p.rgb.r},${p.rgb.g},${p.rgb.b},${alpha * 0.75})`);
+    gradient.addColorStop(0.55, `rgba(${p.rgb.r},${p.rgb.g},${p.rgb.b},${alpha * 0.28})`);
+    gradient.addColorStop(1, `rgba(${p.rgb.r},${p.rgb.g},${p.rgb.b},0)`);
     ctx.beginPath();
-    ctx.arc(p.x, p.y, 2.4, 0, TAU);
-    ctx.fillStyle = `rgba(255,255,240,${0.9 * alpha})`;
+    ctx.arc(p.x, p.y, radius, 0, TAU);
+    ctx.fillStyle = gradient;
     ctx.fill();
     return;
   }
 
-  const glow = p.size * (p.glitter ? 3.2 : 2.4);
+  if (p.kind === 'rocket') {
+    p.trail.forEach((t, i) => {
+      const ta = (i / p.trail.length) * 0.7;
+      ctx.beginPath();
+      ctx.arc(t.x, t.y, 2.4, 0, TAU);
+      ctx.fillStyle = `rgba(${p.rgb.r},${p.rgb.g},${p.rgb.b},${ta})`;
+      ctx.fill();
+    });
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, 3.4, 0, TAU);
+    ctx.fillStyle = `rgba(255,255,240,${0.95 * alpha})`;
+    ctx.fill();
+    return;
+  }
+
+  const glow = p.size * 6.2;
   const gradient = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, glow);
   gradient.addColorStop(0, `rgba(255,255,255,${alpha})`);
-  gradient.addColorStop(0.35, `rgba(${p.rgb.r},${p.rgb.g},${p.rgb.b},${alpha * 0.9})`);
+  gradient.addColorStop(0.22, `rgba(${p.rgb.r},${p.rgb.g},${p.rgb.b},${alpha * 0.95})`);
   gradient.addColorStop(1, `rgba(${p.rgb.r},${p.rgb.g},${p.rgb.b},0)`);
   ctx.beginPath();
   ctx.arc(p.x, p.y, glow, 0, TAU);
   ctx.fillStyle = gradient;
+  ctx.fill();
+
+  ctx.beginPath();
+  ctx.arc(p.x, p.y, p.size * 0.7, 0, TAU);
+  ctx.fillStyle = `rgba(255,255,255,${alpha})`;
   ctx.fill();
 }
 
@@ -224,7 +252,7 @@ export default function FireworksCelebration({
     let width = 0;
     let height = 0;
     let particles = [];
-    let bloom = 0.9;
+    let bloom = 1;
     let lastLaunch = 0;
     let start = performance.now();
     let running = true;
@@ -251,7 +279,7 @@ export default function FireworksCelebration({
       }
     };
 
-    launchSalvo(5);
+    launchSalvo(8);
     const delayedBursts = [];
 
     const queueSecondaryBurst = (x, y) => {
@@ -274,11 +302,11 @@ export default function FireworksCelebration({
       ctx.clearRect(0, 0, width, height);
       ctx.globalCompositeOperation = 'lighter';
 
-      const intense = elapsed < 2800;
+      const intense = elapsed < 3600;
       const lingering = lingerRef.current;
-      const launchGap = intense ? rand(140, 280) : lingering ? rand(420, 820) : rand(260, 500);
-      if (now - lastLaunch > launchGap && particles.length < 1100 && elapsed < (lingering ? 14000 : 7000)) {
-        launchSalvo(intense ? (Math.random() < 0.5 ? 2 : 1) : 1);
+      const launchGap = intense ? rand(90, 180) : lingering ? rand(280, 560) : rand(160, 320);
+      if (now - lastLaunch > launchGap && particles.length < 1800 && elapsed < (lingering ? 16000 : 10000)) {
+        launchSalvo(intense ? (Math.random() < 0.65 ? 3 : 2) : 1);
         lastLaunch = now;
       }
 
@@ -289,16 +317,19 @@ export default function FireworksCelebration({
           p.y += p.vy;
           p.vy += 0.085;
           p.trail.push({ x: p.x, y: p.y });
-          if (p.trail.length > 14) p.trail.shift();
+          if (p.trail.length > 18) p.trail.shift();
           if (p.y <= p.targetY || p.vy >= -0.6) {
             p.exploded = true;
-            const style = pick(['burst', 'burst', 'ring', 'willow']);
+            const style = pick(['burst', 'burst', 'burst', 'ring', 'willow']);
             next.push(...spawnExplosion(p.x, p.y, p.color, style));
-            bloom = Math.min(1, bloom + (style === 'willow' ? 0.22 : 0.38));
-            if (Math.random() < 0.45) queueSecondaryBurst(p.x, p.y);
+            bloom = Math.min(1, bloom + (style === 'willow' ? 0.28 : 0.5));
+            if (Math.random() < 0.6) queueSecondaryBurst(p.x, p.y);
           } else {
             next.push(p);
           }
+        } else if (p.kind === 'flash') {
+          p.life -= p.decay;
+          if (p.life > 0) next.push(p);
         } else if (p.kind === 'spark') {
           p.x += p.vx;
           p.y += p.vy;
@@ -306,7 +337,7 @@ export default function FireworksCelebration({
           p.vx *= 0.985;
           p.vy *= 0.985;
           p.life -= p.decay;
-          if (p.glitter && Math.random() < 0.08 && next.length < 1100) {
+          if (p.glitter && Math.random() < 0.1 && next.length < 1800) {
             next.push({
               kind: 'spark',
               x: p.x,
@@ -329,7 +360,7 @@ export default function FireworksCelebration({
 
       if (bloom > 0.002) {
         ctx.globalCompositeOperation = 'source-over';
-        ctx.fillStyle = `rgba(255, 236, 180, ${bloom * 0.22})`;
+        ctx.fillStyle = `rgba(255, 236, 180, ${bloom * 0.32})`;
         ctx.fillRect(0, 0, width, height);
         bloom *= 0.86;
       }
