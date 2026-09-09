@@ -113,7 +113,7 @@ const StartScreen = ({
             href="https://puzzled.online/?ref=cert-badge&site=https%3A%2F%2Fsums.games"
             aria-label="Certified Independent Puzzler — puzzled.online"
             target="_blank"
-            rel="noreferrer"
+            rel="noopener noreferrer"
             style={{ display: 'block', lineHeight: 0 }}
           >
             <img
