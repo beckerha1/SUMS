@@ -7,6 +7,7 @@ import Faq from './Faq';
 
 test('renders the SUMS start screen', () => {
   render(<App />);
+  expect(screen.getByAltText(/^sums$/i)).toBeInTheDocument();
   expect(screen.getByRole('heading', { name: /daily number puzzle game/i })).toBeInTheDocument();
   expect(screen.getByRole('button', { name: /play mini sums/i })).toBeInTheDocument();
   expect(screen.getByRole('link', { name: /how to play/i })).toBeInTheDocument();

@@ -81,29 +81,33 @@ const WinScreen = ({
   };
 
   return (
-    <div style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      width: '100vw',
-      height: '100vh',
-      backgroundColor: 'rgba(0, 0, 0, 0.7)',
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      zIndex: 2000
-    }}>
-      <div style={{
-        position: 'relative',
-        background: '#fff',
-        padding: '36px 28px 28px',
-        borderRadius: '14px',
-        boxShadow: '0 4px 30px rgba(0,0,0,0.25)',
-        textAlign: 'center',
-        width: 'min(92vw, 360px)',
-        maxHeight: '90vh',
-        overflowY: 'auto'
-      }}>
+    <div
+      className="win-screen-overlay"
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100vw',
+        height: '100vh',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 2000
+      }}
+    >
+      <div
+        className="win-screen-card"
+        style={{
+          position: 'relative',
+          background: '#fff',
+          padding: '36px 28px 28px',
+          borderRadius: '14px',
+          textAlign: 'center',
+          width: 'min(92vw, 360px)',
+          maxHeight: '90vh',
+          overflowY: 'auto'
+        }}
+      >
         {adLoaded && (
           <ins
             className="adsbygoogle"
@@ -133,9 +137,9 @@ const WinScreen = ({
         >✖</button>
 
         {/* Win Header */}
-        <div style={{ marginBottom: '6px', fontSize: '2.2rem' }}>🎉</div>
-        <h2 style={{ marginBottom: '6px', fontSize: '1.5rem', color: '#303036' }}>
-          You Won!
+        <div className="win-screen-emoji" style={{ marginBottom: '6px', fontSize: '2.6rem' }}>🎉</div>
+        <h2 className="win-screen-title" style={{ marginBottom: '6px', fontSize: '1.85rem' }}>
+          YOU WON!
         </h2>
         <p style={{
           fontSize: '1.3rem',

@@ -20,6 +20,11 @@ import {
 import StartScreen from './components/StartScreen';
 import GameHeader from './components/GameHeader';
 import WinScreen from './components/WinScreen';
+import FireworksCelebration, {
+  prefersReducedMotion,
+  WIN_CELEBRATION_MS,
+  WIN_CELEBRATION_REDUCED_MS
+} from './components/FireworksCelebration';
 import GameControls from './components/GameControls';
 import PrivacyPolicyModal from './PrivacyPolicy';
 import AboutModal from './About';
@@ -46,7 +51,8 @@ export default function SumGridGame() {
   const [bestTimeMini, setBestTimeMini] = useState(null);
   const [bestTimeFull, setBestTimeFull] = useState(null);
   const [gameHistory, setGameHistory] = useState([]);
-  const [flippingCells, setFlippingCells] = useState([]);
+  const [celebratingCells, setCelebratingCells] = useState([]);
+  const [showCelebration, setShowCelebration] = useState(false);
   const [placementPath, setPlacementPath] = useState([]);
   const timerRef = useRef(null);
   const [poppingCells, setPoppingCells] = useState([]);
@@ -84,6 +90,8 @@ const modeStateRef = useRef({ mini: null, full: null });
 const [overlayPoints, setOverlayPoints] = useState([]);
 const gridWrapperRef = useRef(null);
 const clueSkipAnimRef = useRef(null);
+const celebrationTimersRef = useRef([]);
+const winModalTimerRef = useRef(null);
 const [clueSkipFlashKeys, setClueSkipFlashKeys] = useState([]);
 const [headerNextOverride, setHeaderNextOverride] = useState(null);
 const clueFlashCells = useMemo(
@@ -108,7 +116,23 @@ useEffect(() => {
     if (clueSkipAnimRef.current) {
       clearTimeout(clueSkipAnimRef.current);
     }
+    celebrationTimersRef.current.forEach(clearTimeout);
+    if (winModalTimerRef.current) {
+      clearTimeout(winModalTimerRef.current);
+    }
   };
+}, []);
+
+useEffect(() => {
+  if (process.env.NODE_ENV !== 'development') return undefined;
+  const applyCelebratePreview = () => {
+    if (window.location.hash === '#celebrate') {
+      setShowCelebration(true);
+    }
+  };
+  applyCelebratePreview();
+  window.addEventListener('hashchange', applyCelebratePreview);
+  return () => window.removeEventListener('hashchange', applyCelebratePreview);
 }, []);
 
 useEffect(() => {
@@ -344,21 +368,45 @@ const getDropTargetHighlight = (r, c) => {
   );
 };
 
-const triggerFlipAnimation = () => {
-  const cellsToFlip = [];
-  grid.forEach((row, rIdx) => {
+const clearCelebrationTimers = () => {
+  celebrationTimersRef.current.forEach(clearTimeout);
+  celebrationTimersRef.current = [];
+  if (winModalTimerRef.current) {
+    clearTimeout(winModalTimerRef.current);
+    winModalTimerRef.current = null;
+  }
+};
+
+const stopWinCelebration = () => {
+  clearCelebrationTimers();
+  setShowCelebration(false);
+  setCelebratingCells([]);
+};
+
+const triggerWinCellCelebration = (origin, board = grid) => {
+  const cells = [];
+  board.forEach((row, rIdx) => {
     row.forEach((cell, cIdx) => {
       if (cell !== undefined && cell !== "X") {
-        cellsToFlip.push([rIdx, cIdx]);
+        cells.push([rIdx, cIdx]);
       }
     });
   });
-  cellsToFlip.forEach(([r, c], idx) => {
-    setTimeout(() => {
-      setFlippingCells(prev => [...prev, `${r},${c}`]);
-    }, idx * 40);
+  const [originR, originC] = origin || [
+    Math.floor(board.length / 2),
+    Math.floor((board[0]?.length || 1) / 2)
+  ];
+  cells.sort((a, b) => {
+    const da = (a[0] - originR) ** 2 + (a[1] - originC) ** 2;
+    const db = (b[0] - originR) ** 2 + (b[1] - originC) ** 2;
+    return da - db;
   });
-  setTimeout(() => setFlippingCells([]), cellsToFlip.length * 30 + 400);
+  cells.forEach(([r, c], idx) => {
+    const id = setTimeout(() => {
+      setCelebratingCells(prev => [...prev, `${r},${c}`]);
+    }, idx * 70);
+    celebrationTimersRef.current.push(id);
+  });
 };
 
 const shareWinMessage = () => {
@@ -510,9 +558,10 @@ const applyPlacementMove = (selectionPath, r, c) => {
   const allFilled = newGrid.every(row => row.every(cell => cell === "X" || cell !== null));
   if (allFilled) {
     clearInterval(timerRef.current);
-    triggerFlipAnimation();
-    const cellsToFlip = grid.flat().filter(cell => cell !== undefined && cell !== "X").length;
-    const delay = cellsToFlip * 80 + 500;
+    setGameWon(true);
+    setShowCelebration(true);
+    triggerWinCellCelebration([r, c], newGrid);
+    const delay = prefersReducedMotion() ? WIN_CELEBRATION_REDUCED_MS : WIN_CELEBRATION_MS;
 
     const finalTime = Math.floor((Date.now() - startTime) / 1000);
     const finalMoves = moveCount + 1;
@@ -521,8 +570,7 @@ const applyPlacementMove = (selectionPath, r, c) => {
     setLastWinStreakCount(streakResult.count);
     setDailyStreakInfo(getDailyStreakInfo());
 
-    setTimeout(() => {
-      setGameWon(true);
+    winModalTimerRef.current = setTimeout(() => {
       setShowWinScreen(true);
 
       if (window.gtag) {
@@ -600,6 +648,7 @@ const handleHint = () => {
 };
 
 const handleCellClick = (r, c, event) => {
+  if (gameWon || showCelebration) return;
   if (!grid || !grid.length || !grid[0]) {
     console.error('Grid not loaded yet');
     return;
@@ -682,6 +731,9 @@ const handleUndo = () => {
     setHistory(newHistory);
     setSelectedCells([]);
     setGameWon(false);
+    stopWinCelebration();
+    setShowWinScreen(false);
+    setWinScreenDismissed(false);
   }
 };
 
@@ -696,6 +748,9 @@ const confirmClear = () => {
   setHistory([clearedGrid]);
   setSelectedCells([]);
   setGameWon(false);
+  stopWinCelebration();
+  setShowWinScreen(false);
+  setWinScreenDismissed(false);
   setElapsedTime(Math.floor((Date.now() - startTime) / 1000));
   setShowClearConfirm(false);
 };
@@ -851,6 +906,12 @@ if (showStartScreen) {
           highlightEntry={highScoresHighlight}
         />
       )}
+
+      <FireworksCelebration
+        active={showCelebration}
+        showBanner={!showWinScreen}
+        linger={showWinScreen}
+      />
     </>
   );
 }
@@ -902,6 +963,7 @@ return (
             setElapsedTime(Math.floor((Date.now() - startTime) / 1000));
             setStartTime(null);
           }
+          stopWinCelebration();
           setShowStartScreen(true);
         }}
         gameMode={gameMode}
@@ -920,7 +982,7 @@ return (
           margin={2}
           clueFlashCells={clueFlashCells}
         />
-        <div className="grid" style={{ 
+        <div className={`grid${celebratingCells.length ? ' sums-grid-celebrating' : ''}`} style={{ 
           position: "relative", 
           zIndex: 2,
           overflow: "visible"
@@ -930,7 +992,7 @@ return (
               {row.map((cell, cIdx) => {
                 const key = `${rIdx},${cIdx}`;
                 const isPopping = poppingCells.includes(key);
-                const isFlipping = flippingCells.includes(key); 
+                const isCelebrating = celebratingCells.includes(key); 
                 const isDropTarget = getDropTargetHighlight(rIdx, cIdx);
                 const isPrefilledClue = puzzle?.[rIdx]?.[cIdx] === cell && typeof cell === "number";
                 const cellStyle = {
@@ -951,7 +1013,7 @@ return (
                   fontWeight: isPrefilledClue ? "bold" : "normal",
                   border: cell === "X" ? "1px solid #303036" : "1px solid #999",
                   transition: "transform 0.2s ease, background-color 0.3s ease",
-                  transform: isFlipping ? "rotateY(180deg)" : "scale(1)",
+                  ...(isCelebrating ? {} : { transform: "scale(1)" }),
                   cursor: "pointer",
                   position: "relative",
                   zIndex: 1,
@@ -963,7 +1025,7 @@ return (
                 return (
                   <div 
                     key={key}
-                    className={`cell-${rIdx}-${cIdx}`}
+                    className={`cell-${rIdx}-${cIdx}${isCelebrating ? ' sums-cell-ignite' : ''}`}
                     style={cellStyle}
                     onClick={(e) => handleCellClick(rIdx, cIdx, e)}
                     onTouchEnd={(e) => handleCellClick(rIdx, cIdx, e)}
@@ -990,10 +1052,21 @@ return (
         onHint={handleHint}
         hintInProgress={hintInProgress}
         hintCooldownRemaining={currentHintCooldownRemaining}
-        hintDisabled={gameWon}
+        hintDisabled={gameWon || showCelebration}
         canUndo={history.length > 1}
-        gameWon={gameWon}
+        gameWon={gameWon || showCelebration}
       />
+
+      <FireworksCelebration
+        active={showCelebration}
+        showBanner={!showWinScreen}
+        linger={showWinScreen}
+      />
+      {showCelebration && (
+        <div role="status" aria-live="assertive" style={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0 0 0 0)' }}>
+          You won!
+        </div>
+      )}
 
       {showWinScreen && (
         <WinScreen
@@ -1002,17 +1075,20 @@ return (
           onClose={() => {
             setShowWinScreen(false);
             setWinScreenDismissed(true);
+            stopWinCelebration();
           }}
           onShare={shareWinMessage}
           gameMode={gameMode}
           streakCount={lastWinStreakCount}
           onViewHighScores={(highlight) => {
+            stopWinCelebration();
             setHighScoresHighlight(highlight);
             setShowHighScores(true);
           }}
           onReturnHome={() => {
             setShowWinScreen(false);
             setWinScreenDismissed(true);
+            stopWinCelebration();
             setShowStartScreen(true);
           }}
         />
