@@ -9,6 +9,7 @@ const WinScreen = ({
   onShare,
   gameMode,
   onViewHighScores,
+  onReturnHome,
   streakCount = 0
 }) => {
   const [adLoaded, setAdLoaded] = useState(false);
@@ -286,6 +287,18 @@ const WinScreen = ({
               📤 Share with a Friend
             </button>
           </div>
+        )}
+
+        {onReturnHome && (
+          <>
+            <hr style={{ border: 'none', borderTop: '1px solid #eee', margin: '20px 0 16px' }} />
+            <button
+              onClick={onReturnHome}
+              style={outlineButton}
+            >
+              Return to home
+            </button>
+          </>
         )}
       </div>
     </div>

@@ -1010,6 +1010,11 @@ return (
             setHighScoresHighlight(highlight);
             setShowHighScores(true);
           }}
+          onReturnHome={() => {
+            setShowWinScreen(false);
+            setWinScreenDismissed(true);
+            setShowStartScreen(true);
+          }}
         />
       )}
 
