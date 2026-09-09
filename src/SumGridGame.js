@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
 import { initialGrid, puzzleNumber } from './puzzles/today';
 import { initialGridMini, puzzleNumberMini } from './puzzles/todayMini';
 import CanvasOverlay from "./components/CanvasOverlay";
@@ -30,7 +29,6 @@ import HighScores from './components/HighScores';
 import { getDailyStreakInfo, recordDailyPuzzleWin, clearDailyStreak } from './utils/dailyStreak';
 
 export default function SumGridGame() {
-  const navigate = useNavigate();
   const HINT_COOLDOWN_MS = 5000;
   const [showStartScreen, setShowStartScreen] = useState(true);
   const [gameMode, setGameMode] = useState(null); // 'mini' or 'full'
@@ -369,10 +367,14 @@ const shareWinMessage = () => {
   const timeStr = formatTime(elapsedTime);
   const gameTitle = gameMode === 'mini' ? 'Mini SUMS' : 'SUMS';
 
-  const message = `${gameTitle}: ${sequence} = ${sum} | ${timeStr}\nPlay at: https://sums.games`;
+  const message = `${gameTitle}: ${sequence} = ${sum} | ${timeStr}\nPlay at https://sums.games`;
 
   if (navigator.share) {
-    navigator.share({ text: message }).catch(err => console.error('Error sharing:', err));
+    navigator.share({
+      title: `${gameTitle} on SUMS`,
+      text: message,
+      url: 'https://sums.games/',
+    }).catch(err => console.error('Error sharing:', err));
   } else {
     alert(`Copy and share:\n${message}`);
   }
@@ -745,9 +747,6 @@ if (showStartScreen) {
         puzzleNumberMini={puzzleNumberMini}
         streakMini={dailyStreakInfo.mini}
         streakFull={dailyStreakInfo.full}
-        onShowAbout={() => navigate("/about")}
-        onShowStrategy={() => navigate("/strategy")}
-        onShowPrivacy={() => navigate("/privacy")}
       />
 
       {showInstructions && (

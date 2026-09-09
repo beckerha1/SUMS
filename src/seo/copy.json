@@ -1,0 +1,70 @@
+{
+  "faq": [
+    {
+      "question": "What is SUMS?",
+      "answer": "SUMS is a free daily number puzzle game at sums.games. You fill a grid by placing numbers in order (1, 2, 3, and so on). To place the next number, select two or more adjacent cells that add up to it, then tap an empty cell touching your selection."
+    },
+    {
+      "question": "How do you play SUMS?",
+      "answer": "Look at the gray clue numbers already on the board. Place numbers in sequence, starting from 1. Select a connected chain of cells whose values add up to your next number, then place that number in an empty cell that touches the start or end of the chain. Fill every empty cell to win."
+    },
+    {
+      "question": "Is SUMS free to play?",
+      "answer": "Yes. SUMS is free to play in any modern web browser. You do not need an account, app download, or subscription. The game is ad-supported."
+    },
+    {
+      "question": "What is the difference between Mini SUMS and Full SUMS?",
+      "answer": "Mini SUMS is a 5×5 grid meant for a quick solve, often in a couple of minutes. Full SUMS is a 7×7 grid with more planning, walls, and longer number chains. Both puzzles refresh daily."
+    },
+    {
+      "question": "When does the daily SUMS puzzle reset?",
+      "answer": "A new Mini puzzle and a new Full puzzle are published every day at midnight Eastern Time (America/New_York)."
+    },
+    {
+      "question": "Do I need an account to play SUMS?",
+      "answer": "No. Open sums.games and play immediately. Statistics, streaks, and best times are stored locally in your browser, not on an account."
+    },
+    {
+      "question": "What is Hard mode in SUMS?",
+      "answer": "Hard mode limits how many cells you can select at once, typically to three or four. That forces tighter combinations and more planning than Normal mode."
+    },
+    {
+      "question": "Is there a time limit?",
+      "answer": "No. You can take as long as you want. SUMS still tracks your completion time so you can compare personal bests and optional daily high scores."
+    },
+    {
+      "question": "How does weekly difficulty work?",
+      "answer": "Puzzles are scheduled from easier to harder across the week: Monday is difficulty 1 and Sunday is difficulty 7. Weekday boards stay approachable; weekend boards ask for longer-range planning."
+    },
+    {
+      "question": "Who created SUMS?",
+      "answer": "SUMS is created by Xavier Games. The puzzle started as a paper-and-pencil game and is now a free daily web game at sums.games."
+    }
+  ],
+  "howToSteps": [
+    {
+      "name": "Read the starting grid",
+      "text": "Gray numbers are pre-filled clues. Empty cells are yours to fill. Some boards also include black squares that block movement."
+    },
+    {
+      "name": "Place numbers in order",
+      "text": "Start with 1, then 2, then 3, and continue in sequence. You cannot skip ahead. If a clue already shows the next number, that clue counts as placed."
+    },
+    {
+      "name": "Select cells that add up to the next number",
+      "text": "Tap two or more adjacent cells whose values sum to your target. Each selected cell must touch the next cell in the chain. Example: 1 + 2 = 3."
+    },
+    {
+      "name": "Place the sum in a touching empty cell",
+      "text": "Tap an empty cell that touches the start or the end of your selection. That cell becomes the next number in the sequence."
+    },
+    {
+      "name": "Use clues to plan ahead",
+      "text": "Later gray numbers constrain earlier placements. Leave a valid path so you can still reach those clues after the numbers in between are filled."
+    },
+    {
+      "name": "Fill every empty cell",
+      "text": "The puzzle is complete when every playable empty cell has a number. Undo is available if a placement blocks the rest of the path."
+    }
+  ]
+}
