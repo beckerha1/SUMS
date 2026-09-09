@@ -65,8 +65,7 @@ const StartScreen = ({
           fontSize: '0.95rem',
           lineHeight: 1.5,
         }}>
-          A free logic puzzle that mixes addition with spatial reasoning. New Mini (5×5)
-          and Full (7×7) boards every day — no account required.
+          A free logic puzzle that mixes addition with spatial reasoning. New puzzles every day.
         </p>
       </header>
 
