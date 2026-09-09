@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import PageNav from './components/PageNav';
 
 const overlayStyle = {
   position: "fixed",
@@ -72,8 +73,9 @@ const PrivacyPolicyContent = ({ onClose, modal = false }) => {
           ✖
         </button>
       ) : (
-        <Link to="/" style={homeLinkStyle}>← Back to home</Link>
+        <Link to="/" style={homeLinkStyle}>← Play today’s puzzle</Link>
       )}
+      {!modal && <PageNav />}
 
         <h1 style={{ fontSize: '2rem', marginBottom: '10px' }}>Privacy Policy</h1>
       <p style={{ color: '#666', marginBottom: '30px' }}>

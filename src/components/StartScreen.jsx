@@ -1,4 +1,5 @@
 import React from 'react';
+import SiteLinks from './SiteLinks';
 
 const StartScreen = ({ 
   onPlayMini,
@@ -11,9 +12,6 @@ const StartScreen = ({
   puzzleNumberMini,
   streakMini = { count: 0, wonToday: false, needsPlayToday: false },
   streakFull = { count: 0, wonToday: false, needsPlayToday: false },
-  onShowPrivacy,
-  onShowAbout,
-  onShowStrategy
 }) => {
   const mobileButton = {
     padding: "10px 20px",
@@ -44,12 +42,33 @@ const StartScreen = ({
     count > 0 ? ` (${count} day${count === 1 ? "" : "s"} streak)` : "";
 
   return (
-    <div style={{ textAlign: 'center', padding: '50px 10px' }}>
-      <img
-        src={`${process.env.PUBLIC_URL}/SUMS_logo.png`}
-        alt="Sums Logo"
-        style={{ maxWidth: "200px", marginBottom: "20px" }}
-      />
+    <main style={{ textAlign: 'center', padding: '50px 10px' }}>
+      <header>
+        <img
+          src={`${process.env.PUBLIC_URL}/SUMS_logo.png`}
+          alt="SUMS"
+          style={{ maxWidth: "200px", marginBottom: "12px" }}
+        />
+        <h1 style={{
+          fontSize: '1.2rem',
+          fontWeight: 600,
+          margin: '0 0 8px',
+          color: '#303036',
+          letterSpacing: '0.01em',
+        }}>
+          Daily Number Puzzle Game
+        </h1>
+        <p style={{
+          maxWidth: '420px',
+          margin: '0 auto 24px',
+          color: '#555',
+          fontSize: '0.95rem',
+          lineHeight: 1.5,
+        }}>
+          A free logic puzzle that mixes addition with spatial reasoning. New Mini (5×5)
+          and Full (7×7) boards every day — no account required.
+        </p>
+      </header>
 
       <div style={{
         display: 'flex',
@@ -106,38 +125,12 @@ const StartScreen = ({
             />
           </a>
         </div>
-        <span 
-          onClick={(e) => {
-            e.stopPropagation();
-            onShowPrivacy();
-          }}
-          style={{ margin: '0 10px', color: '#666', textDecoration: 'none', cursor: 'pointer' }}
-        >
-          Privacy Policy
-        </span>
-        <span 
-          onClick={(e) => {
-            e.stopPropagation();
-            onShowAbout();
-          }}
-          style={{ margin: '0 10px', color: '#666', textDecoration: 'none', cursor: 'pointer' }}
-        >
-          About
-        </span>
-        <span
-          onClick={(e) => {
-            e.stopPropagation();
-            onShowStrategy();
-          }}
-          style={{ margin: '0 10px', color: '#666', textDecoration: 'none', cursor: 'pointer' }}
-        >
-          Strategy
-        </span>
+        <SiteLinks />
         <p style={{ marginTop: '10px', fontSize: "clamp(14px, 2.5vw, 14px)", color: "#666" }}>
           © 2026 Xavier Games
         </p>
       </footer>
-    </div>
+    </main>
   );
 };
 

@@ -38,7 +38,7 @@ const GameHeader = ({
     <>
       <img
         src={`${process.env.PUBLIC_URL}/SUMS_logo.png`}
-        alt="Sums Logo"
+        alt="SUMS"
         style={{ maxWidth: "200px" }}
       />
 

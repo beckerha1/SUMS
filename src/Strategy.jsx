@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from 'react-router-dom';
+import PageNav from './components/PageNav';
 
 const overlayStyle = {
   position: "fixed",
@@ -75,10 +76,19 @@ const StrategyContent = React.memo(({ onClose, modal = false }) => {
           </button>
         )
       ) : (
-        <Link to="/" style={homeLinkStyle}>← Back to home</Link>
+        <Link to="/" style={homeLinkStyle}>← Play today’s puzzle</Link>
       )}
+      {!modal && <PageNav />}
 
-        <h1 style={{ fontSize: "2rem", marginBottom: "20px" }}>Strategy Guide</h1>
+        <h1 style={{ fontSize: "2rem", marginBottom: "20px" }}>SUMS Strategy Guide</h1>
+
+        <section style={{ marginBottom: "30px" }}>
+          <p>
+            SUMS gets harder when each placement leaves fewer legal continuations — not
+            simply when the grid is larger. Use gray clues, walls, and leftover adjacency
+            to decide the next number before you commit.
+          </p>
+        </section>
 
         <section style={{ marginBottom: "30px" }}>
           <h2 style={{ fontSize: "1.5rem", marginBottom: "15px" }}>How difficulty is shaped</h2>
@@ -122,6 +132,10 @@ const StrategyContent = React.memo(({ onClose, modal = false }) => {
           <p>
             Puzzles are scheduled from easier to harder across the week, with Monday at difficulty 1 and Sunday at difficulty 7.
             This keeps weekday play approachable while preserving deep challenge for weekend solvers.
+          </p>
+          <p>
+            New to the rules? Start with{' '}
+            <Link to="/how-to-play" style={{ color: '#303036', fontWeight: 600 }}>how to play SUMS</Link>.
           </p>
         </section>
     </div>

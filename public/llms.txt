@@ -1,0 +1,21 @@
+# SUMS
+
+> SUMS is a free daily number logic puzzle at https://sums.games. Players fill Mini (5×5) and Full (7×7) grids by placing numbers in order using adjacent sums. No account is required. New puzzles publish every day at midnight Eastern Time.
+
+SUMS is created by Xavier Games. Play it in any modern browser.
+
+## Play
+
+- [Play today’s SUMS](https://sums.games/): Start Mini SUMS or Full SUMS. Statistics and streaks stay in the browser.
+
+## Learn
+
+- [How to play SUMS](https://sums.games/how-to-play): Step-by-step rules for placing numbers with adjacent sums.
+- [Strategy guide](https://sums.games/strategy): What makes a board easy or hard, including the Monday–Sunday difficulty ramp.
+- [FAQ](https://sums.games/faq): Short answers about price, modes, reset time, hard mode, and accounts.
+- [About SUMS](https://sums.games/about): Origin of the puzzle and the Xavier Games project.
+
+## Optional
+
+- [Privacy policy](https://sums.games/privacy): Local stats, cookies, Analytics, and AdSense.
+- [Full text for language models](https://sums.games/llms-full.txt): Concatenated SUMS reference copy.

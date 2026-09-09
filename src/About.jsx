@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import PageNav from './components/PageNav';
 
 const overlayStyle = {
   position: "fixed",
@@ -66,10 +67,11 @@ const AboutContent = ({ onClose, modal = false }) => {
       {modal ? (
         <button onClick={onClose} style={closeButtonStyle} aria-label="Close">✖</button>
       ) : (
-        <Link to="/" style={homeLinkStyle}>← Back to home</Link>
+        <Link to="/" style={homeLinkStyle}>← Play today’s puzzle</Link>
       )}
+      {!modal && <PageNav />}
 
-      <h1 style={{ fontSize: '2rem', marginBottom: '20px' }}>About Sums</h1>
+      <h1 style={{ fontSize: '2rem', marginBottom: '20px' }}>About SUMS</h1>
 
       <section style={{ marginBottom: '30px' }}>
         <h2 style={{ fontSize: '1.5rem', marginBottom: '15px' }}>What is SUMS?</h2>
@@ -117,6 +119,12 @@ const AboutContent = ({ onClose, modal = false }) => {
           <li>Plan ahead! Some numbers are pre-filled and you must create valid paths to reach them</li>
           <li>Fill every empty cell to win!</li>
         </ol>
+        <p>
+          For the full walkthrough, see{' '}
+          <Link to="/how-to-play" style={{ color: '#303036', fontWeight: 600 }}>how to play SUMS</Link>.
+          Common questions are answered in the{' '}
+          <Link to="/faq" style={{ color: '#303036', fontWeight: 600 }}>FAQ</Link>.
+        </p>
       </section>
 
       <section style={{ marginBottom: '30px' }}>
