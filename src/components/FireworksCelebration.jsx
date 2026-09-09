@@ -111,6 +111,8 @@ function spawnRocket(width, height) {
     color,
     rgb: hexToRgb(color),
     trail: [],
+    trailAcc: 0,
+    age: 0,
     life: 1,
     exploded: false
   };
@@ -119,7 +121,7 @@ function spawnRocket(width, height) {
 function spawnExplosion(x, y, color, style) {
   const rgb = hexToRgb(color);
   const sparks = [];
-  const count = style === 'ring' ? 56 : style === 'willow' ? 70 : (110 + ((Math.random() * 50) | 0));
+  const count = style === 'ring' ? 40 : style === 'willow' ? 52 : (70 + ((Math.random() * 28) | 0));
   const baseSpeed = style === 'willow' ? 4.8 : style === 'ring' ? 7.2 : rand(5.5, 9.2);
 
   sparks.push({
@@ -176,11 +178,12 @@ function spawnExplosion(x, y, color, style) {
 }
 
 function drawParticle(ctx, p) {
-  const alpha = Math.max(0, p.life);
+  const alpha = Math.max(0, Math.min(1, p.life));
   if (alpha <= 0) return;
+  if (!Number.isFinite(p.x) || !Number.isFinite(p.y)) return;
 
   if (p.kind === 'flash') {
-    const radius = p.radius * (0.65 + (1 - alpha) * 0.55);
+    const radius = Math.max(8, p.radius * (0.65 + (1 - alpha) * 0.55));
     const gradient = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, radius);
     gradient.addColorStop(0, `rgba(255,255,255,${alpha * 0.95})`);
     gradient.addColorStop(0.2, `rgba(${p.rgb.r},${p.rgb.g},${p.rgb.b},${alpha * 0.75})`);
@@ -208,7 +211,7 @@ function drawParticle(ctx, p) {
     return;
   }
 
-  const glow = p.size * 6.2;
+  const glow = Math.max(4, p.size * 6.2);
   const gradient = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, glow);
   gradient.addColorStop(0, `rgba(255,255,255,${alpha})`);
   gradient.addColorStop(0.22, `rgba(${p.rgb.r},${p.rgb.g},${p.rgb.b},${alpha * 0.95})`);
@@ -219,7 +222,7 @@ function drawParticle(ctx, p) {
   ctx.fill();
 
   ctx.beginPath();
-  ctx.arc(p.x, p.y, p.size * 0.7, 0, TAU);
+  ctx.arc(p.x, p.y, Math.max(1, p.size * 0.7), 0, TAU);
   ctx.fillStyle = `rgba(255,255,255,${alpha})`;
   ctx.fill();
 }
@@ -241,7 +244,7 @@ export default function FireworksCelebration({
   lingerRef.current = linger;
 
   useEffect(() => {
-    if (!active || reduced) return undefined;
+    if (!active || prefersReducedMotion()) return undefined;
 
     const canvas = canvasRef.current;
     if (!canvas) return undefined;
@@ -253,14 +256,14 @@ export default function FireworksCelebration({
     let height = 0;
     let particles = [];
     let bloom = 1;
-    let lastLaunch = 0;
     let start = performance.now();
     let running = true;
+    const explodeTimers = [];
 
     const resize = () => {
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
-      width = window.innerWidth;
-      height = window.innerHeight;
+      width = Math.max(2, window.innerWidth);
+      height = Math.max(2, window.innerHeight);
       canvas.width = Math.floor(width * dpr);
       canvas.height = Math.floor(height * dpr);
       canvas.style.width = `${width}px`;
@@ -273,108 +276,135 @@ export default function FireworksCelebration({
 
     audioRef.current = playCelebrationAudio();
 
+    const explodeRocket = (rocket) => {
+      if (!running || rocket.exploded) return [];
+      rocket.exploded = true;
+      const style = pick(['burst', 'burst', 'burst', 'ring', 'willow']);
+      const x = Number.isFinite(rocket.x) ? rocket.x : width * 0.5;
+      const y = Number.isFinite(rocket.y) ? rocket.y : height * 0.3;
+      bloom = Math.min(1, bloom + (style === 'willow' ? 0.28 : 0.5));
+      return spawnExplosion(x, y, rocket.color, style);
+    };
+
     const launchSalvo = (count) => {
       for (let i = 0; i < count; i++) {
-        particles.push(spawnRocket(width, height));
+        const rocket = spawnRocket(width, height);
+        particles.push(rocket);
+        const id = window.setTimeout(() => {
+          if (!running || rocket.exploded) return;
+          particles.push(...explodeRocket(rocket));
+        }, rand(550, 1200));
+        explodeTimers.push(id);
       }
     };
 
-    launchSalvo(8);
-    const delayedBursts = [];
+    launchSalvo(6);
 
-    const queueSecondaryBurst = (x, y) => {
-      const id = window.setTimeout(() => {
-        if (!running) return;
-        particles.push(...spawnExplosion(
-          x + rand(-28, 28),
-          y + rand(-24, 24),
-          pick(PALETTE),
-          'burst'
-        ));
-        bloom = Math.min(1, bloom + 0.18);
-      }, rand(180, 420));
-      delayedBursts.push(id);
-    };
+    const spawnId = window.setInterval(() => {
+      if (!running) return;
+      const elapsed = performance.now() - start;
+      const lingering = lingerRef.current;
+      const launchUntil = lingering ? 16000 : 10000;
+      if (elapsed > launchUntil) return;
+      launchSalvo(elapsed < 4000 ? 2 : 1);
+    }, 220);
+
+    let lastTs = start;
+    const FRAME = 16.667;
+    let lastTickAt = start;
 
     const tick = (now) => {
       if (!running) return;
-      const elapsed = now - start;
-      ctx.clearRect(0, 0, width, height);
-      ctx.globalCompositeOperation = 'lighter';
-
-      const intense = elapsed < 3600;
-      const lingering = lingerRef.current;
-      const launchGap = intense ? rand(90, 180) : lingering ? rand(280, 560) : rand(160, 320);
-      if (now - lastLaunch > launchGap && particles.length < 1800 && elapsed < (lingering ? 16000 : 10000)) {
-        launchSalvo(intense ? (Math.random() < 0.65 ? 3 : 2) : 1);
-        lastLaunch = now;
+      lastTickAt = now;
+      const liveCanvas = canvasRef.current;
+      const liveCtx = liveCanvas ? liveCanvas.getContext('2d') : null;
+      if (!liveCanvas || !liveCtx) {
+        rafRef.current = window.requestAnimationFrame(tick);
+        return;
       }
 
-      const next = [];
-      for (const p of particles) {
-        if (p.kind === 'rocket' && !p.exploded) {
-          p.x += p.vx;
-          p.y += p.vy;
-          p.vy += 0.085;
-          p.trail.push({ x: p.x, y: p.y });
-          if (p.trail.length > 18) p.trail.shift();
-          if (p.y <= p.targetY || p.vy >= -0.6) {
-            p.exploded = true;
-            const style = pick(['burst', 'burst', 'burst', 'ring', 'willow']);
-            next.push(...spawnExplosion(p.x, p.y, p.color, style));
-            bloom = Math.min(1, bloom + (style === 'willow' ? 0.28 : 0.5));
-            if (Math.random() < 0.6) queueSecondaryBurst(p.x, p.y);
-          } else {
-            next.push(p);
-          }
-        } else if (p.kind === 'flash') {
-          p.life -= p.decay;
-          if (p.life > 0) next.push(p);
-        } else if (p.kind === 'spark') {
-          p.x += p.vx;
-          p.y += p.vy;
-          p.vy += p.gravity;
-          p.vx *= 0.985;
-          p.vy *= 0.985;
-          p.life -= p.decay;
-          if (p.glitter && Math.random() < 0.1 && next.length < 1800) {
-            next.push({
-              kind: 'spark',
-              x: p.x,
-              y: p.y,
-              vx: rand(-0.4, 0.4),
-              vy: rand(0.2, 0.9),
-              life: 0.6,
-              decay: 0.03,
-              gravity: 0.02,
-              size: 1.1,
-              rgb: p.rgb,
-              glitter: false
-            });
-          }
-          if (p.life > 0) next.push(p);
+      try {
+        let dt = (now - lastTs) / FRAME;
+        lastTs = now;
+        if (!Number.isFinite(dt) || dt <= 0) dt = 1;
+        dt = Math.min(dt, 2.5);
+
+        if (liveCanvas.width !== Math.floor(width * Math.min(window.devicePixelRatio || 1, 2))) {
+          resize();
         }
-        drawParticle(ctx, p);
-      }
-      particles = next;
 
-      if (bloom > 0.002) {
-        ctx.globalCompositeOperation = 'source-over';
-        ctx.fillStyle = `rgba(255, 236, 180, ${bloom * 0.32})`;
-        ctx.fillRect(0, 0, width, height);
-        bloom *= 0.86;
+        liveCtx.setTransform(Math.min(window.devicePixelRatio || 1, 2), 0, 0, Math.min(window.devicePixelRatio || 1, 2), 0, 0);
+        liveCtx.clearRect(0, 0, width, height);
+        liveCtx.globalCompositeOperation = 'lighter';
+
+        const next = [];
+        for (const p of particles) {
+          if (p.kind === 'rocket' && !p.exploded) {
+            p.age += dt;
+            p.x += p.vx * dt;
+            p.y += p.vy * dt;
+            p.vy += 0.085 * dt;
+            p.trailAcc += dt;
+            if (p.trailAcc >= 0.85) {
+              p.trail.push({ x: p.x, y: p.y });
+              if (p.trail.length > 18) p.trail.shift();
+              p.trailAcc = 0;
+            }
+            if (p.y <= p.targetY || p.vy >= -0.6 || p.age > 80) {
+              next.push(...explodeRocket(p));
+            } else {
+              next.push(p);
+            }
+          } else if (p.kind === 'flash') {
+            p.life -= p.decay * dt;
+            if (p.life > 0) next.push(p);
+          } else if (p.kind === 'spark') {
+            p.x += p.vx * dt;
+            p.y += p.vy * dt;
+            p.vy += p.gravity * dt;
+            const drag = Math.pow(0.985, dt);
+            p.vx *= drag;
+            p.vy *= drag;
+            p.life -= p.decay * dt;
+            if (p.life > 0) next.push(p);
+          }
+        }
+        particles = next.slice(-1800);
+
+        for (let i = 0; i < particles.length; i++) {
+          drawParticle(liveCtx, particles[i]);
+        }
+
+        if (bloom > 0.002) {
+          liveCtx.globalCompositeOperation = 'source-over';
+          liveCtx.fillStyle = `rgba(255, 236, 180, ${bloom * 0.28})`;
+          liveCtx.fillRect(0, 0, width, height);
+          bloom *= Math.pow(0.86, dt);
+        }
+      } catch (err) {
+        // Keep the loop alive even if a single frame fails to draw.
       }
 
-      rafRef.current = window.requestAnimationFrame(tick);
+      if (running) {
+        rafRef.current = window.requestAnimationFrame(tick);
+      }
     };
 
     rafRef.current = window.requestAnimationFrame(tick);
+    const watchdogId = window.setInterval(() => {
+      if (!running) return;
+      if (performance.now() - lastTickAt > 90) {
+        tick(performance.now());
+      }
+    }, 50);
 
     return () => {
       running = false;
       window.cancelAnimationFrame(rafRef.current);
+      window.clearInterval(watchdogId);
+      window.clearInterval(spawnId);
+      explodeTimers.forEach((id) => window.clearTimeout(id));
       window.removeEventListener('resize', resize);
-      delayedBursts.forEach((id) => window.clearTimeout(id));
       if (audioRef.current) {
         const ctxToClose = audioRef.current;
         audioRef.current = null;
@@ -383,7 +413,7 @@ export default function FireworksCelebration({
         }, 4000);
       }
     };
-  }, [active, reduced]);
+  }, [active]);
 
   if (!active) return null;
 
@@ -395,13 +425,12 @@ export default function FireworksCelebration({
     >
       <div className="fireworks-sky" />
       <div className="fireworks-flash" />
-      {!reduced && (
-        <canvas
-          ref={canvasRef}
-          className="fireworks-canvas"
-          data-testid="fireworks-canvas"
-        />
-      )}
+      <canvas
+        ref={canvasRef}
+        className="fireworks-canvas"
+        data-testid="fireworks-canvas"
+        style={reduced ? { visibility: 'hidden' } : undefined}
+      />
       {showBanner && (
         <div className="fireworks-banner">
           <div className="fireworks-banner-kicker">Puzzle complete</div>

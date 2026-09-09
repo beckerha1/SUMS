@@ -63,5 +63,5 @@ test('skips canvas animation when the player prefers reduced motion', () => {
   render(<FireworksCelebration active showBanner />);
   expect(prefersReducedMotion()).toBe(true);
   expect(screen.getByText(/you won/i)).toBeInTheDocument();
-  expect(screen.queryByTestId('fireworks-canvas')).not.toBeInTheDocument();
+  expect(screen.getByTestId('fireworks-canvas')).toHaveStyle({ visibility: 'hidden' });
 });
