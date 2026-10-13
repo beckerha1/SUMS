@@ -41,7 +41,7 @@ const GameHeader = ({
         alt="SUMS"
         style={{ maxWidth: "200px" }}
       />
-      {gameMode === 'warmup' && (
+      {(gameMode === 'warmup' || gameMode === 'warmupFull') && (
         <div style={{ fontSize: '13px', color: '#666' }}>Warm-up puzzle</div>
       )}
 

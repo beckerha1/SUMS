@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { initialGrid, puzzleNumber } from './puzzles/today';
 import { initialGridMini, puzzleNumberMini } from './puzzles/todayMini';
-import { warmupGrid } from './puzzles/warmup';
+import { warmupGrid, warmupFullGrid } from './puzzles/warmup';
 import CanvasOverlay from "./components/CanvasOverlay";
 import NumberOverlay from "./components/NumberOverlay";
 import InteractiveTutorial from './components/InstructionExamples';
@@ -67,20 +67,29 @@ function readWarmupAvailable() {
   }
 }
 
+function isWarmupMode(mode) {
+  return mode === "warmup" || mode === "warmupFull";
+}
+
 export default function SumGridGame() {
   const HINT_COOLDOWN_MS = 5000;
   const [showStartScreen, setShowStartScreen] = useState(true);
-  const [gameMode, setGameMode] = useState(null); // 'mini', 'full', or 'warmup'
+  const [gameMode, setGameMode] = useState(null); // 'mini', 'full', 'warmup', or 'warmupFull'
   
-  const puzzle = gameMode === 'warmup' ? warmupGrid : gameMode === 'mini' ? initialGridMini : initialGrid;
-  const currentPuzzleNumber = gameMode === 'warmup' ? 'warm-up' : gameMode === 'mini' ? puzzleNumberMini : puzzleNumber;
+  const puzzle = gameMode === 'warmup'
+    ? warmupGrid
+    : gameMode === 'warmupFull'
+      ? warmupFullGrid
+      : gameMode === 'mini'
+        ? initialGridMini
+        : initialGrid;
+  const currentPuzzleNumber = isWarmupMode(gameMode) ? 'warm-up' : gameMode === 'mini' ? puzzleNumberMini : puzzleNumber;
   const [grid, setGrid] = useState(initialGrid);
   const [selectedCells, setSelectedCells] = useState([]);
   const [history, setHistory] = useState([initialGrid]);
   const [gameWon, setGameWon] = useState(false);
   const [showWinScreen, setShowWinScreen] = useState(false);
   const [showWarmupDoneScreen, setShowWarmupDoneScreen] = useState(false);
-  const [warmupAvailable, setWarmupAvailable] = useState(readWarmupAvailable);
   const [showInstructions, setShowInstructions] = useState(false);
   const [startTime, setStartTime] = useState(null);
   const [elapsedTime, setElapsedTime] = useState(0);
@@ -110,7 +119,7 @@ export default function SumGridGame() {
   const [showHighScores, setShowHighScores] = useState(false);
   const [highScoresHighlight, setHighScoresHighlight] = useState(null);
   const [hintInProgress, setHintInProgress] = useState(false);
-  const [hintCooldownByMode, setHintCooldownByMode] = useState({ mini: 0, full: 0, warmup: 0 });
+  const [hintCooldownByMode, setHintCooldownByMode] = useState({ mini: 0, full: 0, warmup: 0, warmupFull: 0 });
   const [lastSequence, setLastSequence] = useState(null);
   const [lastPlacedPosition, setLastPlacedPosition] = useState(null);
   const [dailyStreakInfo, setDailyStreakInfo] = useState(() => getDailyStreakInfo());
@@ -124,7 +133,8 @@ const todayStr = new Date().toLocaleDateString("en-US", {
 });
 
 const prefilledCells = useRef(new Set());
-const modeStateRef = useRef({ mini: null, full: null, warmup: null });
+const modeStateRef = useRef({ mini: null, full: null, warmup: null, warmupFull: null });
+const warmupFinishedRef = useRef(false);
 const [overlayPoints, setOverlayPoints] = useState([]);
 const gridWrapperRef = useRef(null);
 const clueSkipAnimRef = useRef(null);
@@ -310,7 +320,6 @@ useEffect(() => {
 useEffect(() => {
   if (showStartScreen) {
     setDailyStreakInfo(getDailyStreakInfo());
-    setWarmupAvailable(readWarmupAvailable());
   }
 }, [showStartScreen]);
 
@@ -412,13 +421,14 @@ useEffect(() => {
 }, [startTime, gameWon, gameMode, elapsedTime, moveCount]);
 
 useEffect(() => {
-  const hasCooldown = hintCooldownByMode.mini > 0 || hintCooldownByMode.full > 0 || hintCooldownByMode.warmup > 0;
+  const hasCooldown = hintCooldownByMode.mini > 0 || hintCooldownByMode.full > 0 || hintCooldownByMode.warmup > 0 || hintCooldownByMode.warmupFull > 0;
   if (!hasCooldown) return;
   const interval = setInterval(() => {
     setHintCooldownByMode((prev) => ({
       mini: Math.max(0, prev.mini - 100),
       full: Math.max(0, prev.full - 100),
-      warmup: Math.max(0, prev.warmup - 100)
+      warmup: Math.max(0, prev.warmup - 100),
+      warmupFull: Math.max(0, prev.warmupFull - 100)
     }));
   }, 100);
   return () => clearInterval(interval);
@@ -489,9 +499,43 @@ const startGameFromTutorial = (mode) => {
   dismissTutorial();
 };
 
+const shouldStartWarmup = () => {
+  if (warmupFinishedRef.current) return false;
+  return readWarmupAvailable();
+};
+
 const startWarmup = () => {
   if (showInstructions) dismissTutorial();
   startGame('warmup');
+};
+
+const startWarmupFull = () => {
+  if (showInstructions) dismissTutorial();
+  startGame('warmupFull');
+};
+
+const startMiniFromEntry = () => {
+  if (shouldStartWarmup()) {
+    startWarmup();
+    return;
+  }
+  if (showInstructions) {
+    startGameFromTutorial('mini');
+    return;
+  }
+  startGame('mini');
+};
+
+const startFullFromEntry = () => {
+  if (shouldStartWarmup()) {
+    startWarmupFull();
+    return;
+  }
+  if (showInstructions) {
+    startGameFromTutorial('full');
+    return;
+  }
+  startGame('full');
 };
 
 const getDropTargetHighlight = (r, c) => {
@@ -715,13 +759,13 @@ const applyPlacementMove = (selectionPath, r, c) => {
     const finalTime = Math.floor((Date.now() - startTime) / 1000);
     const finalMoves = moveCount + 1;
 
-    if (gameMode === 'warmup') {
+    if (isWarmupMode(gameMode)) {
+      warmupFinishedRef.current = true;
       try {
         localStorage.setItem("sums-warmup-done", "1");
       } catch (e) {
-        // Storage can be blocked; the finished board still ends the offer this session.
+        // Storage can be blocked; this session still treats the warm-up as finished.
       }
-      setWarmupAvailable(false);
     } else {
       const streakResult = recordDailyPuzzleWin(gameMode);
       setLastWinStreakCount(streakResult.count);
@@ -729,7 +773,7 @@ const applyPlacementMove = (selectionPath, r, c) => {
     }
 
     winModalTimerRef.current = setTimeout(() => {
-      if (gameMode === 'warmup') {
+      if (isWarmupMode(gameMode)) {
         setShowWarmupDoneScreen(true);
       } else {
         setShowWinScreen(true);
@@ -759,7 +803,7 @@ const applyPlacementMove = (selectionPath, r, c) => {
       }
     }
 
-    if (gameMode !== 'warmup') {
+    if (!isWarmupMode(gameMode)) {
       const updatedHistory = [...gameHistory, { time: finalTime, mode: gameMode, date: new Date().toISOString() }];
       setGameHistory(updatedHistory);
       localStorage.setItem("sums-game-history", JSON.stringify(updatedHistory));
@@ -963,8 +1007,8 @@ if (showStartScreen) {
   return (
     <>
       <StartScreen
-        onPlayMini={() => startGame('mini')}
-        onPlayFull={() => startGame('full')}
+        onPlayMini={startMiniFromEntry}
+        onPlayFull={startFullFromEntry}
         onShowInstructions={() => openTutorial('start_screen')}
         onShowStats={() => setShowStats(true)}
         onShowHighScores={() => {
@@ -976,8 +1020,6 @@ if (showStartScreen) {
         puzzleNumberMini={puzzleNumberMini}
         streakMini={dailyStreakInfo.mini}
         streakFull={dailyStreakInfo.full}
-        warmupAvailable={warmupAvailable}
-        onPlayWarmup={startWarmup}
       />
 
       {showInstructions && (
@@ -1028,10 +1070,8 @@ if (showStartScreen) {
                 dismissTutorial();
                 setShowStartScreen(false);
               }}
-              onPlayMini={() => startGameFromTutorial('mini')}
-              onPlayFull={() => startGameFromTutorial('full')}
-              onPlayWarmup={startWarmup}
-              showWarmupOffer={warmupAvailable}
+              onPlayMini={startMiniFromEntry}
+              onPlayFull={startFullFromEntry}
               onStepChange={handleTutorialStepChange}
             />
 
@@ -1332,10 +1372,8 @@ return (
 
             <InteractiveTutorial 
               onComplete={() => dismissTutorial()}
-              onPlayMini={() => startGameFromTutorial('mini')}
-              onPlayFull={() => startGameFromTutorial('full')}
-              onPlayWarmup={startWarmup}
-              showWarmupOffer={warmupAvailable}
+              onPlayMini={startMiniFromEntry}
+              onPlayFull={startFullFromEntry}
               onStepChange={handleTutorialStepChange}
             />
 

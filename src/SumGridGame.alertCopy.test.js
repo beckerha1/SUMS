@@ -30,6 +30,7 @@ const clickCell = (container, row, col) => {
 
 beforeEach(() => {
   localStorage.clear();
+  localStorage.setItem('sums-warmup-done', '1');
   window.gtag = jest.fn();
   jest.useFakeTimers();
 });

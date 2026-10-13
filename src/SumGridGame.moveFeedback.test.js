@@ -44,6 +44,7 @@ const currentSum = () => screen.getByText(/Current:/).textContent.replace(/\s+/g
 
 beforeEach(() => {
   localStorage.clear();
+  localStorage.setItem('sums-warmup-done', '1');
   window.gtag = jest.fn();
   jest.useFakeTimers();
 });
