@@ -51,10 +51,7 @@ export default function HowToPlay() {
 
         <h1 style={{ fontSize: '2rem', marginBottom: '16px' }}>How to Play SUMS</h1>
         <p>
-          SUMS is a free daily number logic puzzle. You fill a grid by placing numbers
-          in order — 1, then 2, then 3, and so on — using addition and adjacency.
-          Select connected cells that sum to the next number, then place that number
-          in a touching empty cell.
+          SUMS is a free daily number logic puzzle. You fill a grid by counting up. 1, 2 and 3 start on the board, and you add 4, 5, 6 and so on until every square has a number. To place the next number, tap a chain of numbers that adds up to it, then tap an empty square touching the last number in the chain.
         </p>
         <p>
           There are two puzzles each day: <strong>Mini SUMS (5×5)</strong> for a short
@@ -76,14 +73,10 @@ export default function HowToPlay() {
         <section style={{ marginTop: '28px' }}>
           <h2 style={{ fontSize: '1.5rem', marginBottom: '12px' }}>A simple example</h2>
           <p>
-            If 1 and 2 are already on the board and they touch, you can select them
-            because 1 + 2 = 3. Then tap an empty cell next to that selection to place 3.
-            Longer chains work the same way: 1 + 2 + 3 = 6, as long as each selected
-            cell touches the next.
+            Your first move is usually 1 + 3 = 4. Tap 1, then 3, then an empty square touching the 3, and 4 appears there. Squares touch diagonally too, so a chain can zigzag. Longer chains work the same way: 1 + 2 + 3 = 6, as long as each number touches the one before it.
           </p>
           <p>
-            Gray numbers are clues. They already count as placed, so you must leave a
-            legal path that still reaches them when that number comes up in the sequence.
+            Gray numbers come with the puzzle, but you still have to earn them. When the count reaches a gray number, a chain of numbers touching it has to add up to it. Plan ahead so that chain will exist, and use Undo if it can't.
           </p>
         </section>
 
@@ -99,6 +92,7 @@ export default function HowToPlay() {
         <section style={{ marginTop: '28px' }}>
           <h2 style={{ fontSize: '1.5rem', marginBottom: '12px' }}>Tips before you start</h2>
           <ul style={{ marginLeft: '20px', lineHeight: '1.8' }}>
+            <li>Diagonals count, both when you build a chain and when you place a number.</li>
             <li>Work backward from gray clues when the next placement looks ambiguous.</li>
             <li>Black squares are walls. They create corridors where one wrong number can block a whole path.</li>
             <li>There is no time limit. Use Undo to test a different route.</li>

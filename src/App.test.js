@@ -20,7 +20,7 @@ test('how to play page explains the rules', () => {
     </MemoryRouter>
   );
   expect(screen.getByRole('heading', { name: /how to play sums/i })).toBeInTheDocument();
-  expect(screen.getByText(/select connected cells that sum to the next number/i)).toBeInTheDocument();
+  expect(screen.getByText(/tap a chain of numbers that adds up to it/i)).toBeInTheDocument();
 });
 
 test('faq page answers whether SUMS is free', () => {

@@ -2,11 +2,19 @@
   "faq": [
     {
       "question": "What is SUMS?",
-      "answer": "SUMS is a free daily number puzzle game at sums.games. You fill a grid by placing numbers in order (1, 2, 3, and so on). To place the next number, select two or more adjacent cells that add up to it, then tap an empty cell touching your selection."
+      "answer": "SUMS is a free daily number puzzle at sums.games. You fill a grid by counting up: to place the next number, tap a chain of touching numbers that adds up to it, then tap an empty square next to the last one. Diagonals count."
     },
     {
       "question": "How do you play SUMS?",
-      "answer": "Look at the gray clue numbers already on the board. Place numbers in sequence, starting from 1. Select a connected chain of cells whose values add up to your next number, then place that number in an empty cell that touches the start or end of the chain. Fill every empty cell to win."
+      "answer": "1, 2 and 3 start on the board, so your first number is 4. Tap a chain of numbers that adds up to the next number, each touching the one before it (diagonals count), then tap an empty square touching the last number in the chain. Gray numbers come with the puzzle, but when you reach one, a chain touching it has to add up to it. Fill every square that isn't a wall to win."
+    },
+    {
+      "question": "Do diagonals count in SUMS?",
+      "answer": "Yes. Every square touches the eight squares around it, including diagonals. That applies both to building a chain and to placing the number."
+    },
+    {
+      "question": "Why won't SUMS let me place a number?",
+      "answer": "The square has to be empty and touch the last number in your chain, and the chain has to add up to exactly the next number. If all of that is true and it's still refused, putting the number there would leave the next gray number with no chain touching it that adds up to it."
     },
     {
       "question": "Is SUMS free to play?",
@@ -44,27 +52,27 @@
   "howToSteps": [
     {
       "name": "Read the starting grid",
-      "text": "Gray numbers are pre-filled clues. Empty cells are yours to fill. Some boards also include black squares that block movement."
+      "text": "Gray numbers come with the puzzle, including 1, 2 and 3. Black squares are walls. Every other empty square gets a number from you."
     },
     {
-      "name": "Place numbers in order",
-      "text": "Start with 1, then 2, then 3, and continue in sequence. You cannot skip ahead. If a clue already shows the next number, that clue counts as placed."
+      "name": "Count up in order",
+      "text": "Your first number is 4, then 5, then 6. Numbers go in order and you can't skip ahead."
     },
     {
-      "name": "Select cells that add up to the next number",
-      "text": "Tap two or more adjacent cells whose values sum to your target. Each selected cell must touch the next cell in the chain. Example: 1 + 2 = 3."
+      "name": "Tap a chain that adds up to the next number",
+      "text": "Each number in the chain must touch the one before it, and diagonals count. Your first move is usually 1 + 3 = 4."
     },
     {
-      "name": "Place the sum in a touching empty cell",
-      "text": "Tap an empty cell that touches the start or the end of your selection. That cell becomes the next number in the sequence."
+      "name": "Place it next to the end of your chain",
+      "text": "Tap an empty square touching the last number in your chain. The new number appears there."
     },
     {
-      "name": "Use clues to plan ahead",
-      "text": "Later gray numbers constrain earlier placements. Leave a valid path so you can still reach those clues after the numbers in between are filled."
+      "name": "Earn the gray numbers",
+      "text": "When the count reaches a gray number, a chain of numbers touching it has to add up to it, and then the count moves on. Plan ahead so that chain will exist, and undo if it can't."
     },
     {
-      "name": "Fill every empty cell",
-      "text": "The puzzle is complete when every playable empty cell has a number. Undo is available if a placement blocks the rest of the path."
+      "name": "Fill every square",
+      "text": "The puzzle is solved when every square that isn't a wall has a number. Undo and Hint are always there if you get stuck."
     }
   ]
 }
