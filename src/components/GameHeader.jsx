@@ -8,7 +8,7 @@ const GameHeader = ({
   lastSum,
   showHelpDropdown,
   setShowHelpDropdown,
-  setShowInstructions,
+  onOpenInstructions,
   hardMode,
   setHardMode,
   setSelectedCells,
@@ -135,7 +135,7 @@ const GameHeader = ({
               <div
                 onClick={() => {
                   setShowHelpDropdown(false);
-                  setShowInstructions(true);
+                  onOpenInstructions();
                 }}
                 style={{
                   padding: "10px",

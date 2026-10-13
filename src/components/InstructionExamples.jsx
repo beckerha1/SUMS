@@ -3,7 +3,7 @@ import CanvasOverlay from './CanvasOverlay';
 import NumberOverlay from './NumberOverlay';
 import { getNextExpectedNumber } from '../utils/gameHelpers';
 
-const InteractiveTutorial = ({ onComplete, onPlayMini, onPlayFull }) => {
+const InteractiveTutorial = ({ onComplete, onPlayMini, onPlayFull, onStepChange }) => {
   const [tutorialStep, setTutorialStep] = useState(0);
   const [autoPlayStep, setAutoPlayStep] = useState(0);
   const [autoPlayStep3, setAutoPlayStep3] = useState(0);
@@ -27,6 +27,10 @@ const InteractiveTutorial = ({ onComplete, onPlayMini, onPlayFull }) => {
   const step4Puzzle = [[1, 2, null], [null, null, null], [null, null, 5]];
   const cellSize = 60;
   const margin = 2;
+
+  useEffect(() => {
+    if (onStepChange) onStepChange(tutorialStep);
+  }, [tutorialStep, onStepChange]);
 
   // Screen 2 auto-play: 1 + 2 = 3
   useEffect(() => {

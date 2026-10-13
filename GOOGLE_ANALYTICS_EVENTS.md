@@ -7,7 +7,7 @@ All events are tracked using Google Analytics 4 (GA4) and will appear in your An
 ### 1. **game_start** 
 Fired when user clicks to play a game
 
-**When:** User clicks "Play Mini SUMS" or "Play SUMS" button
+**When:** User clicks "Play Mini SUMS" or "Play SUMS" on the start screen or on the tutorial's last screen. Skipped when resuming a game already in progress in that mode.
 
 **Parameters:**
 - `game_mode`: Either `"mini"` or `"full"`
@@ -82,6 +82,71 @@ gtag('event', 'game_abandon', {
 
 ---
 
+### 4. **tutorial_view**
+Fired when the tutorial modal opens
+
+**When:** The tutorial opens on a first visit, from "How to play" on the start screen, or from Instructions in the in-game ? menu
+
+**Parameters:**
+- `trigger`: `"first_visit"`, `"start_screen"`, or `"in_game"`
+
+**Example:**
+```javascript
+gtag('event', 'tutorial_view', {
+  trigger: 'first_visit'
+});
+```
+
+**Use Cases:**
+- See how many people open the tutorial
+- Compare first-visit opens with later opens from the start screen or in-game menu
+
+---
+
+### 5. **tutorial_complete**
+Fired when the player reaches the tutorial's last screen
+
+**When:** The tutorial shows "Ready to Play" (screen index 6). At most once each time the tutorial is opened.
+
+**Parameters:**
+- `trigger`: `"first_visit"`, `"start_screen"`, or `"in_game"`
+
+**Example:**
+```javascript
+gtag('event', 'tutorial_complete', {
+  trigger: 'first_visit'
+});
+```
+
+**Use Cases:**
+- Measure how many people who open the tutorial finish it
+- Compare completion by how the tutorial was opened
+
+---
+
+### 6. **tutorial_close**
+Fired when the player closes the tutorial before the last screen
+
+**When:** The close (X) button dismisses the tutorial and "Ready to Play" was not reached during this open. Not fired after `tutorial_complete` for the same open.
+
+**Parameters:**
+- `trigger`: `"first_visit"`, `"start_screen"`, or `"in_game"`
+- `step`: 0-based screen index where the player left
+
+**Example:**
+```javascript
+gtag('event', 'tutorial_close', {
+  trigger: 'first_visit',
+  step: 2
+});
+```
+
+**Use Cases:**
+- See which screen people leave on
+- Measure drop-off before the tutorial is finished
+
+---
+
 ## Viewing Events in Google Analytics
 
 ### Realtime Events (Immediate)
@@ -89,7 +154,7 @@ gtag('event', 'game_abandon', {
 2. Select your property
 3. Click **Reports** → **Realtime**
 4. Scroll to **Event count by Event name**
-5. You should see: `game_start`, `game_complete`, `game_abandon`
+5. You should see: `game_start`, `game_complete`, `game_abandon`, `tutorial_view`, `tutorial_complete`, `tutorial_close`
 
 ### Historical Data (24-48 hours delay)
 1. **Reports** → **Engagement** → **Events**

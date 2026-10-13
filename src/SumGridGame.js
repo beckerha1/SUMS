@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { initialGrid, puzzleNumber } from './puzzles/today';
 import { initialGridMini, puzzleNumberMini } from './puzzles/todayMini';
 import CanvasOverlay from "./components/CanvasOverlay";
@@ -32,6 +32,28 @@ import StrategyModal from './StrategyModal';
 import Statistics from './components/Statistics';
 import HighScores from './components/HighScores';
 import { getDailyStreakInfo, recordDailyPuzzleWin, clearDailyStreak } from './utils/dailyStreak';
+
+function isFirstVisit() {
+  try {
+    if (localStorage.getItem("sums-tutorial-seen") !== null) return false;
+  } catch (e) {
+    return false;
+  }
+  try {
+    if (localStorage.getItem("sums-game-history") !== null) return false;
+  } catch (e) {
+    return false;
+  }
+  return true;
+}
+
+function markTutorialSeen() {
+  try {
+    localStorage.setItem("sums-tutorial-seen", "1");
+  } catch (e) {
+    // Storage can be blocked; closing the tutorial still has to work.
+  }
+}
 
 export default function SumGridGame() {
   const HINT_COOLDOWN_MS = 5000;
@@ -344,9 +366,70 @@ useEffect(() => {
   return () => clearInterval(interval);
 }, [hintCooldownByMode]);
 
+const tutorialTriggerRef = useRef(null);
+const tutorialStepRef = useRef(0);
+const tutorialCompletedThisOpenRef = useRef(false);
+const firstVisitViewSentRef = useRef(false);
+
+const openTutorial = useCallback((trigger) => {
+  tutorialTriggerRef.current = trigger;
+  tutorialStepRef.current = 0;
+  tutorialCompletedThisOpenRef.current = false;
+  setShowInstructions(true);
+  // Strict Mode runs this mount effect twice in development. Record one view.
+  if (trigger === "first_visit" && firstVisitViewSentRef.current) return;
+  if (trigger === "first_visit") firstVisitViewSentRef.current = true;
+  if (window.gtag) window.gtag('event', 'tutorial_view', { trigger });
+}, []);
+
+const dismissTutorial = useCallback(() => {
+  markTutorialSeen();
+  setShowInstructions(false);
+}, []);
+
+const closeInstructions = useCallback(() => {
+  if (!tutorialCompletedThisOpenRef.current && window.gtag) {
+    window.gtag('event', 'tutorial_close', {
+      trigger: tutorialTriggerRef.current,
+      step: tutorialStepRef.current
+    });
+  }
+  dismissTutorial();
+}, [dismissTutorial]);
+
+const handleTutorialStepChange = useCallback((step) => {
+  tutorialStepRef.current = step;
+  if (step === 6 && !tutorialCompletedThisOpenRef.current) {
+    tutorialCompletedThisOpenRef.current = true;
+    if (window.gtag) {
+      window.gtag('event', 'tutorial_complete', {
+        trigger: tutorialTriggerRef.current
+      });
+    }
+  }
+}, []);
+
+useEffect(() => {
+  if (isFirstVisit()) openTutorial("first_visit");
+}, [openTutorial]);
+
 const currentHintCooldownRemaining = gameMode ? hintCooldownByMode[gameMode] : 0;
 
-const closeInstructions = () => setShowInstructions(false);
+const startGame = (mode) => {
+  const isResumingSameMode = gameMode === mode && !!grid;
+  setGameMode(mode);
+  setShowStartScreen(false);
+  if (isResumingSameMode) {
+    if (gameWon) setShowWinScreen(true);
+  } else if (window.gtag) {
+    window.gtag('event', 'game_start', { game_mode: mode });
+  }
+};
+
+const startGameFromTutorial = (mode) => {
+  startGame(mode);
+  dismissTutorial();
+};
 
 const getDropTargetHighlight = (r, c) => {
   if (!isValidCell(r, c, grid)) return false;
@@ -771,27 +854,9 @@ if (showStartScreen) {
   return (
     <>
       <StartScreen
-        onPlayMini={() => {
-          const isResumingSameMode = gameMode === 'mini' && !!grid;
-          setGameMode('mini');
-          setShowStartScreen(false);
-          if (isResumingSameMode) {
-            if (gameWon) setShowWinScreen(true);
-          } else {
-            if (window.gtag) window.gtag('event', 'game_start', { game_mode: 'mini' });
-          }
-        }}
-        onPlayFull={() => {
-          const isResumingSameMode = gameMode === 'full' && !!grid;
-          setGameMode('full');
-          setShowStartScreen(false);
-          if (isResumingSameMode) {
-            if (gameWon) setShowWinScreen(true);
-          } else {
-            if (window.gtag) window.gtag('event', 'game_start', { game_mode: 'full' });
-          }
-        }}
-        onShowInstructions={() => setShowInstructions(true)}
+        onPlayMini={() => startGame('mini')}
+        onPlayFull={() => startGame('full')}
+        onShowInstructions={() => openTutorial('start_screen')}
         onShowStats={() => setShowStats(true)}
         onShowHighScores={() => {
           setHighScoresHighlight(null);
@@ -849,27 +914,12 @@ if (showStartScreen) {
 
             <InteractiveTutorial 
               onComplete={() => {
-                setShowInstructions(false);
+                dismissTutorial();
                 setShowStartScreen(false);
               }}
-              onPlayMini={() => {
-                const isResumingSameMode = gameMode === 'mini' && !!grid;
-                setGameMode('mini');
-                setShowStartScreen(false);
-                if (isResumingSameMode) {
-                  if (gameWon) setShowWinScreen(true);
-                }
-                setShowInstructions(false);
-              }}
-              onPlayFull={() => {
-                const isResumingSameMode = gameMode === 'full' && !!grid;
-                setGameMode('full');
-                setShowStartScreen(false);
-                if (isResumingSameMode) {
-                  if (gameWon) setShowWinScreen(true);
-                }
-                setShowInstructions(false);
-              }}
+              onPlayMini={() => startGameFromTutorial('mini')}
+              onPlayFull={() => startGameFromTutorial('full')}
+              onStepChange={handleTutorialStepChange}
             />
 
           </div>
@@ -947,7 +997,7 @@ return (
         lastSum={lastSum}
         showHelpDropdown={showHelpDropdown}
         setShowHelpDropdown={setShowHelpDropdown}
-        setShowInstructions={setShowInstructions}
+        onOpenInstructions={() => openTutorial('in_game')}
         hardMode={hardMode}
         setHardMode={setHardMode}
         setSelectedCells={setSelectedCells}
@@ -1141,25 +1191,10 @@ return (
             <p style={{ marginBottom: 20 }}>Build a number chain: 1 → 2 → 3 → 4 → …</p>
 
             <InteractiveTutorial 
-              onComplete={() => setShowInstructions(false)}
-              onPlayMini={() => {
-                const isResumingSameMode = gameMode === 'mini' && !!grid;
-                setGameMode('mini');
-                setShowStartScreen(false);
-                if (isResumingSameMode) {
-                  if (gameWon) setShowWinScreen(true);
-                }
-                setShowInstructions(false);
-              }}
-              onPlayFull={() => {
-                const isResumingSameMode = gameMode === 'full' && !!grid;
-                setGameMode('full');
-                setShowStartScreen(false);
-                if (isResumingSameMode) {
-                  if (gameWon) setShowWinScreen(true);
-                }
-                setShowInstructions(false);
-              }}
+              onComplete={() => dismissTutorial()}
+              onPlayMini={() => startGameFromTutorial('mini')}
+              onPlayFull={() => startGameFromTutorial('full')}
+              onStepChange={handleTutorialStepChange}
             />
 
           </div>
