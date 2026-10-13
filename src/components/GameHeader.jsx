@@ -79,11 +79,13 @@ const GameHeader = ({
             </span>
           )}
           <span style={{ color: "#666" }}>
-            Current: <strong>{currentSum}</strong>
+            Current: <strong style={{
+              color: nextExpectedNumber != null && currentSum > nextExpectedNumber ? "#e53935" : undefined
+            }}>{currentSum}</strong>
           </span>
           {lastSum != null && (
             <span style={{ color: "#666" }}>
-              Last: <strong>{lastSum}</strong>
+              Goal: <strong>{lastSum}</strong>
             </span>
           )}
         </div>
