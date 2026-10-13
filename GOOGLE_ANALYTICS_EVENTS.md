@@ -147,6 +147,32 @@ gtag('event', 'tutorial_close', {
 
 ---
 
+### 7. **move_rejected**
+Fired when a tap cannot be applied
+
+**When:** The player taps a cell that does not make a legal selection or placement, or a placement is rejected because the next gray number cannot be reached. Each reason is sent at most once per game. The set of sent reasons resets when a mode loads a board and when Clear restarts the puzzle. Undo does not reset it.
+
+**Parameters:**
+- `game_mode`: Either `"mini"` or `"full"`
+- `reason`: One of `"empty_first"`, `"wrong_sum"`, `"not_touching_last"`, `"chain_gap"`, `"hard_mode_cap"`, `"gray_unreachable"`
+- `next_number`: The next number the player is trying to place
+
+**Example:**
+```javascript
+gtag('event', 'move_rejected', {
+  game_mode: 'mini',
+  reason: 'wrong_sum',
+  next_number: 4
+});
+```
+
+**Use Cases:**
+- See which failed taps players hit most often
+- Compare rejection reasons between Mini and Full
+- Spot boards where the gray number cannot be reached
+
+---
+
 ## Viewing Events in Google Analytics
 
 ### Realtime Events (Immediate)
@@ -154,7 +180,7 @@ gtag('event', 'tutorial_close', {
 2. Select your property
 3. Click **Reports** → **Realtime**
 4. Scroll to **Event count by Event name**
-5. You should see: `game_start`, `game_complete`, `game_abandon`, `tutorial_view`, `tutorial_complete`, `tutorial_close`
+5. You should see: `game_start`, `game_complete`, `game_abandon`, `tutorial_view`, `tutorial_complete`, `tutorial_close`, `move_rejected`
 
 ### Historical Data (24-48 hours delay)
 1. **Reports** → **Engagement** → **Events**

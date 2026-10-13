@@ -99,7 +99,9 @@ export default function SumGridGame() {
   const [showHelpDropdown, setShowHelpDropdown] = useState(false);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [showAlertModal, setShowAlertModal] = useState(false);
+  const [alertTitle, setAlertTitle] = useState("");
   const [alertMessage, setAlertMessage] = useState("");
+  const [statusMessage, setStatusMessage] = useState("");
   const [winScreenDismissed, setWinScreenDismissed] = useState(false);
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
   const [showAboutModal, setShowAboutModal] = useState(false);
@@ -128,6 +130,8 @@ const gridWrapperRef = useRef(null);
 const clueSkipAnimRef = useRef(null);
 const celebrationTimersRef = useRef([]);
 const winModalTimerRef = useRef(null);
+const messageTimerRef = useRef(null);
+const rejectedReasonsRef = useRef(new Set());
 const [clueSkipFlashKeys, setClueSkipFlashKeys] = useState([]);
 const [headerNextOverride, setHeaderNextOverride] = useState(null);
 const clueFlashCells = useMemo(
@@ -147,6 +151,38 @@ const clearClueSkipAnimation = () => {
   setHeaderNextOverride(null);
 };
 
+const clearStatusMessage = () => {
+  if (messageTimerRef.current) {
+    clearTimeout(messageTimerRef.current);
+    messageTimerRef.current = null;
+  }
+  setStatusMessage("");
+};
+
+const showMessage = (text) => {
+  if (messageTimerRef.current) {
+    clearTimeout(messageTimerRef.current);
+    messageTimerRef.current = null;
+  }
+  setStatusMessage(text);
+  messageTimerRef.current = setTimeout(() => {
+    setStatusMessage("");
+    messageTimerRef.current = null;
+  }, 2500);
+};
+
+const trackMoveRejected = (reason, nextNumber) => {
+  if (rejectedReasonsRef.current.has(reason)) return;
+  rejectedReasonsRef.current.add(reason);
+  if (window.gtag) {
+    window.gtag("event", "move_rejected", {
+      game_mode: gameMode,
+      reason,
+      next_number: nextNumber
+    });
+  }
+};
+
 useEffect(() => {
   return () => {
     if (clueSkipAnimRef.current) {
@@ -155,6 +191,10 @@ useEffect(() => {
     celebrationTimersRef.current.forEach(clearTimeout);
     if (winModalTimerRef.current) {
       clearTimeout(winModalTimerRef.current);
+    }
+    if (messageTimerRef.current) {
+      clearTimeout(messageTimerRef.current);
+      messageTimerRef.current = null;
     }
   };
 }, []);
@@ -191,6 +231,8 @@ useEffect(() => {
 useEffect(() => {
   if (gameMode) {
     clearClueSkipAnimation();
+    clearStatusMessage();
+    rejectedReasonsRef.current = new Set();
     const savedModeState = modeStateRef.current[gameMode];
 
     if (savedModeState) {
@@ -552,7 +594,8 @@ const applyPlacementMove = (selectionPath, r, c) => {
   const clueIsBlocked = puzzle.flat().includes(nextAfter) && isNextNumberBlockedByClue(grid, puzzle);
 
   if (clueIsBlocked) {
-    setAlertMessage(`Cannot continue: ${nextAfter} is prefilled but not reachable by any valid sum.`);
+    setAlertTitle("Stuck");
+    setAlertMessage(`The gray ${nextAfter} can't be reached from here. Undo a few moves and try another route.`);
     setShowAlertModal(true);
     return false;
   }
@@ -608,7 +651,9 @@ const applyPlacementMove = (selectionPath, r, c) => {
       }
 
       if (!hasValidGroup) {
-        setAlertMessage(`Your next SUM ${nextNum} is pre-populated but does not have a legal SUMS chain. Your last move has been undone. Please create a valid path to ${nextNum}.`);
+        setAlertTitle("Not there");
+        setAlertMessage(`If ${expected} goes there, no chain touching the gray ${nextNum} can add up to ${nextNum}. Try another square, or undo a few moves.`);
+        trackMoveRejected("gray_unreachable", expected);
         setShowAlertModal(true);
         setSelectedCells([]);
         setHintInProgress(false);
@@ -743,7 +788,8 @@ const handleHint = () => {
     const hintMove = getHintMove(grid, puzzle, hardMode);
     if (!hintMove) {
       setHintInProgress(false);
-      setAlertMessage("No legal hint is available from this board state.");
+      setAlertTitle("No hint");
+      setAlertMessage("Hint couldn't find a move from here. Undo a few moves and try again.");
       setShowAlertModal(true);
       return;
     }
@@ -815,12 +861,16 @@ const handleCellClick = (r, c, event) => {
 
     if (isAdjacent) {
       if (hardMode && selectedCells.length >= getMaxSelection(hardMode, puzzle)) {
-        setAlertMessage(`Max ${getMaxSelection(hardMode, puzzle)} selections reached! Try a different combination.`);
-        setShowAlertModal(true);
+        const maxSelection = getMaxSelection(hardMode, puzzle);
+        showMessage(`Hard mode: chains can be at most ${maxSelection} numbers.`);
+        trackMoveRejected("hard_mode_cap", next);
         setSelectedCells([]);
         return;
       }
       setSelectedCells([...selectedCells, [r, c]]);
+    } else {
+      showMessage("That number doesn't touch your last one. Diagonals count.");
+      trackMoveRejected("chain_gap", next);
     }
 
   } else {
@@ -830,19 +880,37 @@ const handleCellClick = (r, c, event) => {
       sum === expected &&
       isNextToLastSelected(r, c);
 
-    if (!canPlace && selectedCells.length > 0) {
-      setSelectedCells([]);
+    if (selectedCells.length === 0) {
+      showMessage(`Tap numbers that add up to ${expected} first, then an empty square.`);
+      trackMoveRejected("empty_first", expected);
       return;
     }
 
     if (canPlace) {
       applyPlacementMove(selectedCells, r, c);
+      return;
     }
+
+    if (sum !== expected) {
+      setSelectedCells([]);
+      showMessage(`That adds up to ${sum}. You need ${expected}.`);
+      trackMoveRejected("wrong_sum", expected);
+      return;
+    }
+
+    if (!isNextToLastSelected(r, c)) {
+      showMessage(`Put ${expected} in a square touching the last number you tapped.`);
+      trackMoveRejected("not_touching_last", expected);
+      return;
+    }
+
+    setSelectedCells([]);
   }
 };
 
 const handleUndo = () => {
   clearClueSkipAnimation();
+  clearStatusMessage();
   if (history.length > 1) {
     const newHistory = [...history];
     newHistory.pop();
@@ -858,11 +926,14 @@ const handleUndo = () => {
 };
 
 const handleClear = () => {
+  clearStatusMessage();
   setShowClearConfirm(true);
 };
 
 const confirmClear = () => {
   clearClueSkipAnimation();
+  clearStatusMessage();
+  rejectedReasonsRef.current = new Set();
   const clearedGrid = puzzle.map(row => [...row]);
   setGrid(clearedGrid);
   setHistory([clearedGrid]);
@@ -1062,6 +1133,19 @@ return (
         gameMode={gameMode}
         puzzleNumber={currentPuzzleNumber}
       />
+
+      <div
+        aria-live="polite"
+        style={{
+          height: "22px",
+          lineHeight: "22px",
+          fontSize: "14px",
+          color: "#555",
+          textAlign: "center"
+        }}
+      >
+        {statusMessage}
+      </div>
 
       <div ref={gridWrapperRef} style={{ 
         position: "relative", 
@@ -1402,7 +1486,7 @@ return (
           width: "90%"
         }}>
           <h3 style={{ marginBottom: "20px", fontSize: "1.3rem", color: "#303036" }}>
-            Notice
+            {alertTitle}
           </h3>
           <p style={{ marginBottom: "25px", fontSize: "1rem", lineHeight: "1.5", color: "#555" }}>
             {alertMessage}
