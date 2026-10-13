@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { initialGrid, puzzleNumber } from './puzzles/today';
 import { initialGridMini, puzzleNumberMini } from './puzzles/todayMini';
+import { warmupGrid, warmupFullGrid } from './puzzles/warmup';
 import CanvasOverlay from "./components/CanvasOverlay";
 import NumberOverlay from "./components/NumberOverlay";
 import InteractiveTutorial from './components/InstructionExamples';
@@ -20,6 +21,7 @@ import {
 import StartScreen from './components/StartScreen';
 import GameHeader from './components/GameHeader';
 import WinScreen from './components/WinScreen';
+import WarmupDoneScreen from './components/WarmupDoneScreen';
 import FireworksCelebration, {
   prefersReducedMotion,
   WIN_CELEBRATION_MS,
@@ -33,19 +35,57 @@ import Statistics from './components/Statistics';
 import HighScores from './components/HighScores';
 import { getDailyStreakInfo, recordDailyPuzzleWin, clearDailyStreak } from './utils/dailyStreak';
 
+function markTutorialSeen() {
+  try {
+    localStorage.setItem("sums-tutorial-seen", "1");
+  } catch (e) {
+    // Storage can be blocked; closing the tutorial still has to work.
+  }
+}
+
+function hasSeenTutorial() {
+  try {
+    return localStorage.getItem("sums-tutorial-seen") !== null;
+  } catch (e) {
+    return true;
+  }
+}
+
+function readWarmupAvailable() {
+  try {
+    if (localStorage.getItem("sums-warmup-done") !== null) return false;
+    if (localStorage.getItem("sums-game-history") !== null) return false;
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+function isWarmupMode(mode) {
+  return mode === "warmup" || mode === "warmupFull";
+}
+
 export default function SumGridGame() {
   const HINT_COOLDOWN_MS = 5000;
   const [showStartScreen, setShowStartScreen] = useState(true);
-  const [gameMode, setGameMode] = useState(null); // 'mini' or 'full'
+  const [gameMode, setGameMode] = useState(null); // 'mini', 'full', 'warmup', or 'warmupFull'
   
-  const puzzle = gameMode === 'mini' ? initialGridMini : initialGrid;
-  const currentPuzzleNumber = gameMode === 'mini' ? puzzleNumberMini : puzzleNumber;
+  const puzzle = gameMode === 'warmup'
+    ? warmupGrid
+    : gameMode === 'warmupFull'
+      ? warmupFullGrid
+      : gameMode === 'mini'
+        ? initialGridMini
+        : initialGrid;
+  const currentPuzzleNumber = isWarmupMode(gameMode) ? 'warm-up' : gameMode === 'mini' ? puzzleNumberMini : puzzleNumber;
   const [grid, setGrid] = useState(initialGrid);
   const [selectedCells, setSelectedCells] = useState([]);
   const [history, setHistory] = useState([initialGrid]);
   const [gameWon, setGameWon] = useState(false);
   const [showWinScreen, setShowWinScreen] = useState(false);
+  const [showWarmupDoneScreen, setShowWarmupDoneScreen] = useState(false);
   const [showInstructions, setShowInstructions] = useState(false);
+  const [tutorialEnding, setTutorialEnding] = useState('daily');
   const [startTime, setStartTime] = useState(null);
   const [elapsedTime, setElapsedTime] = useState(0);
   const [bestTimeMini, setBestTimeMini] = useState(null);
@@ -63,7 +103,9 @@ export default function SumGridGame() {
   const [showHelpDropdown, setShowHelpDropdown] = useState(false);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [showAlertModal, setShowAlertModal] = useState(false);
+  const [alertTitle, setAlertTitle] = useState("");
   const [alertMessage, setAlertMessage] = useState("");
+  const [statusMessage, setStatusMessage] = useState("");
   const [winScreenDismissed, setWinScreenDismissed] = useState(false);
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
   const [showAboutModal, setShowAboutModal] = useState(false);
@@ -72,7 +114,7 @@ export default function SumGridGame() {
   const [showHighScores, setShowHighScores] = useState(false);
   const [highScoresHighlight, setHighScoresHighlight] = useState(null);
   const [hintInProgress, setHintInProgress] = useState(false);
-  const [hintCooldownByMode, setHintCooldownByMode] = useState({ mini: 0, full: 0 });
+  const [hintCooldownByMode, setHintCooldownByMode] = useState({ mini: 0, full: 0, warmup: 0, warmupFull: 0 });
   const [lastSequence, setLastSequence] = useState(null);
   const [lastPlacedPosition, setLastPlacedPosition] = useState(null);
   const [dailyStreakInfo, setDailyStreakInfo] = useState(() => getDailyStreakInfo());
@@ -86,12 +128,15 @@ const todayStr = new Date().toLocaleDateString("en-US", {
 });
 
 const prefilledCells = useRef(new Set());
-const modeStateRef = useRef({ mini: null, full: null });
+const modeStateRef = useRef({ mini: null, full: null, warmup: null, warmupFull: null });
+const warmupFinishedRef = useRef(false);
 const [overlayPoints, setOverlayPoints] = useState([]);
 const gridWrapperRef = useRef(null);
 const clueSkipAnimRef = useRef(null);
 const celebrationTimersRef = useRef([]);
 const winModalTimerRef = useRef(null);
+const messageTimerRef = useRef(null);
+const rejectedReasonsRef = useRef(new Set());
 const [clueSkipFlashKeys, setClueSkipFlashKeys] = useState([]);
 const [headerNextOverride, setHeaderNextOverride] = useState(null);
 const clueFlashCells = useMemo(
@@ -111,6 +156,38 @@ const clearClueSkipAnimation = () => {
   setHeaderNextOverride(null);
 };
 
+const clearStatusMessage = () => {
+  if (messageTimerRef.current) {
+    clearTimeout(messageTimerRef.current);
+    messageTimerRef.current = null;
+  }
+  setStatusMessage("");
+};
+
+const showMessage = (text) => {
+  if (messageTimerRef.current) {
+    clearTimeout(messageTimerRef.current);
+    messageTimerRef.current = null;
+  }
+  setStatusMessage(text);
+  messageTimerRef.current = setTimeout(() => {
+    setStatusMessage("");
+    messageTimerRef.current = null;
+  }, 2500);
+};
+
+const trackMoveRejected = (reason, nextNumber) => {
+  if (rejectedReasonsRef.current.has(reason)) return;
+  rejectedReasonsRef.current.add(reason);
+  if (window.gtag) {
+    window.gtag("event", "move_rejected", {
+      game_mode: gameMode,
+      reason,
+      next_number: nextNumber
+    });
+  }
+};
+
 useEffect(() => {
   return () => {
     if (clueSkipAnimRef.current) {
@@ -119,6 +196,10 @@ useEffect(() => {
     celebrationTimersRef.current.forEach(clearTimeout);
     if (winModalTimerRef.current) {
       clearTimeout(winModalTimerRef.current);
+    }
+    if (messageTimerRef.current) {
+      clearTimeout(messageTimerRef.current);
+      messageTimerRef.current = null;
     }
   };
 }, []);
@@ -155,6 +236,8 @@ useEffect(() => {
 useEffect(() => {
   if (gameMode) {
     clearClueSkipAnimation();
+    clearStatusMessage();
+    rejectedReasonsRef.current = new Set();
     const savedModeState = modeStateRef.current[gameMode];
 
     if (savedModeState) {
@@ -333,20 +416,140 @@ useEffect(() => {
 }, [startTime, gameWon, gameMode, elapsedTime, moveCount]);
 
 useEffect(() => {
-  const hasCooldown = hintCooldownByMode.mini > 0 || hintCooldownByMode.full > 0;
+  const hasCooldown = hintCooldownByMode.mini > 0 || hintCooldownByMode.full > 0 || hintCooldownByMode.warmup > 0 || hintCooldownByMode.warmupFull > 0;
   if (!hasCooldown) return;
   const interval = setInterval(() => {
     setHintCooldownByMode((prev) => ({
       mini: Math.max(0, prev.mini - 100),
-      full: Math.max(0, prev.full - 100)
+      full: Math.max(0, prev.full - 100),
+      warmup: Math.max(0, prev.warmup - 100),
+      warmupFull: Math.max(0, prev.warmupFull - 100)
     }));
   }, 100);
   return () => clearInterval(interval);
 }, [hintCooldownByMode]);
 
+const tutorialTriggerRef = useRef(null);
+const tutorialStepRef = useRef(0);
+const tutorialCompletedThisOpenRef = useRef(false);
+const pendingPracticeRef = useRef(null);
+
+const openTutorial = useCallback((trigger, ending = 'daily') => {
+  if (ending !== 'practice') pendingPracticeRef.current = null;
+  tutorialTriggerRef.current = trigger;
+  tutorialStepRef.current = 0;
+  tutorialCompletedThisOpenRef.current = false;
+  setTutorialEnding(ending);
+  setShowInstructions(true);
+  if (window.gtag) window.gtag('event', 'tutorial_view', { trigger });
+}, []);
+
+const dismissTutorial = useCallback(() => {
+  markTutorialSeen();
+  setShowInstructions(false);
+}, []);
+
+const closeInstructions = useCallback(() => {
+  if (!tutorialCompletedThisOpenRef.current && window.gtag) {
+    window.gtag('event', 'tutorial_close', {
+      trigger: tutorialTriggerRef.current,
+      step: tutorialStepRef.current
+    });
+  }
+  pendingPracticeRef.current = null;
+  setShowInstructions(false);
+}, []);
+
+const openBrowsingTutorial = (trigger) => {
+  openTutorial(trigger, readWarmupAvailable() ? 'back' : 'daily');
+};
+
+const handleTutorialStepChange = useCallback((step) => {
+  tutorialStepRef.current = step;
+  if (step === 6 && !tutorialCompletedThisOpenRef.current) {
+    tutorialCompletedThisOpenRef.current = true;
+    if (window.gtag) {
+      window.gtag('event', 'tutorial_complete', {
+        trigger: tutorialTriggerRef.current
+      });
+    }
+  }
+}, []);
+
 const currentHintCooldownRemaining = gameMode ? hintCooldownByMode[gameMode] : 0;
 
-const closeInstructions = () => setShowInstructions(false);
+const startGame = (mode) => {
+  const isResumingSameMode = gameMode === mode && !!grid;
+  setGameMode(mode);
+  setShowStartScreen(false);
+  if (isResumingSameMode) {
+    if (gameWon) setShowWinScreen(true);
+  } else if (window.gtag) {
+    window.gtag('event', 'game_start', { game_mode: mode });
+  }
+};
+
+const startGameFromTutorial = (mode) => {
+  startGame(mode);
+  dismissTutorial();
+};
+
+const shouldStartWarmup = () => {
+  if (warmupFinishedRef.current) return false;
+  return readWarmupAvailable();
+};
+
+const startWarmup = () => {
+  if (showInstructions) dismissTutorial();
+  startGame('warmup');
+};
+
+const startWarmupFull = () => {
+  if (showInstructions) dismissTutorial();
+  startGame('warmupFull');
+};
+
+const startPracticeFromTutorial = () => {
+  const mode = pendingPracticeRef.current === 'full' ? 'warmupFull' : 'warmup';
+  pendingPracticeRef.current = null;
+  if (showInstructions) dismissTutorial();
+  else markTutorialSeen();
+  startGame(mode);
+};
+
+const startMiniFromEntry = () => {
+  if (shouldStartWarmup()) {
+    if (!hasSeenTutorial()) {
+      pendingPracticeRef.current = 'mini';
+      openTutorial('play_mini', 'practice');
+      return;
+    }
+    startWarmup();
+    return;
+  }
+  if (showInstructions) {
+    startGameFromTutorial('mini');
+    return;
+  }
+  startGame('mini');
+};
+
+const startFullFromEntry = () => {
+  if (shouldStartWarmup()) {
+    if (!hasSeenTutorial()) {
+      pendingPracticeRef.current = 'full';
+      openTutorial('play_full', 'practice');
+      return;
+    }
+    startWarmupFull();
+    return;
+  }
+  if (showInstructions) {
+    startGameFromTutorial('full');
+    return;
+  }
+  startGame('full');
+};
 
 const getDropTargetHighlight = (r, c) => {
   if (!isValidCell(r, c, grid)) return false;
@@ -448,7 +651,8 @@ const applyPlacementMove = (selectionPath, r, c) => {
   const clueIsBlocked = puzzle.flat().includes(nextAfter) && isNextNumberBlockedByClue(grid, puzzle);
 
   if (clueIsBlocked) {
-    setAlertMessage(`Cannot continue: ${nextAfter} is prefilled but not reachable by any valid sum.`);
+    setAlertTitle("Stuck");
+    setAlertMessage(`The gray ${nextAfter} can't be reached from here. Undo a few moves and try another route.`);
     setShowAlertModal(true);
     return false;
   }
@@ -504,7 +708,9 @@ const applyPlacementMove = (selectionPath, r, c) => {
       }
 
       if (!hasValidGroup) {
-        setAlertMessage(`Your next SUM ${nextNum} is pre-populated but does not have a legal SUMS chain. Your last move has been undone. Please create a valid path to ${nextNum}.`);
+        setAlertTitle("Not there");
+        setAlertMessage(`If ${expected} goes there, no chain touching the gray ${nextNum} can add up to ${nextNum}. Try another square, or undo a few moves.`);
+        trackMoveRejected("gray_unreachable", expected);
         setShowAlertModal(true);
         setSelectedCells([]);
         setHintInProgress(false);
@@ -566,12 +772,25 @@ const applyPlacementMove = (selectionPath, r, c) => {
     const finalTime = Math.floor((Date.now() - startTime) / 1000);
     const finalMoves = moveCount + 1;
 
-    const streakResult = recordDailyPuzzleWin(gameMode);
-    setLastWinStreakCount(streakResult.count);
-    setDailyStreakInfo(getDailyStreakInfo());
+    if (isWarmupMode(gameMode)) {
+      warmupFinishedRef.current = true;
+      try {
+        localStorage.setItem("sums-warmup-done", "1");
+      } catch (e) {
+        // Storage can be blocked; this session still treats the warm-up as finished.
+      }
+    } else {
+      const streakResult = recordDailyPuzzleWin(gameMode);
+      setLastWinStreakCount(streakResult.count);
+      setDailyStreakInfo(getDailyStreakInfo());
+    }
 
     winModalTimerRef.current = setTimeout(() => {
-      setShowWinScreen(true);
+      if (isWarmupMode(gameMode)) {
+        setShowWarmupDoneScreen(true);
+      } else {
+        setShowWinScreen(true);
+      }
 
       if (window.gtag) {
         const streaks = getDailyStreakInfo();
@@ -597,9 +816,11 @@ const applyPlacementMove = (selectionPath, r, c) => {
       }
     }
 
-    const updatedHistory = [...gameHistory, { time: finalTime, mode: gameMode, date: new Date().toISOString() }];
-    setGameHistory(updatedHistory);
-    localStorage.setItem("sums-game-history", JSON.stringify(updatedHistory));
+    if (!isWarmupMode(gameMode)) {
+      const updatedHistory = [...gameHistory, { time: finalTime, mode: gameMode, date: new Date().toISOString() }];
+      setGameHistory(updatedHistory);
+      localStorage.setItem("sums-game-history", JSON.stringify(updatedHistory));
+    }
   }
 
   return true;
@@ -624,7 +845,8 @@ const handleHint = () => {
     const hintMove = getHintMove(grid, puzzle, hardMode);
     if (!hintMove) {
       setHintInProgress(false);
-      setAlertMessage("No legal hint is available from this board state.");
+      setAlertTitle("No hint");
+      setAlertMessage("Hint couldn't find a move from here. Undo a few moves and try again.");
       setShowAlertModal(true);
       return;
     }
@@ -696,12 +918,16 @@ const handleCellClick = (r, c, event) => {
 
     if (isAdjacent) {
       if (hardMode && selectedCells.length >= getMaxSelection(hardMode, puzzle)) {
-        setAlertMessage(`Max ${getMaxSelection(hardMode, puzzle)} selections reached! Try a different combination.`);
-        setShowAlertModal(true);
+        const maxSelection = getMaxSelection(hardMode, puzzle);
+        showMessage(`Hard mode: chains can be at most ${maxSelection} numbers.`);
+        trackMoveRejected("hard_mode_cap", next);
         setSelectedCells([]);
         return;
       }
       setSelectedCells([...selectedCells, [r, c]]);
+    } else {
+      showMessage("That number doesn't touch your last one. Diagonals count.");
+      trackMoveRejected("chain_gap", next);
     }
 
   } else {
@@ -711,19 +937,37 @@ const handleCellClick = (r, c, event) => {
       sum === expected &&
       isNextToLastSelected(r, c);
 
-    if (!canPlace && selectedCells.length > 0) {
-      setSelectedCells([]);
+    if (selectedCells.length === 0) {
+      showMessage(`Tap numbers that add up to ${expected} first, then an empty square.`);
+      trackMoveRejected("empty_first", expected);
       return;
     }
 
     if (canPlace) {
       applyPlacementMove(selectedCells, r, c);
+      return;
     }
+
+    if (sum !== expected) {
+      setSelectedCells([]);
+      showMessage(`That adds up to ${sum}. You need ${expected}.`);
+      trackMoveRejected("wrong_sum", expected);
+      return;
+    }
+
+    if (!isNextToLastSelected(r, c)) {
+      showMessage(`Put ${expected} in a square touching the last number you tapped.`);
+      trackMoveRejected("not_touching_last", expected);
+      return;
+    }
+
+    setSelectedCells([]);
   }
 };
 
 const handleUndo = () => {
   clearClueSkipAnimation();
+  clearStatusMessage();
   if (history.length > 1) {
     const newHistory = [...history];
     newHistory.pop();
@@ -733,16 +977,20 @@ const handleUndo = () => {
     setGameWon(false);
     stopWinCelebration();
     setShowWinScreen(false);
+    setShowWarmupDoneScreen(false);
     setWinScreenDismissed(false);
   }
 };
 
 const handleClear = () => {
+  clearStatusMessage();
   setShowClearConfirm(true);
 };
 
 const confirmClear = () => {
   clearClueSkipAnimation();
+  clearStatusMessage();
+  rejectedReasonsRef.current = new Set();
   const clearedGrid = puzzle.map(row => [...row]);
   setGrid(clearedGrid);
   setHistory([clearedGrid]);
@@ -750,6 +998,7 @@ const confirmClear = () => {
   setGameWon(false);
   stopWinCelebration();
   setShowWinScreen(false);
+  setShowWarmupDoneScreen(false);
   setWinScreenDismissed(false);
   setElapsedTime(Math.floor((Date.now() - startTime) / 1000));
   setShowClearConfirm(false);
@@ -771,27 +1020,9 @@ if (showStartScreen) {
   return (
     <>
       <StartScreen
-        onPlayMini={() => {
-          const isResumingSameMode = gameMode === 'mini' && !!grid;
-          setGameMode('mini');
-          setShowStartScreen(false);
-          if (isResumingSameMode) {
-            if (gameWon) setShowWinScreen(true);
-          } else {
-            if (window.gtag) window.gtag('event', 'game_start', { game_mode: 'mini' });
-          }
-        }}
-        onPlayFull={() => {
-          const isResumingSameMode = gameMode === 'full' && !!grid;
-          setGameMode('full');
-          setShowStartScreen(false);
-          if (isResumingSameMode) {
-            if (gameWon) setShowWinScreen(true);
-          } else {
-            if (window.gtag) window.gtag('event', 'game_start', { game_mode: 'full' });
-          }
-        }}
-        onShowInstructions={() => setShowInstructions(true)}
+        onPlayMini={startMiniFromEntry}
+        onPlayFull={startFullFromEntry}
+        onShowInstructions={() => openBrowsingTutorial('start_screen')}
         onShowStats={() => setShowStats(true)}
         onShowHighScores={() => {
           setHighScoresHighlight(null);
@@ -849,27 +1080,15 @@ if (showStartScreen) {
 
             <InteractiveTutorial 
               onComplete={() => {
-                setShowInstructions(false);
+                dismissTutorial();
                 setShowStartScreen(false);
               }}
-              onPlayMini={() => {
-                const isResumingSameMode = gameMode === 'mini' && !!grid;
-                setGameMode('mini');
-                setShowStartScreen(false);
-                if (isResumingSameMode) {
-                  if (gameWon) setShowWinScreen(true);
-                }
-                setShowInstructions(false);
-              }}
-              onPlayFull={() => {
-                const isResumingSameMode = gameMode === 'full' && !!grid;
-                setGameMode('full');
-                setShowStartScreen(false);
-                if (isResumingSameMode) {
-                  if (gameWon) setShowWinScreen(true);
-                }
-                setShowInstructions(false);
-              }}
+              onPlayMini={startMiniFromEntry}
+              onPlayFull={startFullFromEntry}
+              onPlayPractice={startPracticeFromTutorial}
+              onBack={closeInstructions}
+              onStepChange={handleTutorialStepChange}
+              ending={tutorialEnding}
             />
 
           </div>
@@ -947,7 +1166,7 @@ return (
         lastSum={lastSum}
         showHelpDropdown={showHelpDropdown}
         setShowHelpDropdown={setShowHelpDropdown}
-        setShowInstructions={setShowInstructions}
+        onOpenInstructions={() => openBrowsingTutorial('in_game')}
         hardMode={hardMode}
         setHardMode={setHardMode}
         setSelectedCells={setSelectedCells}
@@ -964,11 +1183,25 @@ return (
             setStartTime(null);
           }
           stopWinCelebration();
+          setShowWarmupDoneScreen(false);
           setShowStartScreen(true);
         }}
         gameMode={gameMode}
         puzzleNumber={currentPuzzleNumber}
       />
+
+      <div
+        aria-live="polite"
+        style={{
+          height: "22px",
+          lineHeight: "22px",
+          fontSize: "14px",
+          color: "#555",
+          textAlign: "center"
+        }}
+      >
+        {statusMessage}
+      </div>
 
       <div ref={gridWrapperRef} style={{ 
         position: "relative", 
@@ -1059,8 +1292,8 @@ return (
 
       <FireworksCelebration
         active={showCelebration}
-        showBanner={!showWinScreen}
-        linger={showWinScreen}
+        showBanner={!showWinScreen && !showWarmupDoneScreen}
+        linger={showWinScreen || showWarmupDoneScreen}
       />
       {showCelebration && (
         <div role="status" aria-live="assertive" style={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0 0 0 0)' }}>
@@ -1088,6 +1321,24 @@ return (
           onReturnHome={() => {
             setShowWinScreen(false);
             setWinScreenDismissed(true);
+            stopWinCelebration();
+            setShowWarmupDoneScreen(false);
+            setShowStartScreen(true);
+          }}
+        />
+      )}
+
+      {showWarmupDoneScreen && (
+        <WarmupDoneScreen
+          offer={gameMode === 'warmupFull' ? 'mini' : 'full'}
+          onPlayNext={() => {
+            const nextMode = gameMode === 'warmupFull' ? 'mini' : 'full';
+            setShowWarmupDoneScreen(false);
+            stopWinCelebration();
+            startGame(nextMode);
+          }}
+          onReturnHome={() => {
+            setShowWarmupDoneScreen(false);
             stopWinCelebration();
             setShowStartScreen(true);
           }}
@@ -1137,29 +1388,14 @@ return (
               aria-label="Close instructions"
             >✖</button>
 
-            <h2 style={{ marginBottom: 16 }}>How to Play</h2>
-            <p style={{ marginBottom: 20 }}>Build a number chain: 1 → 2 → 3 → 4 → …</p>
-
             <InteractiveTutorial 
-              onComplete={() => setShowInstructions(false)}
-              onPlayMini={() => {
-                const isResumingSameMode = gameMode === 'mini' && !!grid;
-                setGameMode('mini');
-                setShowStartScreen(false);
-                if (isResumingSameMode) {
-                  if (gameWon) setShowWinScreen(true);
-                }
-                setShowInstructions(false);
-              }}
-              onPlayFull={() => {
-                const isResumingSameMode = gameMode === 'full' && !!grid;
-                setGameMode('full');
-                setShowStartScreen(false);
-                if (isResumingSameMode) {
-                  if (gameWon) setShowWinScreen(true);
-                }
-                setShowInstructions(false);
-              }}
+              onComplete={() => dismissTutorial()}
+              onPlayMini={startMiniFromEntry}
+              onPlayFull={startFullFromEntry}
+              onPlayPractice={startPracticeFromTutorial}
+              onBack={closeInstructions}
+              onStepChange={handleTutorialStepChange}
+              ending={tutorialEnding}
             />
 
           </div>
@@ -1309,7 +1545,7 @@ return (
           width: "90%"
         }}>
           <h3 style={{ marginBottom: "20px", fontSize: "1.3rem", color: "#303036" }}>
-            Notice
+            {alertTitle}
           </h3>
           <p style={{ marginBottom: "25px", fontSize: "1rem", lineHeight: "1.5", color: "#555" }}>
             {alertMessage}

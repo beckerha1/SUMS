@@ -108,7 +108,7 @@ function faqCrawler() {
 function aboutCrawler() {
   return wrap(
     'About SUMS',
-    `<h2>What is SUMS?</h2><p>SUMS is a daily number logic puzzle that combines spatial reasoning with addition. Each day brings a new Mini (5×5) and Full (7×7) puzzle.</p><h2>How to play</h2><p>Place numbers in order by selecting adjacent cells that sum to the next number, then drop the result in a touching empty cell. Gray numbers are clues you must route through.</p><p>Created by Xavier Games. <a href="${ORIGIN}/how-to-play">Full how-to-play guide</a>.</p>`
+    `<h2>What is SUMS?</h2><p>SUMS is a daily number logic puzzle that combines spatial reasoning with addition. Each day brings a new Mini (5×5) and Full (7×7) puzzle.</p><h2>How to play</h2><p>Count up from 4 (1, 2 and 3 start on the board). Tap a chain of touching numbers that adds up to the next number, then place it in an empty square touching the last one. Diagonals count. Gray numbers come with the puzzle, but a chain touching each one has to add up to it when you reach it.</p><p>Created by Xavier Games. <a href="${ORIGIN}/how-to-play">Full how-to-play guide</a>.</p>`
   );
 }
 

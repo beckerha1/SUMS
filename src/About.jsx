@@ -80,9 +80,7 @@ const AboutContent = ({ onClose, modal = false }) => {
           Each day brings a new puzzle with a unique solution path.
         </p>
         <p>
-          The goal is simple: fill every empty cell by placing numbers in order (1, 2, 3, 4, 5...)
-          using addition. Select adjacent numbers that sum to your target, then place the result
-          in an empty cell touching your selection.
+          The goal is simple: fill every empty square by counting up from 4 (1, 2 and 3 start on the board). Tap a chain of touching numbers that adds up to the next number, then place it in an empty square touching the last one. Diagonals count.
         </p>
       </section>
 
@@ -90,7 +88,7 @@ const AboutContent = ({ onClose, modal = false }) => {
         <h2 style={{ fontSize: '1.5rem', marginBottom: '15px' }}>History of SUMS</h2>
         <p>
           When I was a kid, I always was playing around with puzzles and numbers and loved trying to find order in chaos. My father was a woodworker and always had graph paper lying around that he would use for work.
-          With these two things happening, I began tinkering with the idea for SUMS. In between playing games of Sodoku and others, I would be playing my own SUMS games by hand.
+          With these two things happening, I began tinkering with the idea for SUMS. In between playing games of Sudoku and others, I would be playing my own SUMS games by hand.
         </p>
         <p>
           Years later, my love for games has continued and grown to encompass the daily puzzle games that so many others play. I realized I wanted to share the same game I grew up designing as well with others, and now it is possible!
@@ -112,12 +110,12 @@ const AboutContent = ({ onClose, modal = false }) => {
       <section style={{ marginBottom: '30px' }}>
         <h2 style={{ fontSize: '1.5rem', marginBottom: '15px' }}>How to Play</h2>
         <ol style={{ marginLeft: '20px', lineHeight: '1.8' }}>
-          <li>Look at the grid with pre-filled clue numbers (shown in gray)</li>
-          <li>Start by placing the number 1, then 2, then 3, and so on in sequence</li>
-          <li>To create each number, select 2 or more adjacent cells whose values add up to your target</li>
-          <li>Click an empty cell touching the start or end of your selection to place the number</li>
-          <li>Plan ahead! Some numbers are pre-filled and you must create valid paths to reach them</li>
-          <li>Fill every empty cell to win!</li>
+          <li>Gray numbers come with the puzzle, including 1, 2 and 3. Black squares are walls.</li>
+          <li>Count up from 4: 4, then 5, then 6, in order.</li>
+          <li>Tap a chain of numbers that adds up to the next number. Each must touch the one before it, and diagonals count.</li>
+          <li>Tap an empty square touching the last number in your chain to place it.</li>
+          <li>When the count reaches a gray number, a chain touching it has to add up to it, so plan ahead.</li>
+          <li>Fill every square that isn't a wall to win.</li>
         </ol>
         <p>
           For the full walkthrough, see{' '}
@@ -130,11 +128,11 @@ const AboutContent = ({ onClose, modal = false }) => {
       <section style={{ marginBottom: '30px' }}>
         <h2 style={{ fontSize: '1.5rem', marginBottom: '15px' }}>Tips & Strategies</h2>
         <ul style={{ marginLeft: '20px', lineHeight: '1.8' }}>
-          <li>Gray numbers are pre-filled clues - work backwards from them to plan your path</li>
+          <li>Work backward from gray numbers: each one needs a chain touching it that adds up to it.</li>
           <li>In Hard mode, you're limited to 3-4 selections, so choose combinations wisely</li>
           <li>Sometimes you need to place numbers in unexpected locations to maintain valid paths</li>
           <li>Use the Undo button to try different approaches</li>
-          <li>Take your time - there's no time limit for solving</li>
+          <li>Take your time. There's no time limit.</li>
         </ul>
       </section>
 

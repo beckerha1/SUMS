@@ -1,9 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import CanvasOverlay from './CanvasOverlay';
 import NumberOverlay from './NumberOverlay';
 import { getNextExpectedNumber } from '../utils/gameHelpers';
 
-const InteractiveTutorial = ({ onComplete, onPlayMini, onPlayFull }) => {
+const InteractiveTutorial = ({
+  onComplete,
+  onPlayMini,
+  onPlayFull,
+  onPlayPractice,
+  onBack,
+  onStepChange,
+  ending = 'daily'
+}) => {
   const [tutorialStep, setTutorialStep] = useState(0);
   const [autoPlayStep, setAutoPlayStep] = useState(0);
   const [autoPlayStep3, setAutoPlayStep3] = useState(0);
@@ -21,12 +29,29 @@ const InteractiveTutorial = ({ onComplete, onPlayMini, onPlayFull }) => {
   const [step4PlacementPath, setStep4PlacementPath] = useState([]);
   const [step4Complete, setStep4Complete] = useState(false);
   const [step4CanPlace, setStep4CanPlace] = useState(false);
+  const [screen2Notice, setScreen2Notice] = useState(null);
+  const [step4Feedback, setStep4Feedback] = useState(null);
+  const step4FeedbackTimerRef = useRef(null);
 
   const puzzle = [[1, 2, null], [null, null, null], [null, null, 5]];
   const screen3Puzzle = [[1, 2, null], [null, null, null], [null, null, 5]];
   const step4Puzzle = [[1, 2, null], [null, null, null], [null, null, 5]];
   const cellSize = 60;
   const margin = 2;
+
+  useEffect(() => {
+    if (onStepChange) onStepChange(tutorialStep);
+  }, [tutorialStep, onStepChange]);
+
+  useEffect(() => {
+    setStep4Feedback(null);
+    return () => {
+      if (step4FeedbackTimerRef.current) {
+        clearTimeout(step4FeedbackTimerRef.current);
+        step4FeedbackTimerRef.current = null;
+      }
+    };
+  }, [tutorialStep]);
 
   // Screen 2 auto-play: 1 + 2 = 3
   useEffect(() => {
@@ -89,20 +114,34 @@ const InteractiveTutorial = ({ onComplete, onPlayMini, onPlayFull }) => {
     if (tutorialStep !== 2) return;
     const cellValue = grid[r][c];
 
-    if (canPlaceNumber && r === 1 && c === 1 && grid[r][c] === null) {
-      const newGrid = [[1, 2, null], [3, 4, null], [null, null, 5]];
-      setPlacementPath([[1, 0], [r, c]]);
-      setTimeout(() => {
-        setGrid(newGrid);
-        setSelectedCells([]);
-        setPlacementPath([]);
-        setCanPlaceNumber(false);
-        setUserCompletedPlacement(true);
-      }, 200);
+    if (canPlaceNumber && grid[r][c] === null) {
+      if (r === 1 && c === 1) {
+        const newGrid = [[1, 2, null], [3, 4, null], [null, null, 5]];
+        setScreen2Notice(null);
+        setPlacementPath([[1, 0], [r, c]]);
+        setTimeout(() => {
+          setGrid(newGrid);
+          setSelectedCells([]);
+          setPlacementPath([]);
+          setCanPlaceNumber(false);
+          setUserCompletedPlacement(true);
+        }, 200);
+        return;
+      }
+
+      const [lastR, lastC] = selectedCells[selectedCells.length - 1];
+      const touchesLast = isAdjacentCell(lastR, lastC, r, c);
+      setScreen2Notice(
+        touchesLast
+          ? "Not there. With 4 there, nothing touching the 5 could add up to 5."
+          : "Put it in a square touching the last number you tapped."
+      );
       return;
     }
 
     if (cellValue === null || cellValue === 5) return;
+
+    setScreen2Notice(null);
 
     const selectedIndex = selectedCells.findIndex(([sr, sc]) => sr === r && sc === c);
     if (selectedIndex !== -1) {
@@ -171,6 +210,17 @@ const InteractiveTutorial = ({ onComplete, onPlayMini, onPlayFull }) => {
 
   const getNextExpected = (g) => getNextExpectedNumber(g, step4Puzzle);
 
+  const showStep4Feedback = (message) => {
+    if (step4FeedbackTimerRef.current) {
+      clearTimeout(step4FeedbackTimerRef.current);
+    }
+    setStep4Feedback(message);
+    step4FeedbackTimerRef.current = setTimeout(() => {
+      setStep4Feedback(null);
+      step4FeedbackTimerRef.current = null;
+    }, 2500);
+  };
+
   const handleStep4Click = (r, c) => {
     if (step4Complete) return;
     const g = step4Grid;
@@ -182,6 +232,11 @@ const InteractiveTutorial = ({ onComplete, onPlayMini, onPlayFull }) => {
       const [lr, lc] = step4Selected[step4Selected.length - 1];
       const adjToLast = isAdjacentCell(lr, lc, r, c);
       if (sum === next && isConnected(step4Selected) && adjToLast) {
+        if (step4FeedbackTimerRef.current) {
+          clearTimeout(step4FeedbackTimerRef.current);
+          step4FeedbackTimerRef.current = null;
+        }
+        setStep4Feedback(null);
         setStep4PlacementPath([[lr, lc], [r, c]]);
         setTimeout(() => {
           const newGrid = g.map(row => [...row]);
@@ -193,6 +248,12 @@ const InteractiveTutorial = ({ onComplete, onPlayMini, onPlayFull }) => {
           const allFilled = newGrid.flat().every(v => v !== null);
           if (allFilled) setStep4Complete(true);
         }, 200);
+      } else if (sum !== next) {
+        setStep4Selected([]);
+        setStep4CanPlace(false);
+        showStep4Feedback(`That adds up to ${sum}. You need ${next}.`);
+      } else if (!adjToLast) {
+        showStep4Feedback("Put it in a square touching the last number you tapped.");
       } else {
         setStep4Selected([]);
         setStep4CanPlace(false);
@@ -254,6 +315,8 @@ const InteractiveTutorial = ({ onComplete, onPlayMini, onPlayFull }) => {
     setStep4PlacementPath([]);
     setStep4Complete(false);
     setStep4CanPlace(false);
+    setScreen2Notice(null);
+    setStep4Feedback(null);
   };
 
   const getDropTargetHighlight = (r, c) => canPlaceNumber && r === 1 && c === 1 && grid[r][c] === null;
@@ -376,9 +439,9 @@ const InteractiveTutorial = ({ onComplete, onPlayMini, onPlayFull }) => {
             lineHeight: '1.6',
             textAlign: 'left'
           }}>
-            SUMS is a mathematical logic game with a sprinkle of spatial reasoning.
+            Fill the grid by counting up: 1, 2, 3, 4 and so on.
             <br /><br />
-            Fill every empty cell by placing numbers <strong>one at a time, in order</strong> - 1, 2, 3, 4, and so on.
+            Each new number is built from numbers already on the board. In real puzzles, 1, 2 and 3 are already placed, so you start at 4.
           </p>
           <button onClick={() => setTutorialStep(1)} style={primaryButtonStyle}>
             Next
@@ -396,9 +459,9 @@ const InteractiveTutorial = ({ onComplete, onPlayMini, onPlayFull }) => {
             null,
             overlayPoints,
             autoPlayStep === 0 ? "Watch this move..." :
-            autoPlayStep === 1 ? "Select 1..." :
-            autoPlayStep === 2 ? "Then select 2..." :
-            autoPlayStep === 3 ? "Place 3!" :
+            autoPlayStep === 1 ? "Tap 1..." :
+            autoPlayStep === 2 ? "Then tap 2..." :
+            autoPlayStep === 3 ? "Place 3 next to the 2" :
             "Nice."
           )}
           <p style={{
@@ -408,9 +471,9 @@ const InteractiveTutorial = ({ onComplete, onPlayMini, onPlayFull }) => {
             lineHeight: '1.5',
             textAlign: 'left'
           }}>
-            To place the next number, <strong>select cells that add up to it</strong>, then tap an empty cell next to your selection.
+            To make the next number, tap numbers that add up to it. Each one has to touch the one before, and <strong>diagonals count</strong>.
             <br /><br />
-            Here, 1 + 2 = 3, so <strong>3</strong> is placed next to them.
+            Then tap an empty square <strong>touching the last number you tapped</strong>. Here, 1 + 2 = 3, so 3 goes diagonally next to the 2.
           </p>
           <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
             <button onClick={() => setTutorialStep(0)} style={secondaryButtonStyle}>Back</button>
@@ -439,11 +502,13 @@ const InteractiveTutorial = ({ onComplete, onPlayMini, onPlayFull }) => {
             handleCellClick,
             getDropTargetHighlight,
             overlayPoints,
-            !userSelectedCorrectly && !userCompletedPlacement
-              ? "Select 1 and 3 to make 4"
-              : userSelectedCorrectly && !userCompletedPlacement
-                ? "Place 4!"
-                : "Great move."
+            screen2Notice
+              ? screen2Notice
+              : !userSelectedCorrectly && !userCompletedPlacement
+                ? "Tap 1 and 3 to make 4"
+                : userSelectedCorrectly && !userCompletedPlacement
+                  ? "Now tap the highlighted square"
+                  : "Great move."
           )}
           <p style={{
             fontSize: '1.1rem',
@@ -452,11 +517,9 @@ const InteractiveTutorial = ({ onComplete, onPlayMini, onPlayFull }) => {
             lineHeight: '1.5',
             textAlign: 'left'
           }}>
-            Some numbers are already placed as part of the starting grid.
+            Your turn. Make 4 from 1 + 3, then place it.
             <br /><br />
-            You must place <strong>4</strong> so there is a valid path to reach <strong>5</strong>.
-            <br /><br />
-            <strong>Place 4</strong> using the grid above.
+            Watch the gray 5 in the corner. Gray numbers come with the puzzle, but you still have to earn them.
           </p>
           <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
             <button
@@ -468,6 +531,7 @@ const InteractiveTutorial = ({ onComplete, onPlayMini, onPlayFull }) => {
                 setGrid([[1, 2, null], [3, null, null], [null, null, 5]]);
                 setSelectedCells([]);
                 setPlacementPath([]);
+                setScreen2Notice(null);
               }}
               style={secondaryButtonStyle}
             >
@@ -497,8 +561,14 @@ const InteractiveTutorial = ({ onComplete, onPlayMini, onPlayFull }) => {
             puzzle,
             null,
             null,
-            [],
-            "5 is already in the grid."
+            [
+              { row: 0, col: 0, placed: false },
+              { row: 1, col: 1, placed: false },
+              // The end stays unplaced so the line remains. A placed end point
+              // plays the drop animation and then clears the chain.
+              { row: 2, col: 2, placed: false }
+            ],
+            "1 + 4 = 5, and the 4 touches the 5"
           )}
           <p style={{
             fontSize: '1.1rem',
@@ -507,9 +577,11 @@ const InteractiveTutorial = ({ onComplete, onPlayMini, onPlayFull }) => {
             lineHeight: '1.5',
             textAlign: 'left'
           }}>
-            The gray <strong>5</strong> is already in the grid and already valid.
+            The 5 came with the puzzle, but it only counts because 1 + 4 = 5 and the 4 touches it. That's why the 4 had to go there.
             <br /><br />
-            After placing <strong>4</strong>, your next target is <strong>6</strong>.
+            <strong>The one rule to remember: when you reach a gray number, a chain touching it has to add up to it.</strong> If nothing does, undo and try another route.
+            <br /><br />
+            With the 5 earned, the next number is 6.
           </p>
           <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
             <button onClick={() => setTutorialStep(2)} style={secondaryButtonStyle}>Back</button>
@@ -528,9 +600,9 @@ const InteractiveTutorial = ({ onComplete, onPlayMini, onPlayFull }) => {
             null,
             screen3OverlayPoints,
             autoPlayStep3 === 0 ? "Watch this chain..." :
-            autoPlayStep3 === 1 ? "Select 1..." :
-            autoPlayStep3 === 2 ? "Then select 2..." :
-            autoPlayStep3 === 3 ? "Then select 3..." :
+            autoPlayStep3 === 1 ? "Tap 1..." :
+            autoPlayStep3 === 2 ? "Then 2..." :
+            autoPlayStep3 === 3 ? "Then 3..." :
             autoPlayStep3 === 4 ? "Place 6!" :
             "Nice."
           )}
@@ -541,9 +613,9 @@ const InteractiveTutorial = ({ onComplete, onPlayMini, onPlayFull }) => {
             lineHeight: '1.5',
             textAlign: 'left'
           }}>
-            Your selection can include <strong>as many numbers as you need</strong>.
+            Chains can be <strong>as long as you need</strong>.
             <br /><br />
-            Here, 1 + 2 + 3 = 6, as long as each selected cell <strong>touches the next</strong> in the chain.
+            Here, 1 + 2 + 3 = 6. Each number touches the one before it (the 2 and 3 touch diagonally), and 6 goes in a square touching the 3.
           </p>
           <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
             <button
@@ -587,7 +659,13 @@ const InteractiveTutorial = ({ onComplete, onPlayMini, onPlayFull }) => {
             handleStep4Click,
             getStep4DropTarget,
             step4OverlayPoints,
-            step4Complete ? "Grid complete." : `Next number: ${getNextExpected(step4Grid)}`
+            step4Feedback
+              ? step4Feedback
+              : step4Complete
+                ? "Grid complete."
+                : step4Selected.length === 0
+                  ? `Next number: ${getNextExpected(step4Grid)}`
+                  : `Next number: ${getNextExpected(step4Grid)} · Selected: ${step4Selected.reduce((acc, [sr, sc]) => acc + step4Grid[sr][sc], 0)}`
           )}
           <p style={{
             fontSize: '1.1rem',
@@ -596,9 +674,9 @@ const InteractiveTutorial = ({ onComplete, onPlayMini, onPlayFull }) => {
             lineHeight: '1.5',
             textAlign: 'left'
           }}>
-            Now it's your turn. <strong>Fill the rest of the grid</strong> using what you learned.
+            <strong>Your turn. Fill the rest of the grid.</strong>
             <br /><br />
-            Select adjacent numbers that sum to the next number, then tap an empty cell to place it.
+            Tap a chain that adds up to the next number, then tap an empty square touching the last number in your chain.
           </p>
           <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
             <button
@@ -643,32 +721,69 @@ const InteractiveTutorial = ({ onComplete, onPlayMini, onPlayFull }) => {
             lineHeight: '1.6',
             textAlign: 'left'
           }}>
-            Now that you know the basics, it's your turn!
-            <br /><br />
-            Each day there are 2 new puzzles available:
+            There's a new Mini and a new full puzzle every day. Puzzles get harder through the week, and Mondays are the easiest.
           </p>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '24px' }}>
-            <button
-              onClick={() => { onComplete(); onPlayMini(); }}
-              style={{ ...primaryButtonStyle, width: '100%', fontSize: '15px' }}
-            >
-              Play Mini SUMS
-            </button>
-            <p style={{ margin: '-6px 0 0', fontSize: '0.88rem', color: '#666', textAlign: 'center' }}>
-              5×5 grid for when you only have a few minutes
-            </p>
+          {ending === 'practice' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '24px' }}>
+              <button
+                onClick={onPlayPractice}
+                style={{ ...primaryButtonStyle, width: '100%', fontSize: '15px' }}
+              >
+                Play
+              </button>
+            </div>
+          )}
 
-            <button
-              onClick={() => { onComplete(); onPlayFull(); }}
-              style={{ ...primaryButtonStyle, width: '100%', fontSize: '15px' }}
-            >
-              Play SUMS
-            </button>
-            <p style={{ margin: '-6px 0 0', fontSize: '0.88rem', color: '#666', textAlign: 'center' }}>
-              7×7 grid that may take you a full cup of coffee to finish
-            </p>
-          </div>
+          {ending === 'back' && (
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '24px' }}>
+              <button
+                onClick={onBack}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  padding: '8px 12px',
+                  fontSize: '1rem',
+                  color: '#303036',
+                  cursor: 'pointer',
+                  fontFamily: 'inherit',
+                  fontWeight: '600'
+                }}
+              >
+                Back
+              </button>
+            </div>
+          )}
+
+          {ending === 'daily' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '24px' }}>
+              <button
+                onClick={() => { onComplete(); onPlayMini(); }}
+                style={{ ...primaryButtonStyle, width: '100%', fontSize: '15px' }}
+              >
+                Play today's Mini
+              </button>
+              <p style={{ margin: '-6px 0 0', fontSize: '0.88rem', color: '#666', textAlign: 'center' }}>
+                5×5, a few minutes
+              </p>
+
+              <button
+                onClick={() => { onComplete(); onPlayFull(); }}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  padding: 0,
+                  fontSize: '0.88rem',
+                  color: '#666',
+                  textDecoration: 'underline',
+                  cursor: 'pointer',
+                  fontFamily: 'inherit'
+                }}
+              >
+                Or play the full 7×7
+              </button>
+            </div>
+          )}
 
           <button
             onClick={resetTutorialState}

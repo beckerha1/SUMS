@@ -7,10 +7,10 @@ All events are tracked using Google Analytics 4 (GA4) and will appear in your An
 ### 1. **game_start** 
 Fired when user clicks to play a game
 
-**When:** User clicks "Play Mini SUMS" or "Play SUMS" button
+**When:** A daily puzzle or a practice board starts. On a first visit, Play Mini SUMS or Play SUMS opens the tutorial and does not fire this event until the player continues into that practice board. After the practice board is finished, those buttons start today's puzzles. Returning players can also start from the tutorial's last screen. Skipped when resuming a game already in progress in that mode.
 
 **Parameters:**
-- `game_mode`: Either `"mini"` or `"full"`
+- `game_mode`: `"mini"`, `"full"`, `"warmup"`, or `"warmupFull"`
 
 **Example:**
 ```javascript
@@ -82,6 +82,97 @@ gtag('event', 'game_abandon', {
 
 ---
 
+### 4. **tutorial_view**
+Fired when the tutorial modal opens
+
+**When:** A first-time player presses Play Mini SUMS or Play SUMS, or anyone opens How to play on the start screen, or Instructions in the in-game help menu. The tutorial does not open on page load.
+
+**Parameters:**
+- `trigger`: `"play_mini"`, `"play_full"`, `"start_screen"`, or `"in_game"`
+
+**Example:**
+```javascript
+gtag('event', 'tutorial_view', {
+  trigger: 'play_mini'
+});
+```
+
+**Use Cases:**
+- See how many people open the tutorial
+- Compare opens from Play, How to play, and the in-game menu
+
+---
+
+### 5. **tutorial_complete**
+Fired when the player reaches the tutorial's last screen
+
+**When:** The tutorial shows "Ready to Play" (screen index 6). At most once each time the tutorial is opened.
+
+**Parameters:**
+- `trigger`: `"play_mini"`, `"play_full"`, `"start_screen"`, or `"in_game"`
+
+**Example:**
+```javascript
+gtag('event', 'tutorial_complete', {
+  trigger: 'play_mini'
+});
+```
+
+**Use Cases:**
+- Measure how many people who open the tutorial finish it
+- Compare completion by how the tutorial was opened
+
+---
+
+### 6. **tutorial_close**
+Fired when the player closes the tutorial before the last screen
+
+**When:** The close (X) button dismisses the tutorial and "Ready to Play" was not reached during this open. Not fired after `tutorial_complete` for the same open.
+
+**Parameters:**
+- `trigger`: `"play_mini"`, `"play_full"`, `"start_screen"`, or `"in_game"`
+- `step`: 0-based screen index where the player left
+
+**Example:**
+```javascript
+gtag('event', 'tutorial_close', {
+  trigger: 'play_mini',
+  step: 2
+});
+```
+
+**Use Cases:**
+- See which screen people leave on
+- Measure drop-off before the tutorial is finished
+
+---
+
+### 7. **move_rejected**
+Fired when a tap cannot be applied
+
+**When:** The player taps a cell that does not make a legal selection or placement, or a placement is rejected because the next gray number cannot be reached. Each reason is sent at most once per game. The set of sent reasons resets when a mode loads a board and when Clear restarts the puzzle. Undo does not reset it.
+
+**Parameters:**
+- `game_mode`: Either `"mini"` or `"full"`
+- `reason`: One of `"empty_first"`, `"wrong_sum"`, `"not_touching_last"`, `"chain_gap"`, `"hard_mode_cap"`, `"gray_unreachable"`
+- `next_number`: The next number the player is trying to place
+
+**Example:**
+```javascript
+gtag('event', 'move_rejected', {
+  game_mode: 'mini',
+  reason: 'wrong_sum',
+  next_number: 4
+});
+```
+
+**Use Cases:**
+- See which failed taps players hit most often
+- Compare rejection reasons between Mini and Full
+- Spot boards where the gray number cannot be reached
+
+---
+
 ## Viewing Events in Google Analytics
 
 ### Realtime Events (Immediate)
@@ -89,7 +180,7 @@ gtag('event', 'game_abandon', {
 2. Select your property
 3. Click **Reports** → **Realtime**
 4. Scroll to **Event count by Event name**
-5. You should see: `game_start`, `game_complete`, `game_abandon`
+5. You should see: `game_start`, `game_complete`, `game_abandon`, `tutorial_view`, `tutorial_complete`, `tutorial_close`, `move_rejected`
 
 ### Historical Data (24-48 hours delay)
 1. **Reports** → **Engagement** → **Events**
