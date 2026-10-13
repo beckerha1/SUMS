@@ -1187,9 +1187,6 @@ return (
               aria-label="Close instructions"
             >✖</button>
 
-            <h2 style={{ marginBottom: 16 }}>How to Play</h2>
-            <p style={{ marginBottom: 20 }}>Build a number chain: 1 → 2 → 3 → 4 → …</p>
-
             <InteractiveTutorial 
               onComplete={() => dismissTutorial()}
               onPlayMini={() => startGameFromTutorial('mini')}

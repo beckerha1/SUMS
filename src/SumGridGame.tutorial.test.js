@@ -113,6 +113,57 @@ test('closing on the first screen tracks the step and does not reopen', () => {
   expect(screen.queryByLabelText('Close instructions')).not.toBeInTheDocument();
 });
 
+test('screen 2 keeps the selection after a gray-number mistake', () => {
+  jest.useFakeTimers();
+  renderGame();
+
+  clickEnabledNext();
+  advance(4500);
+  clickEnabledNext();
+  clickGridCell(0, 0);
+  clickGridCell(1, 0);
+  clickGridCell(0, 2);
+  expect(screen.getByText('Put it in a square touching the last number you tapped.')).toBeInTheDocument();
+
+  clickGridCell(2, 0);
+  expect(screen.getByText('Not there. With 4 there, nothing touching the 5 could add up to 5.')).toBeInTheDocument();
+
+  clickGridCell(1, 1);
+  advance(200);
+  expect(screen.getByText('Great move.')).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: 'Next' })).toBeEnabled();
+});
+
+test('screen 5 explains a wrong sum and then completes', () => {
+  jest.useFakeTimers();
+  renderGame();
+
+  clickEnabledNext();
+  advance(4500);
+  clickEnabledNext();
+  place([[0, 0], [1, 0], [1, 1]]);
+  clickEnabledNext();
+  expect(screen.getByText('1 + 4 = 5, and the 4 touches the 5')).toBeInTheDocument();
+  clickEnabledNext();
+  advance(4000);
+  clickEnabledNext();
+
+  clickGridCell(0, 0);
+  clickGridCell(0, 1);
+  expect(screen.getByText('Next number: 6 · Selected: 3')).toBeInTheDocument();
+  clickGridCell(0, 2);
+  expect(screen.getByText('That adds up to 3. You need 6.')).toBeInTheDocument();
+  advance(2500);
+  expect(screen.getByText('Next number: 6')).toBeInTheDocument();
+
+  place([[0, 0], [0, 1], [1, 0], [2, 0]]);
+  place([[1, 0], [1, 1], [1, 2]]);
+  place([[0, 0], [1, 0], [1, 1], [0, 2]]);
+  place([[0, 1], [1, 2], [2, 1]]);
+  expect(screen.getByText('Grid complete.')).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: 'Next' })).toBeEnabled();
+});
+
 test('closing on screen 2 reports that step', () => {
   jest.useFakeTimers();
   renderGame();
@@ -120,7 +171,7 @@ test('closing on screen 2 reports that step', () => {
   clickEnabledNext();
   advance(4500);
   clickEnabledNext();
-  expect(screen.getByText(/select 1 and 3 to make 4/i)).toBeInTheDocument();
+  expect(screen.getByText('Tap 1 and 3 to make 4')).toBeInTheDocument();
 
   fireEvent.click(screen.getByLabelText('Close instructions'));
 
@@ -180,6 +231,8 @@ test('How to play and in-game instructions use their own triggers', () => {
   fireEvent.click(screen.getByRole('button', { name: 'Help' }));
   fireEvent.click(screen.getByText('Instructions'));
 
+  expect(screen.getAllByRole('heading', { name: /^how to play$/i })).toHaveLength(1);
+  expect(screen.queryByText(/build a number chain/i)).not.toBeInTheDocument();
   expect(gtagCalls('tutorial_view')).toEqual([
     ['event', 'tutorial_view', { trigger: 'start_screen' }],
     ['event', 'tutorial_view', { trigger: 'in_game' }]
@@ -213,7 +266,7 @@ test('Play Mini SUMS on the last screen starts the mini puzzle', () => {
   jest.useFakeTimers();
   renderGame();
   finishTutorial();
-  playFromTutorial('Play Mini SUMS');
+  playFromTutorial("Play today's Mini");
 
   expect(gtagCalls('game_start')).toEqual([
     ['event', 'game_start', { game_mode: 'mini' }]
@@ -227,7 +280,7 @@ test('Play SUMS on the last screen starts the full puzzle', () => {
   jest.useFakeTimers();
   renderGame();
   finishTutorial();
-  playFromTutorial('Play SUMS');
+  playFromTutorial('Or play the full 7×7');
 
   expect(gtagCalls('game_start')).toEqual([
     ['event', 'game_start', { game_mode: 'full' }]
@@ -239,13 +292,13 @@ test('resuming the same mode from the tutorial does not fire game_start again', 
   jest.useFakeTimers();
   renderGame();
   finishTutorial();
-  playFromTutorial('Play Mini SUMS');
+  playFromTutorial("Play today's Mini");
 
   fireEvent.click(screen.getByRole('button', { name: 'Help' }));
   fireEvent.click(screen.getByText('Return to home'));
   fireEvent.click(screen.getByRole('button', { name: 'How to play' }));
   finishTutorial();
-  playFromTutorial('Play Mini SUMS');
+  playFromTutorial("Play today's Mini");
 
   expect(gtagCalls('game_start')).toEqual([
     ['event', 'game_start', { game_mode: 'mini' }]
