@@ -3,7 +3,7 @@ import CanvasOverlay from './CanvasOverlay';
 import NumberOverlay from './NumberOverlay';
 import { getNextExpectedNumber } from '../utils/gameHelpers';
 
-const InteractiveTutorial = ({ onComplete, onPlayMini, onPlayFull, onStepChange }) => {
+const InteractiveTutorial = ({ onComplete, onPlayMini, onPlayFull, onStepChange, showWarmupOffer = false, onPlayWarmup }) => {
   const [tutorialStep, setTutorialStep] = useState(0);
   const [autoPlayStep, setAutoPlayStep] = useState(0);
   const [autoPlayStep3, setAutoPlayStep3] = useState(0);
@@ -717,31 +717,62 @@ const InteractiveTutorial = ({ onComplete, onPlayMini, onPlayFull, onStepChange 
           </p>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '24px' }}>
-            <button
-              onClick={() => { onComplete(); onPlayMini(); }}
-              style={{ ...primaryButtonStyle, width: '100%', fontSize: '15px' }}
-            >
-              Play today's Mini
-            </button>
-            <p style={{ margin: '-6px 0 0', fontSize: '0.88rem', color: '#666', textAlign: 'center' }}>
-              5×5, a few minutes
-            </p>
+            {showWarmupOffer ? (
+              <>
+                <button
+                  onClick={() => { onComplete(); onPlayWarmup(); }}
+                  style={{ ...primaryButtonStyle, width: '100%', fontSize: '15px' }}
+                >
+                  Play a warm-up puzzle
+                </button>
+                <p style={{ margin: '-6px 0 0', fontSize: '0.88rem', color: '#666', textAlign: 'center' }}>
+                  4×4, about a minute
+                </p>
+                <button
+                  onClick={() => { onComplete(); onPlayMini(); }}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    padding: 0,
+                    fontSize: '0.88rem',
+                    color: '#666',
+                    textDecoration: 'underline',
+                    cursor: 'pointer',
+                    fontFamily: 'inherit'
+                  }}
+                >
+                  Skip to today's Mini
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  onClick={() => { onComplete(); onPlayMini(); }}
+                  style={{ ...primaryButtonStyle, width: '100%', fontSize: '15px' }}
+                >
+                  Play today's Mini
+                </button>
+                <p style={{ margin: '-6px 0 0', fontSize: '0.88rem', color: '#666', textAlign: 'center' }}>
+                  5×5, a few minutes
+                </p>
 
-            <button
-              onClick={() => { onComplete(); onPlayFull(); }}
-              style={{
-                background: 'none',
-                border: 'none',
-                padding: 0,
-                fontSize: '0.88rem',
-                color: '#666',
-                textDecoration: 'underline',
-                cursor: 'pointer',
-                fontFamily: 'inherit'
-              }}
-            >
-              Or play the full 7×7
-            </button>
+                <button
+                  onClick={() => { onComplete(); onPlayFull(); }}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    padding: 0,
+                    fontSize: '0.88rem',
+                    color: '#666',
+                    textDecoration: 'underline',
+                    cursor: 'pointer',
+                    fontFamily: 'inherit'
+                  }}
+                >
+                  Or play the full 7×7
+                </button>
+              </>
+            )}
           </div>
 
           <button

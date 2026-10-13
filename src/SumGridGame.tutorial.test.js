@@ -264,6 +264,7 @@ test('reaching the last screen tracks completion once and a later close does not
 
 test('Play Mini SUMS on the last screen starts the mini puzzle', () => {
   jest.useFakeTimers();
+  localStorage.setItem('sums-warmup-done', '1');
   renderGame();
   finishTutorial();
   playFromTutorial("Play today's Mini");
@@ -278,6 +279,7 @@ test('Play Mini SUMS on the last screen starts the mini puzzle', () => {
 
 test('Play SUMS on the last screen starts the full puzzle', () => {
   jest.useFakeTimers();
+  localStorage.setItem('sums-warmup-done', '1');
   renderGame();
   finishTutorial();
   playFromTutorial('Or play the full 7×7');
@@ -290,6 +292,7 @@ test('Play SUMS on the last screen starts the full puzzle', () => {
 
 test('resuming the same mode from the tutorial does not fire game_start again', () => {
   jest.useFakeTimers();
+  localStorage.setItem('sums-warmup-done', '1');
   renderGame();
   finishTutorial();
   playFromTutorial("Play today's Mini");

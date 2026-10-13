@@ -12,6 +12,8 @@ const StartScreen = ({
   puzzleNumberMini,
   streakMini = { count: 0, wonToday: false, needsPlayToday: false },
   streakFull = { count: 0, wonToday: false, needsPlayToday: false },
+  warmupAvailable = false,
+  onPlayWarmup,
 }) => {
   const mobileButton = {
     padding: "10px 20px",
@@ -88,6 +90,24 @@ const StartScreen = ({
         <button onClick={onShowInstructions} style={mobileButton}>
           How to play
         </button>
+
+        {warmupAvailable && (
+          <button
+            onClick={onPlayWarmup}
+            style={{
+              background: 'none',
+              border: 'none',
+              padding: 0,
+              fontSize: '0.88rem',
+              color: '#666',
+              textDecoration: 'underline',
+              cursor: 'pointer',
+              fontFamily: 'inherit'
+            }}
+          >
+            New here? Try a quick warm-up
+          </button>
+        )}
 
         <button onClick={onShowStats} style={mobileButton}>
           Personal Statistics
