@@ -7,10 +7,10 @@ All events are tracked using Google Analytics 4 (GA4) and will appear in your An
 ### 1. **game_start** 
 Fired when user clicks to play a game
 
-**When:** User clicks "Play Mini SUMS" or "Play SUMS" on the start screen or on the tutorial's last screen. Skipped when resuming a game already in progress in that mode.
+**When:** A daily puzzle or a practice board starts. On a first visit, Play Mini SUMS or Play SUMS opens the tutorial and does not fire this event until the player continues into that practice board. After the practice board is finished, those buttons start today's puzzles. Returning players can also start from the tutorial's last screen. Skipped when resuming a game already in progress in that mode.
 
 **Parameters:**
-- `game_mode`: Either `"mini"` or `"full"`
+- `game_mode`: `"mini"`, `"full"`, `"warmup"`, or `"warmupFull"`
 
 **Example:**
 ```javascript
@@ -85,21 +85,21 @@ gtag('event', 'game_abandon', {
 ### 4. **tutorial_view**
 Fired when the tutorial modal opens
 
-**When:** The tutorial opens on a first visit, from "How to play" on the start screen, or from Instructions in the in-game ? menu
+**When:** A first-time player presses Play Mini SUMS or Play SUMS, or anyone opens How to play on the start screen, or Instructions in the in-game help menu. The tutorial does not open on page load.
 
 **Parameters:**
-- `trigger`: `"first_visit"`, `"start_screen"`, or `"in_game"`
+- `trigger`: `"play_mini"`, `"play_full"`, `"start_screen"`, or `"in_game"`
 
 **Example:**
 ```javascript
 gtag('event', 'tutorial_view', {
-  trigger: 'first_visit'
+  trigger: 'play_mini'
 });
 ```
 
 **Use Cases:**
 - See how many people open the tutorial
-- Compare first-visit opens with later opens from the start screen or in-game menu
+- Compare opens from Play, How to play, and the in-game menu
 
 ---
 
@@ -109,12 +109,12 @@ Fired when the player reaches the tutorial's last screen
 **When:** The tutorial shows "Ready to Play" (screen index 6). At most once each time the tutorial is opened.
 
 **Parameters:**
-- `trigger`: `"first_visit"`, `"start_screen"`, or `"in_game"`
+- `trigger`: `"play_mini"`, `"play_full"`, `"start_screen"`, or `"in_game"`
 
 **Example:**
 ```javascript
 gtag('event', 'tutorial_complete', {
-  trigger: 'first_visit'
+  trigger: 'play_mini'
 });
 ```
 
@@ -130,13 +130,13 @@ Fired when the player closes the tutorial before the last screen
 **When:** The close (X) button dismisses the tutorial and "Ready to Play" was not reached during this open. Not fired after `tutorial_complete` for the same open.
 
 **Parameters:**
-- `trigger`: `"first_visit"`, `"start_screen"`, or `"in_game"`
+- `trigger`: `"play_mini"`, `"play_full"`, `"start_screen"`, or `"in_game"`
 - `step`: 0-based screen index where the player left
 
 **Example:**
 ```javascript
 gtag('event', 'tutorial_close', {
-  trigger: 'first_visit',
+  trigger: 'play_mini',
   step: 2
 });
 ```

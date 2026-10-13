@@ -1,6 +1,7 @@
 import React from 'react';
 
-const WarmupDoneScreen = ({ onPlayMini, onReturnHome }) => {
+const WarmupDoneScreen = ({ offer = 'full', onPlayNext, onReturnHome }) => {
+  const nextLabel = offer === 'mini' ? 'Play Mini SUMS' : 'Play SUMS';
   const fullWidthButton = {
     width: '100%',
     padding: '10px 20px',
@@ -68,7 +69,7 @@ const WarmupDoneScreen = ({ onPlayMini, onReturnHome }) => {
         >✖</button>
 
         <h2 className="win-screen-title" style={{ margin: '8px 0 12px', fontSize: '1.85rem' }}>
-          Warm-up done
+          Nice work
         </h2>
         <p style={{
           fontSize: '1rem',
@@ -79,8 +80,8 @@ const WarmupDoneScreen = ({ onPlayMini, onReturnHome }) => {
           That's the whole game. Daily puzzles are bigger, and they get harder through the week. Mondays are the easiest.
         </p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          <button onClick={onPlayMini} style={fullWidthButton}>
-            Play today's Mini
+          <button onClick={onPlayNext} style={fullWidthButton}>
+            {nextLabel}
           </button>
           <button onClick={onReturnHome} style={outlineButton}>
             Back to home

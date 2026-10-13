@@ -35,25 +35,19 @@ import Statistics from './components/Statistics';
 import HighScores from './components/HighScores';
 import { getDailyStreakInfo, recordDailyPuzzleWin, clearDailyStreak } from './utils/dailyStreak';
 
-function isFirstVisit() {
-  try {
-    if (localStorage.getItem("sums-tutorial-seen") !== null) return false;
-  } catch (e) {
-    return false;
-  }
-  try {
-    if (localStorage.getItem("sums-game-history") !== null) return false;
-  } catch (e) {
-    return false;
-  }
-  return true;
-}
-
 function markTutorialSeen() {
   try {
     localStorage.setItem("sums-tutorial-seen", "1");
   } catch (e) {
     // Storage can be blocked; closing the tutorial still has to work.
+  }
+}
+
+function hasSeenTutorial() {
+  try {
+    return localStorage.getItem("sums-tutorial-seen") !== null;
+  } catch (e) {
+    return true;
   }
 }
 
@@ -91,6 +85,7 @@ export default function SumGridGame() {
   const [showWinScreen, setShowWinScreen] = useState(false);
   const [showWarmupDoneScreen, setShowWarmupDoneScreen] = useState(false);
   const [showInstructions, setShowInstructions] = useState(false);
+  const [tutorialEnding, setTutorialEnding] = useState('daily');
   const [startTime, setStartTime] = useState(null);
   const [elapsedTime, setElapsedTime] = useState(0);
   const [bestTimeMini, setBestTimeMini] = useState(null);
@@ -437,16 +432,15 @@ useEffect(() => {
 const tutorialTriggerRef = useRef(null);
 const tutorialStepRef = useRef(0);
 const tutorialCompletedThisOpenRef = useRef(false);
-const firstVisitViewSentRef = useRef(false);
+const pendingPracticeRef = useRef(null);
 
-const openTutorial = useCallback((trigger) => {
+const openTutorial = useCallback((trigger, ending = 'daily') => {
+  if (ending !== 'practice') pendingPracticeRef.current = null;
   tutorialTriggerRef.current = trigger;
   tutorialStepRef.current = 0;
   tutorialCompletedThisOpenRef.current = false;
+  setTutorialEnding(ending);
   setShowInstructions(true);
-  // Strict Mode runs this mount effect twice in development. Record one view.
-  if (trigger === "first_visit" && firstVisitViewSentRef.current) return;
-  if (trigger === "first_visit") firstVisitViewSentRef.current = true;
   if (window.gtag) window.gtag('event', 'tutorial_view', { trigger });
 }, []);
 
@@ -462,8 +456,13 @@ const closeInstructions = useCallback(() => {
       step: tutorialStepRef.current
     });
   }
-  dismissTutorial();
-}, [dismissTutorial]);
+  pendingPracticeRef.current = null;
+  setShowInstructions(false);
+}, []);
+
+const openBrowsingTutorial = (trigger) => {
+  openTutorial(trigger, readWarmupAvailable() ? 'back' : 'daily');
+};
 
 const handleTutorialStepChange = useCallback((step) => {
   tutorialStepRef.current = step;
@@ -476,10 +475,6 @@ const handleTutorialStepChange = useCallback((step) => {
     }
   }
 }, []);
-
-useEffect(() => {
-  if (isFirstVisit()) openTutorial("first_visit");
-}, [openTutorial]);
 
 const currentHintCooldownRemaining = gameMode ? hintCooldownByMode[gameMode] : 0;
 
@@ -514,8 +509,21 @@ const startWarmupFull = () => {
   startGame('warmupFull');
 };
 
+const startPracticeFromTutorial = () => {
+  const mode = pendingPracticeRef.current === 'full' ? 'warmupFull' : 'warmup';
+  pendingPracticeRef.current = null;
+  if (showInstructions) dismissTutorial();
+  else markTutorialSeen();
+  startGame(mode);
+};
+
 const startMiniFromEntry = () => {
   if (shouldStartWarmup()) {
+    if (!hasSeenTutorial()) {
+      pendingPracticeRef.current = 'mini';
+      openTutorial('play_mini', 'practice');
+      return;
+    }
     startWarmup();
     return;
   }
@@ -528,6 +536,11 @@ const startMiniFromEntry = () => {
 
 const startFullFromEntry = () => {
   if (shouldStartWarmup()) {
+    if (!hasSeenTutorial()) {
+      pendingPracticeRef.current = 'full';
+      openTutorial('play_full', 'practice');
+      return;
+    }
     startWarmupFull();
     return;
   }
@@ -1009,7 +1022,7 @@ if (showStartScreen) {
       <StartScreen
         onPlayMini={startMiniFromEntry}
         onPlayFull={startFullFromEntry}
-        onShowInstructions={() => openTutorial('start_screen')}
+        onShowInstructions={() => openBrowsingTutorial('start_screen')}
         onShowStats={() => setShowStats(true)}
         onShowHighScores={() => {
           setHighScoresHighlight(null);
@@ -1072,7 +1085,10 @@ if (showStartScreen) {
               }}
               onPlayMini={startMiniFromEntry}
               onPlayFull={startFullFromEntry}
+              onPlayPractice={startPracticeFromTutorial}
+              onBack={closeInstructions}
               onStepChange={handleTutorialStepChange}
+              ending={tutorialEnding}
             />
 
           </div>
@@ -1150,7 +1166,7 @@ return (
         lastSum={lastSum}
         showHelpDropdown={showHelpDropdown}
         setShowHelpDropdown={setShowHelpDropdown}
-        onOpenInstructions={() => openTutorial('in_game')}
+        onOpenInstructions={() => openBrowsingTutorial('in_game')}
         hardMode={hardMode}
         setHardMode={setHardMode}
         setSelectedCells={setSelectedCells}
@@ -1314,10 +1330,12 @@ return (
 
       {showWarmupDoneScreen && (
         <WarmupDoneScreen
-          onPlayMini={() => {
+          offer={gameMode === 'warmupFull' ? 'mini' : 'full'}
+          onPlayNext={() => {
+            const nextMode = gameMode === 'warmupFull' ? 'mini' : 'full';
             setShowWarmupDoneScreen(false);
             stopWinCelebration();
-            startGame('mini');
+            startGame(nextMode);
           }}
           onReturnHome={() => {
             setShowWarmupDoneScreen(false);
@@ -1374,7 +1392,10 @@ return (
               onComplete={() => dismissTutorial()}
               onPlayMini={startMiniFromEntry}
               onPlayFull={startFullFromEntry}
+              onPlayPractice={startPracticeFromTutorial}
+              onBack={closeInstructions}
               onStepChange={handleTutorialStepChange}
+              ending={tutorialEnding}
             />
 
           </div>

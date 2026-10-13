@@ -60,6 +60,10 @@ function playFromTutorial(name) {
   fireEvent.click(within(ready.parentElement).getByRole('button', { name }));
 }
 
+function openHowToPlay() {
+  fireEvent.click(screen.getByRole('button', { name: 'How to play' }));
+}
+
 beforeEach(() => {
   localStorage.clear();
   window.gtag = jest.fn();
@@ -73,40 +77,51 @@ afterEach(() => {
   delete window.gtag;
 });
 
-test('opens the tutorial on a first visit and tracks tutorial_view', () => {
+test('does not open the tutorial until the player chooses a game', () => {
   renderGame();
 
-  expect(screen.getByLabelText('Close instructions')).toBeInTheDocument();
+  expect(screen.queryByLabelText('Close instructions')).not.toBeInTheDocument();
   expect(screen.getByRole('heading', { name: /daily number puzzle game/i })).toBeInTheDocument();
-  expect(gtagCalls('tutorial_view')).toEqual([
-    ['event', 'tutorial_view', { trigger: 'first_visit' }]
-  ]);
+  expect(gtagCalls('tutorial_view')).toEqual([]);
 });
 
-test('records one first-visit view when Strict Mode replays the open', () => {
+test('does not open the tutorial when Strict Mode replays the first render', () => {
   renderGame(
     <React.StrictMode>
       <SumGridGame />
     </React.StrictMode>
   );
 
-  expect(screen.getByLabelText('Close instructions')).toBeInTheDocument();
-  expect(gtagCalls('tutorial_view')).toEqual([
-    ['event', 'tutorial_view', { trigger: 'first_visit' }]
-  ]);
+  expect(screen.queryByLabelText('Close instructions')).not.toBeInTheDocument();
+  expect(gtagCalls('tutorial_view')).toEqual([]);
 });
 
-test('closing on the first screen tracks the step and does not reopen', () => {
+test('closing before the end returns home and Play opens the tutorial again', () => {
   const { unmount } = renderGame();
+
+  fireEvent.click(screen.getByRole('button', { name: /play mini sums/i }));
+  expect(gtagCalls('tutorial_view')).toEqual([
+    ['event', 'tutorial_view', { trigger: 'play_mini' }]
+  ]);
+  expect(document.querySelectorAll('[class^="cell-"]')).toHaveLength(0);
 
   fireEvent.click(screen.getByLabelText('Close instructions'));
 
   expect(gtagCalls('tutorial_close')).toEqual([
-    ['event', 'tutorial_close', { trigger: 'first_visit', step: 0 }]
+    ['event', 'tutorial_close', { trigger: 'play_mini', step: 0 }]
   ]);
   expect(gtagCalls('tutorial_complete')).toEqual([]);
-  expect(localStorage.getItem('sums-tutorial-seen')).toBe('1');
+  expect(gtagCalls('game_start')).toEqual([]);
+  expect(localStorage.getItem('sums-tutorial-seen')).toBeNull();
+  expect(localStorage.getItem('sums-warmup-done')).toBeNull();
   expect(screen.queryByLabelText('Close instructions')).not.toBeInTheDocument();
+
+  fireEvent.click(screen.getByRole('button', { name: /play mini sums/i }));
+  expect(screen.getByLabelText('Close instructions')).toBeInTheDocument();
+  expect(gtagCalls('tutorial_view')).toEqual([
+    ['event', 'tutorial_view', { trigger: 'play_mini' }],
+    ['event', 'tutorial_view', { trigger: 'play_mini' }]
+  ]);
 
   unmount();
   renderGame();
@@ -116,6 +131,7 @@ test('closing on the first screen tracks the step and does not reopen', () => {
 test('screen 2 keeps the selection after a gray-number mistake', () => {
   jest.useFakeTimers();
   renderGame();
+  openHowToPlay();
 
   clickEnabledNext();
   advance(4500);
@@ -137,6 +153,7 @@ test('screen 2 keeps the selection after a gray-number mistake', () => {
 test('screen 5 explains a wrong sum and then completes', () => {
   jest.useFakeTimers();
   renderGame();
+  openHowToPlay();
 
   clickEnabledNext();
   advance(4500);
@@ -167,6 +184,7 @@ test('screen 5 explains a wrong sum and then completes', () => {
 test('closing on screen 2 reports that step', () => {
   jest.useFakeTimers();
   renderGame();
+  openHowToPlay();
 
   clickEnabledNext();
   advance(4500);
@@ -176,9 +194,11 @@ test('closing on screen 2 reports that step', () => {
   fireEvent.click(screen.getByLabelText('Close instructions'));
 
   expect(gtagCalls('tutorial_close')).toEqual([
-    ['event', 'tutorial_close', { trigger: 'first_visit', step: 2 }]
+    ['event', 'tutorial_close', { trigger: 'start_screen', step: 2 }]
   ]);
-  expect(localStorage.getItem('sums-tutorial-seen')).toBe('1');
+  expect(localStorage.getItem('sums-tutorial-seen')).toBeNull();
+  expect(localStorage.getItem('sums-warmup-done')).toBeNull();
+  expect(gtagCalls('game_start')).toEqual([]);
 });
 
 test('does not auto-open when a game history exists', () => {
@@ -202,19 +222,28 @@ test('does not auto-open when storage throws', () => {
   expect(gtagCalls('tutorial_view')).toEqual([]);
 });
 
-test('still closes when marking the tutorial seen throws', () => {
+test('still starts the practice board when marking the tutorial seen throws', () => {
+  jest.useFakeTimers();
   renderGame();
+  fireEvent.click(screen.getByRole('button', { name: /play mini sums/i }));
   jest.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
     throw new Error('storage blocked');
   });
 
-  fireEvent.click(screen.getByLabelText('Close instructions'));
+  finishTutorial();
+  const ready = screen.getByRole('heading', { name: /ready to play/i });
+  fireEvent.click(within(ready.parentElement).getByRole('button', { name: /^Play$/ }));
 
   expect(screen.queryByLabelText('Close instructions')).not.toBeInTheDocument();
+  expect(document.querySelectorAll('[class^="cell-"]')).toHaveLength(16);
+  expect(gtagCalls('game_start')).toEqual([
+    ['event', 'game_start', { game_mode: 'warmup' }]
+  ]);
 });
 
 test('How to play and in-game instructions use their own triggers', () => {
   localStorage.setItem('sums-tutorial-seen', '1');
+  localStorage.setItem('sums-warmup-done', '1');
   renderGame();
 
   fireEvent.click(screen.getByRole('button', { name: 'How to play' }));
@@ -247,10 +276,11 @@ test('How to play and in-game instructions use their own triggers', () => {
 test('reaching the last screen tracks completion once and a later close does not', () => {
   jest.useFakeTimers();
   renderGame();
+  fireEvent.click(screen.getByRole('button', { name: /play mini sums/i }));
   finishTutorial();
 
   expect(gtagCalls('tutorial_complete')).toEqual([
-    ['event', 'tutorial_complete', { trigger: 'first_visit' }]
+    ['event', 'tutorial_complete', { trigger: 'play_mini' }]
   ]);
 
   fireEvent.click(screen.getByRole('button', { name: 'Review Tutorial' }));
@@ -259,13 +289,15 @@ test('reaching the last screen tracks completion once and a later close does not
   expect(gtagCalls('tutorial_complete')).toHaveLength(1);
   expect(gtagCalls('tutorial_close')).toEqual([]);
   expect(gtagCalls('game_start')).toEqual([]);
-  expect(localStorage.getItem('sums-tutorial-seen')).toBe('1');
+  expect(localStorage.getItem('sums-tutorial-seen')).toBeNull();
+  expect(document.querySelectorAll('[class^="cell-"]')).toHaveLength(0);
 });
 
 test('Play Mini SUMS on the last screen starts the mini puzzle', () => {
   jest.useFakeTimers();
   localStorage.setItem('sums-warmup-done', '1');
   renderGame();
+  openHowToPlay();
   finishTutorial();
   playFromTutorial("Play today's Mini");
 
@@ -281,6 +313,7 @@ test('Play SUMS on the last screen starts the full puzzle', () => {
   jest.useFakeTimers();
   localStorage.setItem('sums-warmup-done', '1');
   renderGame();
+  openHowToPlay();
   finishTutorial();
   playFromTutorial('Or play the full 7×7');
 
@@ -294,12 +327,13 @@ test('resuming the same mode from the tutorial does not fire game_start again', 
   jest.useFakeTimers();
   localStorage.setItem('sums-warmup-done', '1');
   renderGame();
+  openHowToPlay();
   finishTutorial();
   playFromTutorial("Play today's Mini");
 
   fireEvent.click(screen.getByRole('button', { name: 'Help' }));
   fireEvent.click(screen.getByText('Return to home'));
-  fireEvent.click(screen.getByRole('button', { name: 'How to play' }));
+  openHowToPlay();
   finishTutorial();
   playFromTutorial("Play today's Mini");
 
@@ -307,7 +341,7 @@ test('resuming the same mode from the tutorial does not fire game_start again', 
     ['event', 'game_start', { game_mode: 'mini' }]
   ]);
   expect(gtagCalls('tutorial_complete')).toEqual([
-    ['event', 'tutorial_complete', { trigger: 'first_visit' }],
+    ['event', 'tutorial_complete', { trigger: 'start_screen' }],
     ['event', 'tutorial_complete', { trigger: 'start_screen' }]
   ]);
 });

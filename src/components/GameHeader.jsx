@@ -13,7 +13,6 @@ const GameHeader = ({
   setHardMode,
   setSelectedCells,
   onReturnHome,
-  gameMode,
   puzzleNumber
 }) => {
   const dropdownRef = useRef(null);
@@ -41,9 +40,6 @@ const GameHeader = ({
         alt="SUMS"
         style={{ maxWidth: "200px" }}
       />
-      {(gameMode === 'warmup' || gameMode === 'warmupFull') && (
-        <div style={{ fontSize: '13px', color: '#666' }}>Warm-up puzzle</div>
-      )}
 
       <div style={{
         display: "grid",

@@ -3,7 +3,15 @@ import CanvasOverlay from './CanvasOverlay';
 import NumberOverlay from './NumberOverlay';
 import { getNextExpectedNumber } from '../utils/gameHelpers';
 
-const InteractiveTutorial = ({ onComplete, onPlayMini, onPlayFull, onStepChange }) => {
+const InteractiveTutorial = ({
+  onComplete,
+  onPlayMini,
+  onPlayFull,
+  onPlayPractice,
+  onBack,
+  onStepChange,
+  ending = 'daily'
+}) => {
   const [tutorialStep, setTutorialStep] = useState(0);
   const [autoPlayStep, setAutoPlayStep] = useState(0);
   const [autoPlayStep3, setAutoPlayStep3] = useState(0);
@@ -716,33 +724,66 @@ const InteractiveTutorial = ({ onComplete, onPlayMini, onPlayFull, onStepChange 
             There's a new Mini and a new full puzzle every day. Puzzles get harder through the week, and Mondays are the easiest.
           </p>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '24px' }}>
-            <button
-              onClick={() => { onComplete(); onPlayMini(); }}
-              style={{ ...primaryButtonStyle, width: '100%', fontSize: '15px' }}
-            >
-              Play today's Mini
-            </button>
-            <p style={{ margin: '-6px 0 0', fontSize: '0.88rem', color: '#666', textAlign: 'center' }}>
-              5×5, a few minutes
-            </p>
+          {ending === 'practice' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '24px' }}>
+              <button
+                onClick={onPlayPractice}
+                style={{ ...primaryButtonStyle, width: '100%', fontSize: '15px' }}
+              >
+                Play
+              </button>
+            </div>
+          )}
 
-            <button
-              onClick={() => { onComplete(); onPlayFull(); }}
-              style={{
-                background: 'none',
-                border: 'none',
-                padding: 0,
-                fontSize: '0.88rem',
-                color: '#666',
-                textDecoration: 'underline',
-                cursor: 'pointer',
-                fontFamily: 'inherit'
-              }}
-            >
-              Or play the full 7×7
-            </button>
-          </div>
+          {ending === 'back' && (
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '24px' }}>
+              <button
+                onClick={onBack}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  padding: '8px 12px',
+                  fontSize: '1rem',
+                  color: '#303036',
+                  cursor: 'pointer',
+                  fontFamily: 'inherit',
+                  fontWeight: '600'
+                }}
+              >
+                Back
+              </button>
+            </div>
+          )}
+
+          {ending === 'daily' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '24px' }}>
+              <button
+                onClick={() => { onComplete(); onPlayMini(); }}
+                style={{ ...primaryButtonStyle, width: '100%', fontSize: '15px' }}
+              >
+                Play today's Mini
+              </button>
+              <p style={{ margin: '-6px 0 0', fontSize: '0.88rem', color: '#666', textAlign: 'center' }}>
+                5×5, a few minutes
+              </p>
+
+              <button
+                onClick={() => { onComplete(); onPlayFull(); }}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  padding: 0,
+                  fontSize: '0.88rem',
+                  color: '#666',
+                  textDecoration: 'underline',
+                  cursor: 'pointer',
+                  fontFamily: 'inherit'
+                }}
+              >
+                Or play the full 7×7
+              </button>
+            </div>
+          )}
 
           <button
             onClick={resetTutorialState}
